@@ -1,0 +1,1 @@
+import{r as s}from"./index-CFmMcpk5.js";function n(a=200){const t=s(!0),e=s(!1);let l=null;return{loading:t,showSkeleton:e,start:()=>{t.value=!0,e.value=!1,l=setTimeout(()=>{e.value=!0},a)},finish:()=>{clearTimeout(l),t.value=!1,e.value=!1}}}export{n as u};
