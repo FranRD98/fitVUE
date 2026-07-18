@@ -20,7 +20,7 @@ const userData = ref({
   weight: '',
   age: '',
   activity: 'sedentario',
-  profile_image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile-images/default-profile.svg',
+  profile_image: '/img/default-profile.svg',
   completedForm: true,
   goal: '',
   gender: ''
@@ -138,7 +138,7 @@ const restart = () => {
     weight: '',
     age: '',
     activity: 'sedentario',
-    profile_image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile-images/default-profile.svg',
+    profile_image: '/img/default-profile.svg',
     completedForm: true,
     goal: '',
     gender: ''

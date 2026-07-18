@@ -29,7 +29,7 @@ const userData = computed(() => userStore.userData)
 
 const profileImage = computed(() =>
   userData.value?.profile_image ||
-  'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile/default-profile.svg'
+  '/img/default-profile.svg'
 )
 
 const userName = computed(() => userData.value?.name || 'Usuario')

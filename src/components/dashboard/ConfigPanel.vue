@@ -2,7 +2,7 @@
 import { ref, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia' // 👈 Importante para mantener reactividad
-import { supabase } from '@/supabase/config'
+import api from '@/supabase/config'
 import { uploadProfileImage, updateUserData } from '@/supabase/services/users'
 
 // Obtener el store y desestructurar con reactividad
@@ -50,12 +50,12 @@ const handleSave = async () => {
       profile_image: imageUrl
     }
 
-    if (email.value && email.value !== userData.value.email) {
-      await supabase.auth.updateUser({ email: email.value })
-    }
+    const accountChanges = {}
+    if (email.value && email.value !== userData.value.email) accountChanges.email = email.value
+    if (password.value) accountChanges.password = password.value
 
-    if (password.value) {
-      await supabase.auth.updateUser({ password: password.value })
+    if (Object.keys(accountChanges).length) {
+      await api.patch('/me', accountChanges)
     }
 
     await updateUserData(userData.value.uid, updates)

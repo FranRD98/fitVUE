@@ -34,11 +34,13 @@ const registerUser = async () => {
   // Guardamos el plan también en localStorage por si acaso
   localStorage.setItem('pendingPlan', selectedPlan.value)
 
-  // Redirigimos a Stripe
+  // El client_reference_id permite al webhook de Stripe identificar a qué usuario aplicar el plan tras el pago.
+  const uid = response.user?.uid
+
   if (selectedPlan.value === 2) {
-    window.location.href = 'https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00?plan=2'
+    window.location.href = `https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00?client_reference_id=${uid}`
   } else if (selectedPlan.value === 3) {
-    window.location.href = 'https://buy.stripe.com/test_bJe8wP5N6bsm6i96djdfG01?plan=3'
+    window.location.href = `https://buy.stripe.com/test_bJe8wP5N6bsm6i96djdfG01?client_reference_id=${uid}`
   } else {
     router.push('/empezar')
   }

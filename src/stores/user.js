@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { supabase } from '@/supabase/config'
 import { useRouter } from 'vue-router'
+import api, { TOKEN_KEY } from '@/supabase/config'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref(null)
@@ -9,114 +9,95 @@ export const useUserStore = defineStore('user', () => {
   const authError = ref('')
   const router = useRouter()
 
- // Registrar
+  // Registrar
   const register = async ({ email, password, ...profile }) => {
     authError.value = ''
-    const { data, error: signUpError } = await supabase.auth.signUp({ email, password })
 
-    if (signUpError) {
-      authError.value = signUpError.message
-      return { error: signUpError }
+    try {
+      const { data } = await api.post('/register', { email, password, ...profile })
+      localStorage.setItem(TOKEN_KEY, data.token)
+      user.value = data.user
+      userData.value = data.user
+
+      return { success: true, user: data.user }
+    } catch (err) {
+      authError.value = err.response?.data?.message || 'Error al registrarse'
+      return { error: err }
     }
-
-    const userId = data?.user?.id
-    if (!userId) return { error: new Error('Fallo en creación de usuario') }
-
-    const { error: insertError } = await supabase
-      .from('users')
-      .insert([{ uid: userId, email, role: 'user', ...profile, created_at: new Date().toISOString() }])
-
-    if (insertError) {
-      authError.value = insertError.message
-      return { error: insertError }
-    }
-
-    await fetchUserData()
-    return { success: true }
   }
 
   // Login
   const login = async ({ email, password }) => {
     authError.value = ''
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
-      authError.value = error.message
-    } else {
-      await fetchUserData()
+    try {
+      const { data } = await api.post('/login', { email, password })
+      localStorage.setItem(TOKEN_KEY, data.token)
+      user.value = data.user
+      userData.value = data.user
       router.push('/dashboard')
+    } catch (err) {
+      authError.value = err.response?.data?.message || 'Credenciales incorrectas'
     }
   }
 
   // Logout
   const logout = async () => {
-    await supabase.auth.signOut()
+    try {
+      await api.post('/logout')
+    } catch (err) {
+      // El token ya podría ser inválido: continuamos con el logout local.
+    }
+
+    localStorage.removeItem(TOKEN_KEY)
     user.value = null
     userData.value = null
     router.push('/')
   }
 
   // Obtener usuario actual y datos extendidos
-  const session = ref(null)
-    
-const fetchUserData = async () => {
-  const { data: sessionData } = await supabase.auth.getSession()
-  session.value = sessionData?.session || null // <-- Guarda toda la sesión
-  user.value = sessionData?.session?.user || null
-
-  if (user.value) {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('uid', user.value.id)
-      .single()
-
-    if (error) {
-      console.error('Error cargando datos del usuario:', error)
+  const fetchUserData = async () => {
+    if (!localStorage.getItem(TOKEN_KEY)) {
+      user.value = null
+      userData.value = null
+      return
     }
 
-    userData.value = data
+    try {
+      const { data } = await api.get('/me')
+      user.value = data
+      userData.value = data
+    } catch (err) {
+      localStorage.removeItem(TOKEN_KEY)
+      user.value = null
+      userData.value = null
+    }
   }
-}
 
   // Actualizar plan una vez pagado
   const updatePlan = async (newPlanId) => {
-  if (!user.value) return
-  await supabase.from('users')
-    .update({ plan_id: newPlanId })
-    .eq('uid', user.value.id)
-
-  await fetchUserData()
-}
-
-  // Escuchar cambios de sesión
-  const initAuthListener = () => {
-    supabase.auth.onAuthStateChange((_event, session) => {
-      user.value = session?.user || null
-      if (user.value) fetchUserData()
-    })
+    if (!user.value) return
+    await api.patch(`/users/${user.value.uid}`, { plan_id: newPlanId })
+    await fetchUserData()
   }
 
   const updateUserData = async (uid, updates) => {
-  const { error } = await supabase
-  .from('users')
-  .update(updates)
-  .eq('uid', uid)
-  
-  if (error) throw error
-}
+    await api.patch(`/users/${uid}`, updates)
+  }
 
-return {
-  user,
-  userData,
-  session,
-  authError,
-  register,
-  login,
-  logout,
-  fetchUserData,
-  updatePlan,
-  updateUserData,
-  initAuthListener
-}
+  // No hay un listener de sesión en tiempo real con auth por token; se mantiene por compatibilidad.
+  const initAuthListener = () => {}
+
+  return {
+    user,
+    userData,
+    authError,
+    register,
+    login,
+    logout,
+    fetchUserData,
+    updatePlan,
+    updateUserData,
+    initAuthListener
+  }
 })

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { supabase } from '@/supabase/config'
+import api from '@/supabase/config'
 import { createExercise, updateExercise, getExerciseCategories, getExerciseHistory } from '@/supabase/services/exercises'
 import ExerciseProgressChart from '@/components/dashboard/charts/ExerciseProgressChart.vue'
 
@@ -71,26 +71,30 @@ async function loadExerciseHistory() {
 
 const uploadImage = async () => {
   if (!imageFile.value) return
-  const file = imageFile.value
-  const filePath = `icons/exercises/${Date.now()}-${file.name}`
 
-  const { error } = await supabase.storage.from('fitvue').upload(filePath, file)
-  if (error) return console.error('Error al subir imagen:', error)
+  const formData = new FormData()
+  formData.append('image', imageFile.value)
 
-  const imageUrl = supabase.storage.from('fitvue').getPublicUrl(filePath).data.publicUrl
-  exercise.value.image = imageUrl
+  try {
+    const { data } = await api.post('/uploads/exercises', formData)
+    exercise.value.image = data.url
 
-  if (exercise.value.id) {
-    await supabase.from('exercises').update({ image: imageUrl }).eq('id', exercise.value.id)
+    if (exercise.value.id) {
+      await updateExercise(exercise.value.id, { image: data.url })
+    }
+  } catch (error) {
+    console.error('Error al subir imagen:', error)
   }
 }
 
 const deleteImage = async () => {
   const imageUrl = exercise.value.image
   if (!imageUrl || imageUrl.startsWith('blob:')) return
-  const path = imageUrl.split('/storage/v1/object/public/fitvue/')[1]
-  if (path) await supabase.storage.from('fitvue').remove([path])
-  if (exercise.value.id) await supabase.from('exercises').update({ image: '' }).eq('id', exercise.value.id)
+
+  const path = imageUrl.split('/storage/')[1]
+  if (path) await api.delete('/uploads', { data: { path } })
+  if (exercise.value.id) await updateExercise(exercise.value.id, { image: '' })
+
   exercise.value.image = ''
   imageFile.value = null
 }

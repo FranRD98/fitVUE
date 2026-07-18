@@ -27,7 +27,7 @@ const emit = defineEmits(['toggleSidebar'])
       <button class="md:hidden text-2xl" @click="$emit('toggleSidebar')">☰</button>
 
       <img
-        :src="userStore.userData.profile_image || 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/profile/default-profile.svg'"
+        :src="userStore.userData.profile_image || '/img/default-profile.svg'"
         alt="profile"
         class="w-10 h-10 md:w-12 md:h-12 rounded-full"
       />

@@ -1,9 +1,8 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { supabase } from '@/supabase/config'
+import { useUserStore } from '@/stores/user'
 
-const router = useRouter()
+const userStore = useUserStore()
 const email = ref('')
 const password = ref('')
 const error = ref('')
@@ -16,18 +15,11 @@ const login = async () => {
 
   error.value = ''
 
-  const { error: authError } = await supabase.auth.signInWithPassword({
-    email: email.value,
-    password: password.value,
-  })
+  await userStore.login({ email: email.value, password: password.value })
 
-  if (authError) {
-    console.error(authError)
+  if (userStore.authError) {
     error.value = 'Credenciales incorrectas o usuario no registrado'
-    return
   }
-
-  router.push('/dashboard')
 }
 </script>
 

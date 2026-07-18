@@ -1,8 +1,16 @@
-import { createClient } from '@supabase/supabase-js';
+import axios from 'axios'
 
-// Credentials
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;  // URL Supabase project
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;  // Supabase public key
+export const TOKEN_KEY = 'fitvue_token'
 
-// Create the client of Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Cliente HTTP hacia la API Laravel (sustituye al cliente de Supabase).
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+})
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY)
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+export default api

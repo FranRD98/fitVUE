@@ -38,6 +38,14 @@ const badgeColor = computed(() => {
       return 'bg-gray-300 text-gray-700'
   }
 })
+
+// El client_reference_id permite al webhook de Stripe identificar a qué usuario aplicar el plan tras el pago.
+const upgradeUrl = computed(() => {
+  const uid = userStore.userData?.uid
+  return uid
+    ? `https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00?client_reference_id=${uid}`
+    : 'https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00'
+})
 </script>
 
 <template>
@@ -87,7 +95,7 @@ const badgeColor = computed(() => {
         <p class="font-semibold mb-1">Actualiza a PREMIUM</p>
         <p class="text-xs mb-4">y desbloquea nuevas funcionalidades</p>
        <a
-        href="https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00"
+        :href="upgradeUrl"
         class="block w-full text-center bg-white text-cyan-900 text-sm font-semibold py-1.5 rounded-full hover:bg-gray-100 transition"
       >
         Actualizar

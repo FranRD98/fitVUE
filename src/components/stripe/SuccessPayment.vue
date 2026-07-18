@@ -2,44 +2,32 @@
 import { useRoute, useRouter } from 'vue-router'
 import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { supabase } from '@/supabase/config'
+import api from '@/supabase/config'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 
 onMounted(async () => {
-  const plan = Number(route.query.plan)
-  console.log('[✅ URL Params]', route.query)
+  const sessionId = route.query.session_id
 
-  if (![2, 3].includes(plan)) {
+  if (!sessionId) {
+    // El enlace de pago de Stripe no incluye el session_id: no podemos confirmar el pago de forma segura.
+    console.error('Falta session_id: configura el "after payment redirect" del Payment Link con {CHECKOUT_SESSION_ID}.')
     return router.push('/dashboard')
   }
 
-  // Esperamos a que el usuario esté actualizado
-  await userStore.fetchUserData()
-
-  const userId = userStore.userData?.uid
-
-  if (userId) {
-    const { error } = await supabase
-      .from('users')
-      .update({
-        plan_id: plan,
-        ...(plan === 3 && { role: 'coach' })
-      })
-      .eq('uid', userId)
-
-    if (error) {
-      return console.error('❌ Error actualizando plan:', error)
-    }
+  try {
+    // El backend verifica el pago contra la API de Stripe antes de aplicar el plan.
+    await api.post('/stripe/confirm', { session_id: sessionId })
+  } catch (error) {
+    console.error('❌ Error confirmando el pago:', error)
+    return router.push('/dashboard')
   }
 
-  // Esperamos de nuevo tras actualizar
   await userStore.fetchUserData()
 
-  // Redirige según si completó el formulario
-  if (userStore.userData?.completedForm) {
+  if (userStore.userData?.completed_form) {
     router.push('/dashboard')
   } else {
     router.push('/empezar')

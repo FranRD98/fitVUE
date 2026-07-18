@@ -1,77 +1,44 @@
-import { supabase } from '@/supabase/config'
+import api from '@/supabase/config'
 
 // Obtener todos los ingredientes
 export async function getIngredients(userId) {
-  const { data, error } = await supabase
-    .from('ingredients')
-    .select('*')
-    .eq('created_by', userId)
-    .order('name', { ascending: true });
-
-  if (error) {
+  try {
+    const { data } = await api.get('/ingredients', { params: { user_id: userId } })
+    return data
+  } catch (error) {
     console.error('Error al obtener ingredientes:', error)
     return []
   }
-
-  return data
 }
 
 // Obtener datos de un ingrediente
 export async function getIngredientById(id) {
-  const { data, error } = await supabase
-    .from('ingredients')
-    .select('*')
-    .eq('id', id)
-    
-  if (error) {
+  try {
+    const { data } = await api.get(`/ingredients/${id}`)
+    return data
+  } catch (error) {
     console.error('Error al obtener ingrediente:', error)
     return []
   }
-
-  return data
 }
 
 // Crear nuevo ingrediente
-export async function createIngredient(data, userId) {
-  const { error } = await supabase
-    .from('ingredients')
-    .insert([{ ...data, created_by: userId }])
-
-  if (error) throw error
+export async function createIngredient(data) {
+  await api.post('/ingredients', data)
 }
 
 // Actualizar ingrediente
 export async function updateIngredient(id, data) {
-  const { error } = await supabase
-    .from('ingredients')
-    .update(data)
-    .eq('id', id)
-
-  if (error) throw error
+  await api.patch(`/ingredients/${id}`, data)
 }
 
 // Eliminar ingrediente
 export async function deleteIngredient(id) {
-  const { error } = await supabase
-    .from('ingredients')
-    .delete()
-    .eq('id', id)
-
-  if (error) throw error
+  await api.delete(`/ingredients/${id}`)
 }
 
 // Verifica si un ingrediente está siendo usado en algún plato
 export async function isIngredientUsed(ingredientId) {
-  const { data, error } = await supabase
-    .from('plates')
-    .select('id')
-    .filter('items', 'cs', JSON.stringify([{ ingredient_id: ingredientId }]))
-
-  if (error) {
-    console.error('Error comprobando uso del ingrediente:', error)
-    throw error
-  }
-
-  return data.length > 0
+  const { data } = await api.get(`/ingredients/${ingredientId}/used`)
+  return data.used
 }
-

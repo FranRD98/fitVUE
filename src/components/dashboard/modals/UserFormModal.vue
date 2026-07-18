@@ -3,7 +3,6 @@ import { ref, watch, onMounted } from 'vue'
 import { createUserByCoach, getAllCoaches, updateUser } from '@/supabase/services/users.js'
 import { getRoutines } from '@/supabase/services/routines.js'
 import { getDiets } from '@/supabase/services/diets.js'
-import { supabase } from '@/supabase/config.js'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
@@ -86,50 +85,31 @@ const handleSubmit = async () => {
   formError.value = ''
 
   try {
-    const token = userStore.session?.access_token
-    if (!token) {
-      formError.value = 'Sesión no válida o expirada.'
-      return
-    }
-
     const payload = {
       email: form.value.email,
       name: form.value.name,
       last_name: form.value.last_name,
-      coach_uid: form.value.coach_uid || userStore.userData.uid, 
+      coach_uid: form.value.coach_uid || userStore.userData.uid,
       assigned_diet: form.value.assigned_diet || null,
-      assigned_routine_by_coach: form.value.assigned_routine || null,    }
+      assigned_routine_by_coach: form.value.assigned_routine || null,
+    }
 
-    // Solo añadimos la contraseña si estamos creando
-    if (!isEditing.value) {
+    if (isEditing.value) {
+      await updateUser(props.initialData.uid, payload)
+    } else {
       if (!form.value.password) {
         formError.value = 'La contraseña es obligatoria para crear un usuario.'
         return
       }
       payload.password = form.value.password
-    }
-
-    const response = await fetch('https://bumjstjctwiokebjwnzn.supabase.co/functions/v1/create_user_by_coach', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify(payload)
-    })
-
-    const result = await response.json()
-
-    if (!response.ok) {
-      formError.value = result.error || 'Error al crear el usuario'
-      return
+      await createUserByCoach(payload)
     }
 
     emit('saved')
     emit('close')
   } catch (err) {
     console.error(err)
-    formError.value = 'Error inesperado al crear el usuario'
+    formError.value = err.response?.data?.message || 'Error inesperado al guardar el usuario'
   }
 }
 </script>

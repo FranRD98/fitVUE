@@ -44,7 +44,7 @@ const routine = ref({
   id_category: '',
   days: [],
   user_id: '',
-  public: false
+  published: false
 })
 
 // Cargar datos al montar
@@ -62,7 +62,7 @@ watch(() => props.initialData, (newVal) => {
       description: newVal.description || '',
       id_category: newVal.id_category || '',
       days: [],
-      public: newVal.public ?? false,
+      published: newVal.published ?? false,
     }
 
     selectedDays.value = defaultDays.map(dayName => {
@@ -230,14 +230,14 @@ function resetForm() {
         <!-- Solo visible si el usuario es admin -->
         <div v-if="userStore.userData?.role === 'admin'" class="flex items-center gap-3 mt-4">
           <label class="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" v-model="routine.public" class="sr-only" />
+            <input type="checkbox" v-model="routine.published" class="sr-only" />
             <div
               class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
-              :class="{ 'bg-green-500': routine.public }"
+              :class="{ 'bg-green-500': routine.published }"
             >
               <div
                 class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
-                :class="{ 'translate-x-4': routine.public }"
+                :class="{ 'translate-x-4': routine.published }"
               ></div>
             </div>
             <span class="text-sm text-gray-700">Publicar rutina</span>

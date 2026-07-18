@@ -2,7 +2,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { createGuide, updateGuide, getCategories, createCategory } from '@/supabase/services/guides'
-import { supabase } from '@/supabase/config'
+import api from '@/supabase/config'
 
 const userStore = useUserStore()
 
@@ -92,16 +92,15 @@ const handleImageChange = async (e) => {
   if (!file) return
 
   file = await resizeImage(file, 800)
-  const filePath = `guides/${Date.now()}-${file.name}`
-  const { data, error } = await supabase.storage.from('fitvue').upload(filePath, file)
+  const formData = new FormData()
+  formData.append('image', file)
 
-  if (error) {
+  try {
+    const { data } = await api.post('/uploads/guides', formData)
+    guide.value.header_image = data.url
+  } catch (error) {
     console.error('Error al subir imagen:', error)
-    return
   }
-
-  const imageUrl = supabase.storage.from('fitvue').getPublicUrl(filePath).data.publicUrl
-  guide.value.header_image = imageUrl
 }
 
 // Eliminar imagen

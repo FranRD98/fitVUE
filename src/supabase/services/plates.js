@@ -1,47 +1,14 @@
-// src/supabase/services/plates.js
-import { supabase } from '@/supabase/config'
+import api from '@/supabase/config'
 
-// Obtener todos los platos con los ingredientes completos
+// Obtener todos los platos con los ingredientes completos (el backend ya los hidrata)
 export async function getPlates(uid = null) {
-  let query = supabase
-    .from('plates')
-    .select('id, name, items, created_by') // incluye created_by para seguridad
-    .order('name', { ascending: true });
-
-  if (uid) {
-    query = query.eq('created_by', uid)
-  }
-
-  const { data, error } = await query
-
-  if (error) {
+  try {
+    const { data } = await api.get('/plates', { params: uid ? { created_by: uid } : {} })
+    return data
+  } catch (error) {
     console.error('Error al obtener platos:', error)
     return []
   }
-
-  // Resolver los ingredientes
-  const platesWithIngredients = await Promise.all(data.map(async (plate) => {
-    const ingredientIds = plate.items.map(item => item.ingredient_id)
-    const { data: ingredients, error: ingredientsError } = await supabase
-      .from('ingredients')
-      .select('*')
-      .in('id', ingredientIds)
-      .order('name', { ascending: true });
-
-    if (ingredientsError) {
-      console.error('Error al obtener ingredientes:', ingredientsError)
-      return plate
-    }
-
-    const detailedItems = plate.items.map(item => ({
-      ...item,
-      ingredient: ingredients.find(ing => ing.id === item.ingredient_id)
-    }))
-
-    return { ...plate, items: detailedItems }
-  }))
-
-  return platesWithIngredients
 }
 
 export function getMacros(plate) {
@@ -79,32 +46,17 @@ export function getMacros(plate) {
   }
 }
 
-
 // Crear nuevo plato
-export async function createPlate(plateData, userId) {
-  const { error } = await supabase
-    .from('plates')
-    .insert([{ ...plateData, created_by: userId }])
-
-  if (error) throw error
+export async function createPlate(plateData) {
+  await api.post('/plates', plateData)
 }
 
 // Actualizar plato
 export async function updatePlate(id, plateData) {
-  const { error } = await supabase
-    .from('plates')
-    .update(plateData)
-    .eq('id', id)
-
-  if (error) throw error
+  await api.patch(`/plates/${id}`, plateData)
 }
 
 // Eliminar plato
 export async function deletePlate(id) {
-  const { error } = await supabase
-    .from('plates')
-    .delete()
-    .eq('id', id)
-
-  if (error) throw error
+  await api.delete(`/plates/${id}`)
 }

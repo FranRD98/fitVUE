@@ -59,19 +59,19 @@ watch(step, async () => {
 })
 
 const steps = [
-  { model: 'weight', label: '¿Cuál es tu peso corporal actual?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/weight.png' },
-  { model: 'neck', label: '¿Cuánto mide tu cuello?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/neck.png' },
-  { model: 'shoulders', label: '¿Cuánto miden tus hombros?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/shoulders.png' },
-  { model: 'chest', label: '¿Cuánto mide tu pecho?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/chest.png' },
-  { model: 'biceps_relaxed', label: '¿Cuánto mide tu bíceps relajado?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/biceps-relaxed.png' },
-  { model: 'biceps_flexed', label: '¿Y tu bíceps contraído?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/biceps-flexed.png' },
-  { model: 'forearm', label: '¿Medida del antebrazo?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/forearm.png' },
-  { model: 'wrist', label: '¿Tamaño de la muñeca?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/wrist.png' },
-  { model: 'waist', label: '¿Cuánto mide tu cintura?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/waist.png' },
-  { model: 'abdomen', label: '¿Medida del abdomen?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/abs.png' },
-  { model: 'hips', label: '¿Cuánto mide tu cadera?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/hips.png' },
-  { model: 'quadriceps', label: '¿Tamaño de los cuádriceps?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/quad.png' },
-  { model: 'calves', label: '¿Y tus gemelos?', image: 'https://bumjstjctwiokebjwnzn.supabase.co/storage/v1/object/public/fitvue/icons/reviews/calve.png' }
+  { model: 'weight', label: '¿Cuál es tu peso corporal actual?', image: '/icons/reviews/weight.png' },
+  { model: 'neck', label: '¿Cuánto mide tu cuello?', image: '/icons/reviews/neck.png' },
+  { model: 'shoulders', label: '¿Cuánto miden tus hombros?', image: '/icons/reviews/shoulders.png' },
+  { model: 'chest', label: '¿Cuánto mide tu pecho?', image: '/icons/reviews/chest.png' },
+  { model: 'biceps_relaxed', label: '¿Cuánto mide tu bíceps relajado?', image: '/icons/reviews/biceps-relaxed.png' },
+  { model: 'biceps_flexed', label: '¿Y tu bíceps contraído?', image: '/icons/reviews/biceps-flexed.png' },
+  { model: 'forearm', label: '¿Medida del antebrazo?', image: '/icons/reviews/forearm.png' },
+  { model: 'wrist', label: '¿Tamaño de la muñeca?', image: '/icons/reviews/wrist.png' },
+  { model: 'waist', label: '¿Cuánto mide tu cintura?', image: '/icons/reviews/waist.png' },
+  { model: 'abdomen', label: '¿Medida del abdomen?', image: '/icons/reviews/abs.png' },
+  { model: 'hips', label: '¿Cuánto mide tu cadera?', image: '/icons/reviews/hips.png' },
+  { model: 'quadriceps', label: '¿Tamaño de los cuádriceps?', image: '/icons/reviews/quad.png' },
+  { model: 'calves', label: '¿Y tus gemelos?', image: '/icons/reviews/calve.png' }
 ]
 
 const currentStep = computed(() => steps[step.value])

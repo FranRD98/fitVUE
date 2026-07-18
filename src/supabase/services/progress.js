@@ -1,59 +1,33 @@
-import { supabase } from '@/supabase/config'
+import api from '@/supabase/config'
 
 // Crear una revisión
 export async function createReview(data) {
-  const { error } = await supabase
-    .from('progress')
-    .insert([data])
-
-  if (error) throw error
+  await api.post('/reviews', data)
 }
 
 // Actualizar una revisión
 export async function updateReview(id, updatedData) {
-  const { error } = await supabase
-    .from('progress')
-    .update(updatedData)
-    .eq('id', id)
-
-  if (error) throw error
+  await api.patch(`/reviews/${id}`, updatedData)
 }
 
 // Eliminar una revisión
 export async function deleteReview(id) {
-  const { error } = await supabase
-    .from('progress')
-    .delete()
-    .eq('id', id)
-
-  if (error) throw error
+  await api.delete(`/reviews/${id}`)
 }
 
 // Obtener todas las revisiones por uid
 export async function getReviewsById(userId) {
-  const { data, error } = await supabase
-    .from('progress')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false })
-
-  if (error) throw error
+  const { data } = await api.get('/reviews', { params: { user_id: userId } })
   return data
 }
 
-// Obtener una revisión por uid y fecha
+// Obtener una revisión por uid y id
 export async function getReviewById(uid, reviewId) {
-  const { data, error } = await supabase
-    .from('progress')
-    .select('*')
-    .eq('user_id', uid)
-    .eq('id', reviewId)
-    .limit(1)
-
-  if (error) {
+  try {
+    const { data } = await api.get(`/reviews/${reviewId}`, { params: { user_id: uid } })
+    return data
+  } catch (error) {
     console.error('Error al obtener revisión por UID y fecha:', error)
     return null
   }
-
-  return data?.[0] || null
 }
