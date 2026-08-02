@@ -1,118 +1,46 @@
-# FitVue 🏋️‍♂️  
+# fitVUE
 
-🚀 **FitVue** es una plataforma interactiva para personas interesadas en el fitness y la vida saludable. Ofrece recomendaciones personalizadas, seguimiento del progreso y herramientas de gestión potentes para profesionales del entrenamiento.  
+Aplicación para seguimiento de entrenamientos, dietas y progreso físico. Proyecto único de Laravel (backend + API) con Vue 3 integrado de forma nativa vía Vite (`resources/js`), sin servicios externos de pago (Supabase sustituido por MySQL propio).
 
-Diseñada para usuarios individuales y entrenadores personales, **FitVue** centraliza el control del progreso, la planificación de rutinas, las revisiones físicas y mucho más.  
+## Stack
 
----
+- **Backend**: Laravel 13, MySQL, Sanctum (auth por token), Stripe (pagos)
+- **Frontend**: Vue 3, Vue Router, Pinia, Tailwind CSS 4, Chart.js — todo dentro de `resources/js/`, compilado con el Vite de Laravel
+- Un único proyecto, un único `Document Root` (`public/`), sin frontend separado
 
-## 👥 Roles y planes disponibles
+## Desarrollo local
 
-### 👤 Usuario Básico (gratuito)
-- Acceso limitado al contenido.
-- Visualización de rutinas y dietas predefinidas.
-- Sin personalización ni seguimiento detallado.
+Requisitos: PHP 8.3+, Composer, Node.js, MySQL.
 
-### 💎 Usuario Premium
-- Registro y seguimiento de revisiones físicas.
-- Rutinas y dietas personalizadas por coach fitVUE.
-- Visualización de gráficos de evolución, radar charts y más.
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+# Configura DB_* en .env con tu MySQL local, luego:
+php artisan migrate
+php artisan storage:link
+php artisan admin:sync   # crea/asegura la cuenta admin@fitvue.es
+```
 
-### 🧑‍🏫 Usuario Profesional (Pro)
-- Gestión completa de clientes.
-- Asignación de rutinas y dietas a medida.
-- Seguimiento del progreso de cada cliente en tiempo real.
-- Paneles de control administrativos potentes.
+Arranca todo con:
 
----
+```bash
+composer run dev
+```
 
-## 🎯 Objetivos del proyecto
+(o por separado: `php artisan serve` + `npm run dev`)
 
-- ✅ Desarrollar una página web dinámica, intuitiva y funcional.
-- ✅ Permitir a los usuarios registrarse y recibir recomendaciones personalizadas.
-- ✅ Ofrecer planes de ejercicio y alimentación adaptados al perfil y rol del usuario.
-- ✅ Facilitar el seguimiento del progreso mediante visualizaciones intuitivas.
-- ✅ Proporcionar herramientas completas a profesionales para gestionar clientes.
+## Importar datos reales de Supabase
 
----
+Si tienes un dump de `pg_dumpall` de la antigua base de Supabase:
 
-## 🛠️ Tecnologías utilizadas
+```bash
+php artisan app:import-supabase-dump /ruta/al/dump.sql
+```
 
-- **Frontend:** VueJS  
-- **Backend y BBDD:** Supabase  
-- **Autenticación:** Supabase Auth 
-- **Estilos:** TailwindCSS   
-- **Gestión de estado:** Pinia  
+Migra usuarios, rutinas, ejercicios, dietas, ingredientes, guías y revisiones, remapeando los UUID de Supabase a IDs de MySQL y conservando los hashes de contraseña originales (bcrypt, compatibles con Laravel).
 
----
+## Despliegue
 
-## 🖼️ Vista previa de la plataforma
-
-### 🧭 Landing
-![Landing](./public/github/Landing.jpeg)
-
-### 🔐 Login
-![Login](./public/github/Login.jpeg)
-
-### 🏠 Panel principal (Desktop)
-![HomePanel](./public/github/HomePanel_PremiumUser.jpeg)
-
-### 📱 Panel principal (Móvil)
-![HomePanelMobile](./public/github/HomePanelMobile_PremiumUser.jpeg)
-
-### 📊 Revisión física
-![ReviewDetail](./public/github/ReviewDetail_PremiumUser.jpeg)
-
-### ➕ Nueva revisión
-![NewReview](./public/github/NewReview_PremiumUser.jpeg)
-
-### 💪 Historial de levantamientos
-![LiftingHistory](./public/github/LiftingExerciseHistory_PremiumUser.jpeg)
-
-### ➕ Crear ejercicio
-![NewExercise](./public/github/NewExercise_PremiumUser.jpeg)
-
-### 🥗 Crear dieta personalizada
-![NewDiet](./public/github/NewDiet_PremiumUser.jpeg)
-
-### 👥 Panel de clientes (Pro)
-![ClientsPanel](./public/github/ClientsPanel_ProUser.jpeg)
-
-### 📋 Panel de rutinas (Pro)
-![RoutinesPanel](./public/github/RoutinesPanel_ProUser.jpeg)
-
----
-
-## ✨ Características principales
-
-### 👤 Gestión de usuario
-- Registro e inicio de sesión con autenticación segura.
-- Edición del perfil con información personal y objetivos.
-
-### 🏋️ Planes personalizados
-- Rutinas y dietas generadas automáticamente según objetivos.
-- Seguimiento del progreso a través de gráficos y comparativas.
-
-### 📈 Progreso visual e histórico
-- Revisión física con medidas detalladas.
-- Radar charts y line charts para visualizar la evolución.
-
-### 📋 Panel Pro para entrenadores
-- Gestión completa de clientes.
-- Asignación de rutinas, dietas y revisiones personalizadas.
-- Visualización clara del progreso de cada cliente.
-
----
-
-## 🚧 En desarrollo
-
-- 📅 Calendario de sesiones integradas  
-- 📲 Versión móvil como Progressive Web App (PWA)  
-
----
-
-## 💬 Contribuciones
-
-Toda sugerencia, mejora o pull request es más que bienvenida 🙌
-
----
+Ver [DEPLOY.md](DEPLOY.md) para la guía completa de despliegue en Plesk.

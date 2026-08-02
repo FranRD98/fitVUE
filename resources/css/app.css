@@ -1,0 +1,31 @@
+@import "tailwindcss";
+@import "@fontsource/poppins";
+
+:root {
+  /* Tipografía */
+  --font-display: "Poppins", "Arial", sans-serif;
+  --font-body: "Poppins", "Arial", sans-serif;
+
+  /* Paleta de colores */
+  --color-primary: #005F78;
+  --color-primary-rgb: 0, 95, 120;
+  --color-secondary: #104e64;
+  --color-bg-light: #E8F6F3;
+
+  /* Colores de texto */
+  --color-text: #333333;
+  --color-text-dark: #E8F6F3;
+  --color-text-light: #387373;
+
+  /* Otros estilos */
+  --border-radius: 8px;
+  --spacing-unit: 1rem;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
