@@ -324,7 +324,9 @@ function confirmExit() {
   text-align: center;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  font-size: 0.95rem;
+  /* 16px mínimo: por debajo de esto, iOS hace zoom automático al enfocar el input
+     aunque el viewport tenga user-scalable=no */
+  font-size: 1rem;
   outline: none;
   transition: border-color 0.2s ease, background-color 0.2s ease;
 }

@@ -29,3 +29,15 @@ body {
   line-height: 1.5;
   overflow-x: hidden;
 }
+
+/* iOS hace zoom automático al enfocar un input/select/textarea con
+   font-size menor de 16px, incluso con el viewport en user-scalable=no.
+   Forzamos 16px mínimo en móvil para que el "sin zoom" de la PWA se cumpla
+   también al rellenar formularios. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
