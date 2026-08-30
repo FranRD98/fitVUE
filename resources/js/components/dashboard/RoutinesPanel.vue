@@ -8,12 +8,33 @@ import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.
 import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconLockOpen2, IconTrash } from '@tabler/icons-vue'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
+const FREE_ROUTINE_LIMIT = 3
+
 const routines = ref([])
 
 const viewAssignedRoutine = ref(false)
 const userStore = useUserStore()
 const showModal = ref(false)
+const showUpgradePrompt = ref(false)
 const selectedRoutine = ref(null)
+
+// El client_reference_id permite al webhook de Stripe identificar a qué usuario aplicar el plan tras el pago.
+const upgradeUrl = computed(() => {
+  const uid = userStore.userData?.uid
+  return uid
+    ? `https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00?client_reference_id=${uid}`
+    : 'https://buy.stripe.com/test_eVqdR95N6gMG4a19pvdfG00'
+})
+
+// routines.value ya viene filtrada por el backend a solo las del usuario actual
+function openCreateModal() {
+  if (userStore.userData?.plan_id === 1 && routines.value.length >= FREE_ROUTINE_LIMIT) {
+    showUpgradePrompt.value = true
+    return
+  }
+
+  showModal.value = true
+}
 
 const assignedRoutine = ref(null)
 const assignedRoutineId = ref(null)
@@ -169,7 +190,7 @@ const handleUnassign = async () => {
 
         <!-- Crear rutina -->
         <button
-          @click="showModal = true"
+          @click="openCreateModal"
           class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition cursor-pointer"
         >
           <IconPlus class="w-5 h-5" />
@@ -184,6 +205,37 @@ const handleUnassign = async () => {
         @close="showModal = false; selectedRoutine = null"
         @saved="loadRoutines"
       />
+
+      <!-- Límite del plan gratuito alcanzado -->
+      <div
+        v-if="showUpgradePrompt"
+        class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-center items-center px-4"
+        @click.self="showUpgradePrompt = false"
+      >
+        <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 text-center">
+          <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-yellow-100 flex items-center justify-center">
+            <IconLockOff class="w-7 h-7 text-yellow-600" />
+          </div>
+          <h2 class="text-lg font-bold text-[var(--color-primary)] mb-2">Límite de rutinas alcanzado</h2>
+          <p class="text-sm text-gray-600 mb-6">
+            El plan Free permite hasta {{ FREE_ROUTINE_LIMIT }} rutinas. Actualiza tu plan para crear rutinas ilimitadas.
+          </p>
+          <div class="flex flex-col gap-2">
+            <a
+              :href="upgradeUrl"
+              class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition font-semibold"
+            >
+              Actualizar plan
+            </a>
+            <button
+              @click="showUpgradePrompt = false"
+              class="text-sm text-gray-500 hover:text-gray-700 transition py-1"
+            >
+              Ahora no
+            </button>
+          </div>
+        </div>
+      </div>
 
       <!-- Vista solo lectura de rutina asignada -->
       <RoutineAssignedViewer

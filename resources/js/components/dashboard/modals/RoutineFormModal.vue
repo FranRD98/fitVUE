@@ -130,7 +130,7 @@ async function submitForm() {
     close()
   } catch (error) {
     console.error('Error al guardar la rutina:', error)
-    alert('Ocurrió un error al guardar la rutina.')
+    alert(error.response?.data?.message || 'Ocurrió un error al guardar la rutina.')
   }
 }
 

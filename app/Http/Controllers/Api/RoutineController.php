@@ -37,8 +37,19 @@ class RoutineController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+
+        // Plan gratuito: máximo 3 rutinas propias. Se valida aquí además de en el
+        // frontend para que no se pueda saltar el límite llamando a la API directamente.
+        if ($user->plan_id === 1 && Routine::where('user_id', $user->id)->count() >= 3) {
+            return response()->json([
+                'message' => 'Has alcanzado el límite de 3 rutinas del plan gratuito. Actualiza tu plan para crear más.',
+                'limit_reached' => true,
+            ], 403);
+        }
+
         $data = $this->validated($request);
-        $data['user_id'] = $request->user()->id;
+        $data['user_id'] = $user->id;
 
         return response()->json(Routine::create($data), 201);
     }

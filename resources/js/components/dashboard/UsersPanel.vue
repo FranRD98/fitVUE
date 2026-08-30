@@ -191,6 +191,7 @@ const filteredUsers = computed(() => {
 
             <td class="py-3 px-2 text-right">
               <button
+                v-if="user.role !== 'admin'"
                 @click.prevent.stop="handleDelete(user)"
                 class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200 focus:outline-none focus:ring-2 focus:ring-red-300"
                 title="Eliminar"

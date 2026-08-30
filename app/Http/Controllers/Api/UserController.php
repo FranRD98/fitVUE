@@ -118,6 +118,11 @@ class UserController extends Controller
             abort(403);
         }
 
+        // Las cuentas admin no se pueden borrar desde el panel (ni saltándose la UI).
+        if ($user->role === 'admin') {
+            abort(403, 'No se puede eliminar una cuenta de administrador.');
+        }
+
         $user->delete();
 
         return response()->json(['success' => true]);
