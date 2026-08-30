@@ -1,6 +1,7 @@
 <script setup>
   import { IconBrandInstagram, IconBrandX, IconBrandLinkedin } from '@tabler/icons-vue'
 
+  const currentYear = new Date().getFullYear()
 </script>
 
 <template>
@@ -55,7 +56,7 @@
     <!-- Legal links -->
     <div class="bg-[#111827] text-gray-400 py-6">
       <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-xs gap-3">
-        <p>© 2025 FitVue · Fran Riera</p>
+        <p>© {{ currentYear }} FitVue · Fran Riera</p>
         <div class="flex gap-4">
           <router-link to="/politica-privacidad" class="hover:underline">Política de privacidad</router-link>
           <router-link to="/terminos-y-condiciones" class="hover:underline">Términos y condiciones</router-link>

@@ -19,11 +19,11 @@ userStore.initAuthListener()
 </script>
 
 <template>
-  <div>
+  <div class="min-h-screen flex flex-col">
     <!-- Esperar a que los datos del usuario estén listos antes de mostrar el layout -->
     <Header v-if="showLayout" />
 
-    <main>
+    <main class="flex-1">
       <router-view />
     </main>
 

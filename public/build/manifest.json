@@ -1,55 +1,55 @@
 {
-  "_IconLayoutList-BLDlL4Gk.js": {
-    "file": "assets/IconLayoutList-BLDlL4Gk.js",
+  "_IconLayoutList-DVPUzRIa.js": {
+    "file": "assets/IconLayoutList-DVPUzRIa.js",
     "name": "IconLayoutList",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_IconRocket-DDK0mD6j.js": {
-    "file": "assets/IconRocket-DDK0mD6j.js",
+  "_IconRocket-C82x1uaC.js": {
+    "file": "assets/IconRocket-C82x1uaC.js",
     "name": "IconRocket",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_IconTrash-DXX8Q_Ui.js": {
-    "file": "assets/IconTrash-DXX8Q_Ui.js",
+  "_IconTrash-BNZkY4LW.js": {
+    "file": "assets/IconTrash-BNZkY4LW.js",
     "name": "IconTrash",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_diets-DpNVeLyN.js": {
-    "file": "assets/diets-DpNVeLyN.js",
+  "_diets-CcPXnUh2.js": {
+    "file": "assets/diets-CcPXnUh2.js",
     "name": "diets",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_ingredients-D8EgEkLe.js": {
-    "file": "assets/ingredients-D8EgEkLe.js",
+  "_ingredients-BY9ZzMBN.js": {
+    "file": "assets/ingredients-BY9ZzMBN.js",
     "name": "ingredients",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_plates-Cpyp7DAL.js": {
-    "file": "assets/plates-Cpyp7DAL.js",
+  "_plates-CJ7VTrpv.js": {
+    "file": "assets/plates-CJ7VTrpv.js",
     "name": "plates",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_useDelayedSkeleton-C5uREI6N.js": {
-    "file": "assets/useDelayedSkeleton-C5uREI6N.js",
+  "_useDelayedSkeleton-DBwVoDLo.js": {
+    "file": "assets/useDelayedSkeleton-DBwVoDLo.js",
     "name": "useDelayedSkeleton",
     "imports": [
       "resources/js/app.js"
     ]
   },
-  "_users-QOryZw8x.js": {
-    "file": "assets/users-QOryZw8x.js",
+  "_users-DEQIs1SX.js": {
+    "file": "assets/users-DEQIs1SX.js",
     "name": "users",
     "imports": [
       "resources/js/app.js"
@@ -97,7 +97,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DkbYAuiX.js",
+    "file": "assets/app-DW15zowQ.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -113,60 +113,60 @@
       "resources/js/components/dashboard/ConfigPanel.vue"
     ],
     "css": [
-      "assets/app-BlbRWQKe.css"
+      "assets/app-CRO4r5gY.css"
     ]
   },
   "resources/js/components/dashboard/ConfigPanel.vue": {
-    "file": "assets/ConfigPanel-B4V6OH-G.js",
+    "file": "assets/ConfigPanel-nGKZF47s.js",
     "name": "ConfigPanel",
     "src": "resources/js/components/dashboard/ConfigPanel.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_users-QOryZw8x.js"
+      "_users-DEQIs1SX.js"
     ]
   },
   "resources/js/components/dashboard/DietsPanel.vue": {
-    "file": "assets/DietsPanel-Cz6TFgHX.js",
+    "file": "assets/DietsPanel-BqkbD3_-.js",
     "name": "DietsPanel",
     "src": "resources/js/components/dashboard/DietsPanel.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_IconLayoutList-BLDlL4Gk.js",
-      "_IconRocket-DDK0mD6j.js",
-      "_IconTrash-DXX8Q_Ui.js",
+      "_IconLayoutList-DVPUzRIa.js",
+      "_IconRocket-C82x1uaC.js",
+      "_IconTrash-BNZkY4LW.js",
       "resources/js/app.js",
-      "_diets-DpNVeLyN.js",
-      "_ingredients-D8EgEkLe.js",
-      "_plates-Cpyp7DAL.js"
+      "_diets-CcPXnUh2.js",
+      "_ingredients-BY9ZzMBN.js",
+      "_plates-CJ7VTrpv.js"
     ],
     "css": [
       "assets/DietsPanel-C_Iz_HyJ.css"
     ]
   },
   "resources/js/components/dashboard/ExercisesPanel.vue": {
-    "file": "assets/ExercisesPanel-CrFOvSNj.js",
+    "file": "assets/ExercisesPanel-DV5WO87U.js",
     "name": "ExercisesPanel",
     "src": "resources/js/components/dashboard/ExercisesPanel.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_IconLayoutList-BLDlL4Gk.js",
-      "_IconTrash-DXX8Q_Ui.js",
+      "_IconLayoutList-DVPUzRIa.js",
+      "_IconTrash-BNZkY4LW.js",
       "resources/js/app.js",
-      "_useDelayedSkeleton-C5uREI6N.js"
+      "_useDelayedSkeleton-DBwVoDLo.js"
     ],
     "css": [
       "assets/ExercisesPanel-C5kJZ52I.css"
     ]
   },
   "resources/js/components/dashboard/GuidesPanel.vue": {
-    "file": "assets/GuidesPanel-DaQh_n-S.js",
+    "file": "assets/GuidesPanel-G6ikIlhd.js",
     "name": "GuidesPanel",
     "src": "resources/js/components/dashboard/GuidesPanel.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_IconLayoutList-BLDlL4Gk.js",
-      "_IconTrash-DXX8Q_Ui.js",
+      "_IconLayoutList-DVPUzRIa.js",
+      "_IconTrash-BNZkY4LW.js",
       "resources/js/app.js"
     ],
     "css": [
@@ -174,72 +174,72 @@
     ]
   },
   "resources/js/components/dashboard/HomePanel.vue": {
-    "file": "assets/HomePanel-CnCJTcbG.js",
+    "file": "assets/HomePanel-BnLyxg8E.js",
     "name": "HomePanel",
     "src": "resources/js/components/dashboard/HomePanel.vue",
     "isDynamicEntry": true,
     "imports": [
       "resources/js/app.js",
-      "_useDelayedSkeleton-C5uREI6N.js"
+      "_useDelayedSkeleton-DBwVoDLo.js"
     ]
   },
   "resources/js/components/dashboard/IngredientsPanel.vue": {
-    "file": "assets/IngredientsPanel-CXNXP4j-.js",
+    "file": "assets/IngredientsPanel-CQFixhqG.js",
     "name": "IngredientsPanel",
     "src": "resources/js/components/dashboard/IngredientsPanel.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_IconLayoutList-BLDlL4Gk.js",
-      "_IconTrash-DXX8Q_Ui.js",
+      "_IconLayoutList-DVPUzRIa.js",
+      "_IconTrash-BNZkY4LW.js",
       "resources/js/app.js",
-      "_ingredients-D8EgEkLe.js"
+      "_ingredients-BY9ZzMBN.js"
     ],
     "css": [
       "assets/IngredientsPanel-BFSJNmVp.css"
     ]
   },
   "resources/js/components/dashboard/PlatesPanel.vue": {
-    "file": "assets/PlatesPanel-Ccpi6dCx.js",
+    "file": "assets/PlatesPanel-5wwyGQDU.js",
     "name": "PlatesPanel",
     "src": "resources/js/components/dashboard/PlatesPanel.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_IconLayoutList-BLDlL4Gk.js",
-      "_IconTrash-DXX8Q_Ui.js",
+      "_IconLayoutList-DVPUzRIa.js",
+      "_IconTrash-BNZkY4LW.js",
       "resources/js/app.js",
-      "_ingredients-D8EgEkLe.js",
-      "_plates-Cpyp7DAL.js"
+      "_ingredients-BY9ZzMBN.js",
+      "_plates-CJ7VTrpv.js"
     ],
     "css": [
       "assets/PlatesPanel-DfrW902_.css"
     ]
   },
   "resources/js/components/dashboard/RoutinesPanel.vue": {
-    "file": "assets/RoutinesPanel-D-2j210Z.js",
+    "file": "assets/RoutinesPanel-1wjhTv9M.js",
     "name": "RoutinesPanel",
     "src": "resources/js/components/dashboard/RoutinesPanel.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_IconLayoutList-BLDlL4Gk.js",
-      "_IconRocket-DDK0mD6j.js",
-      "_IconTrash-DXX8Q_Ui.js",
+      "_IconLayoutList-DVPUzRIa.js",
+      "_IconRocket-C82x1uaC.js",
+      "_IconTrash-BNZkY4LW.js",
       "resources/js/app.js",
-      "_useDelayedSkeleton-C5uREI6N.js"
+      "_useDelayedSkeleton-DBwVoDLo.js"
     ],
     "css": [
       "assets/RoutinesPanel-DR9ynO_y.css"
     ]
   },
   "resources/js/components/dashboard/UsersPanel.vue": {
-    "file": "assets/UsersPanel-BsuH1KhZ.js",
+    "file": "assets/UsersPanel-BPYXjQnu.js",
     "name": "UsersPanel",
     "src": "resources/js/components/dashboard/UsersPanel.vue",
     "isDynamicEntry": true,
     "imports": [
-      "_IconTrash-DXX8Q_Ui.js",
+      "_IconTrash-BNZkY4LW.js",
       "resources/js/app.js",
-      "_users-QOryZw8x.js",
-      "_diets-DpNVeLyN.js"
+      "_users-DEQIs1SX.js",
+      "_diets-CcPXnUh2.js"
     ],
     "css": [
       "assets/UsersPanel-T7688BcD.css"
