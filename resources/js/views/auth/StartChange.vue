@@ -251,7 +251,7 @@ const calculateCalories = () => {
                   userData.gender === 'male' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-200'
                 ]"
               >
-                <img src="/icons/gender_man.svg" class="mx-auto h-14 mb-4" />
+                <img src="/img/icons/gender_man.svg" class="mx-auto h-14 mb-4" />
                 <p class="text-lg font-semibold text-center text-[var(--color-primary)]">Hombre</p>
               </div>
 
@@ -263,7 +263,7 @@ const calculateCalories = () => {
                   userData.gender === 'female' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-200'
                 ]"
               >
-                <img src="/icons/gender_woman.svg" class="mx-auto h-14 mb-4" />
+                <img src="/img/icons/gender_woman.svg" class="mx-auto h-14 mb-4" />
                 <p class="text-lg font-semibold text-center text-[var(--color-primary)]">Mujer</p>
               </div>
 
@@ -275,7 +275,7 @@ const calculateCalories = () => {
                   userData.gender === 'other' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-200'
                 ]"
               >
-                <img src="/icons/gender_other.svg" class="mx-auto h-14 mb-4" />
+                <img src="/img/icons/gender_other.svg" class="mx-auto h-14 mb-4" />
                 <p class="text-lg font-semibold text-center text-[var(--color-primary)]">Otro</p>
               </div>
             </div>
@@ -297,7 +297,7 @@ const calculateCalories = () => {
                   userData.goal === 'perder_grasa' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'
                 ]"
               >
-                <img src="/icons/Perder_grasa.webp" class="h-14 w-auto" />
+                <img src="/img/icons/Perder_grasa.webp" class="h-14 w-auto" />
                 <div>
                   <h4 class="text-xl font-bold text-[var(--color-text)]">Perder grasa</h4>
                   <p class="text-gray-500 text-sm">Perder peso y mejorar tu salud metabólica.</p>
@@ -312,7 +312,7 @@ const calculateCalories = () => {
                   userData.goal === 'ganar_musculo' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'
                 ]"
               >
-                <img src="/icons/Ganar_musculo.webp" class="h-14 w-auto" />
+                <img src="/img/icons/Ganar_musculo.webp" class="h-14 w-auto" />
                 <div>
                   <h4 class="text-xl font-bold text-[var(--color-text)]">Ganar músculo</h4>
                   <p class="text-gray-500 text-sm">Aumentar tu masa muscular y tu fuerza física.</p>
@@ -327,7 +327,7 @@ const calculateCalories = () => {
                   userData.goal === 'mantener_peso' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'
                 ]"
               >
-                <img src="/icons/Mantener_peso.webp" class="h-14 w-auto" />
+                <img src="/img/icons/Mantener_peso.webp" class="h-14 w-auto" />
                 <div>
                   <h4 class="text-xl font-bold text-[var(--color-text)]">Mantener peso</h4>
                   <p class="text-gray-500 text-sm">Estabilizar tu peso y continuar mejorando tu salud.</p>
@@ -405,7 +405,7 @@ const calculateCalories = () => {
                 :class="userData.activity === 'sedentario' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'"
                 class="p-4 border rounded-lg shadow-sm flex items-center gap-4 cursor-pointer transition"
               >
-                <img src="/icons/ic_low_activity.webp" class="w-10 h-auto" />
+                <img src="/img/icons/ic_low_activity.webp" class="w-10 h-auto" />
                 <div>
                   <h4 class="text-lg font-semibold text-[var(--color-text)]">Sedentario</h4>
                   <p class="text-sm text-gray-500">Poca o ninguna actividad física</p>
@@ -418,7 +418,7 @@ const calculateCalories = () => {
                 :class="userData.activity === 'ligero' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'"
                 class="p-4 border rounded-lg shadow-sm flex items-center gap-4 cursor-pointer transition"
               >
-                <img src="/icons/ic_moderate_activity.webp" class="w-10 h-auto" />
+                <img src="/img/icons/ic_moderate_activity.webp" class="w-10 h-auto" />
                 <div>
                   <h4 class="text-lg font-semibold text-[var(--color-text)]">Ligero</h4>
                   <p class="text-sm text-gray-500">Ejercicio 1-3 veces por semana</p>
@@ -431,7 +431,7 @@ const calculateCalories = () => {
                 :class="userData.activity === 'moderado' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'"
                 class="p-4 border rounded-lg shadow-sm flex items-center gap-4 cursor-pointer transition"
               >
-                <img src="/icons/ic_high_activity.webp" class="w-10 h-auto" />
+                <img src="/img/icons/ic_high_activity.webp" class="w-10 h-auto" />
                 <div>
                   <h4 class="text-lg font-semibold text-[var(--color-text)]">Moderado</h4>
                   <p class="text-sm text-gray-500">Ejercicio 3-5 veces por semana</p>
@@ -444,7 +444,7 @@ const calculateCalories = () => {
                 :class="userData.activity === 'activo' ? 'border-[var(--color-primary)] bg-[var(--color-bg-light)]' : 'border-gray-300'"
                 class="p-4 border rounded-lg shadow-sm flex items-center gap-4 cursor-pointer transition"
               >
-                <img src="/icons/ic_athletic_activity.webp" class="w-10 h-auto" />
+                <img src="/img/icons/ic_athletic_activity.webp" class="w-10 h-auto" />
                 <div>
                   <h4 class="text-lg font-semibold text-[var(--color-text)]">Activo</h4>
                   <p class="text-sm text-gray-500">Ejercicio 6-7 veces por semana</p>

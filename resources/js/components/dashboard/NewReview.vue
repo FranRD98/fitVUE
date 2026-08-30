@@ -59,19 +59,19 @@ watch(step, async () => {
 })
 
 const steps = [
-  { model: 'weight', label: '¿Cuál es tu peso corporal actual?', image: '/icons/reviews/weight.png' },
-  { model: 'neck', label: '¿Cuánto mide tu cuello?', image: '/icons/reviews/neck.png' },
-  { model: 'shoulders', label: '¿Cuánto miden tus hombros?', image: '/icons/reviews/shoulders.png' },
-  { model: 'chest', label: '¿Cuánto mide tu pecho?', image: '/icons/reviews/chest.png' },
-  { model: 'biceps_relaxed', label: '¿Cuánto mide tu bíceps relajado?', image: '/icons/reviews/biceps-relaxed.png' },
-  { model: 'biceps_flexed', label: '¿Y tu bíceps contraído?', image: '/icons/reviews/biceps-flexed.png' },
-  { model: 'forearm', label: '¿Medida del antebrazo?', image: '/icons/reviews/forearm.png' },
-  { model: 'wrist', label: '¿Tamaño de la muñeca?', image: '/icons/reviews/wrist.png' },
-  { model: 'waist', label: '¿Cuánto mide tu cintura?', image: '/icons/reviews/waist.png' },
-  { model: 'abdomen', label: '¿Medida del abdomen?', image: '/icons/reviews/abs.png' },
-  { model: 'hips', label: '¿Cuánto mide tu cadera?', image: '/icons/reviews/hips.png' },
-  { model: 'quadriceps', label: '¿Tamaño de los cuádriceps?', image: '/icons/reviews/quad.png' },
-  { model: 'calves', label: '¿Y tus gemelos?', image: '/icons/reviews/calve.png' }
+  { model: 'weight', label: '¿Cuál es tu peso corporal actual?', image: '/img/icons/reviews/weight.png' },
+  { model: 'neck', label: '¿Cuánto mide tu cuello?', image: '/img/icons/reviews/neck.png' },
+  { model: 'shoulders', label: '¿Cuánto miden tus hombros?', image: '/img/icons/reviews/shoulders.png' },
+  { model: 'chest', label: '¿Cuánto mide tu pecho?', image: '/img/icons/reviews/chest.png' },
+  { model: 'biceps_relaxed', label: '¿Cuánto mide tu bíceps relajado?', image: '/img/icons/reviews/biceps-relaxed.png' },
+  { model: 'biceps_flexed', label: '¿Y tu bíceps contraído?', image: '/img/icons/reviews/biceps-flexed.png' },
+  { model: 'forearm', label: '¿Medida del antebrazo?', image: '/img/icons/reviews/forearm.png' },
+  { model: 'wrist', label: '¿Tamaño de la muñeca?', image: '/img/icons/reviews/wrist.png' },
+  { model: 'waist', label: '¿Cuánto mide tu cintura?', image: '/img/icons/reviews/waist.png' },
+  { model: 'abdomen', label: '¿Medida del abdomen?', image: '/img/icons/reviews/abs.png' },
+  { model: 'hips', label: '¿Cuánto mide tu cadera?', image: '/img/icons/reviews/hips.png' },
+  { model: 'quadriceps', label: '¿Tamaño de los cuádriceps?', image: '/img/icons/reviews/quad.png' },
+  { model: 'calves', label: '¿Y tus gemelos?', image: '/img/icons/reviews/calve.png' }
 ]
 
 const currentStep = computed(() => steps[step.value])

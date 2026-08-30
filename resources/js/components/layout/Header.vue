@@ -117,7 +117,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
                     class="flex items-center space-x-3"
                   >
                     <img
-                      :src="category.icon_path || '/icons/default-icon.svg'"
+                      :src="category.icon_path || '/img/icons/default-icon.svg'"
                       alt="Icono"
                       class="w-8 h-8 object-contain"
                     />
