@@ -1,5 +1,12 @@
 import api from '@/api/client'
 
+// Laravel devuelve {} (no null) cuando una relación "belongsTo" está vacía;
+// lo normalizamos aquí para que el resto del código pueda seguir comprobando
+// simplemente `if (resultado)`.
+function nullIfEmpty(value) {
+  return value && Object.keys(value).length ? value : null
+}
+
 // Obtener todas las dietas de un usuario
 export async function getDiets(userId) {
   try {
@@ -14,7 +21,7 @@ export async function getDiets(userId) {
 // Obtener dieta asignada por el coach
 export async function getCoachAssignedDiet(uid) {
   const { data } = await api.get(`/users/${uid}/coach-assigned-diet`)
-  return data
+  return nullIfEmpty(data)
 }
 
 // Crear nueva dieta

@@ -1,5 +1,12 @@
 import api from '@/api/client'
 
+// Laravel devuelve {} (no null) cuando una relación "belongsTo" está vacía;
+// lo normalizamos aquí para que el resto del código pueda seguir comprobando
+// simplemente `if (resultado)`.
+function nullIfEmpty(value) {
+  return value && Object.keys(value).length ? value : null
+}
+
 // Crear nueva rutina
 export async function createRoutine(routineData) {
   const { data } = await api.post('/routines', routineData)
@@ -53,13 +60,13 @@ export async function getRoutineById(id) {
 // Obtener rutina asignada actual
 export async function getAssignedRoutine(uid) {
   const { data } = await api.get(`/users/${uid}/assigned-routine`)
-  return data
+  return nullIfEmpty(data)
 }
 
 // Obtener rutina asignada del coach
 export async function getCoachAssignedRoutine(uid) {
   const { data } = await api.get(`/users/${uid}/coach-assigned-routine`)
-  return data
+  return nullIfEmpty(data)
 }
 
 // Actualizar una rutina existente

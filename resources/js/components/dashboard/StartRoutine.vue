@@ -1,23 +1,40 @@
 <script setup>
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getAssignedRoutine, getCoachAssignedRoutine } from '@/api/services/routines'
 import { getLastExerciseProgress, saveExerciseProgress } from '@/api/services/exercises'
+import { IconCheck, IconPlus, IconTrash, IconX, IconClock } from '@tabler/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const routine = ref(null)
 const loading = ref(true)
-const step = ref(0)
-const inputRefs = ref([])
 const exerciseInputs = ref([])
 const selectedDay = ref(null)
 const showDaySelector = ref(false)
 const userId = ref(null)
+const saving = ref(false)
 
-const currentExercise = computed(() => selectedDay.value?.exercises?.[step.value])
-const totalSteps = computed(() => selectedDay.value?.exercises?.length || 0)
+// Cronómetro del entrenamiento
+const elapsedSeconds = ref(0)
+let timerHandle = null
+
+const elapsedLabel = computed(() => {
+  const m = Math.floor(elapsedSeconds.value / 60).toString().padStart(2, '0')
+  const s = (elapsedSeconds.value % 60).toString().padStart(2, '0')
+  return `${m}:${s}`
+})
+
+const completedSets = computed(() =>
+  exerciseInputs.value.reduce((total, ex) => total + ex.sets.filter((s) => s.done).length, 0)
+)
+const totalSets = computed(() =>
+  exerciseInputs.value.reduce((total, ex) => total + ex.sets.length, 0)
+)
+const progressPct = computed(() =>
+  totalSets.value ? Math.round((completedSets.value / totalSets.value) * 100) : 0
+)
 
 onMounted(async () => {
   userId.value = route.params.userId
@@ -37,72 +54,111 @@ onMounted(async () => {
   }
 })
 
+onUnmounted(() => {
+  if (timerHandle) clearInterval(timerHandle)
+})
+
 const handleDaySelection = async (dayObj) => {
   selectedDay.value = dayObj
-  step.value = 0
   showDaySelector.value = false
 
   exerciseInputs.value = await Promise.all(
     dayObj.exercises.map(async (exercise) => {
       const lastProgress = await getLastExerciseProgress(exercise.id, userId.value)
-
       const lastSets = lastProgress?.sets || []
-      const sets = Array.from({ length: exercise.sets }).map((_, i) => ({
+      const plannedSets = exercise.sets || 1
+
+      const sets = Array.from({ length: plannedSets }).map((_, i) => ({
         reps: '',
         weight: '',
-        lastReps: lastSets[i]?.reps || null,
-        lastWeight: lastSets[i]?.weight || null
+        lastReps: lastSets[i]?.reps ?? (exercise.reps ?? null),
+        lastWeight: lastSets[i]?.weight ?? null,
+        done: false,
       }))
 
       return {
         exerciseId: exercise.id,
         name: exercise.name,
         sets,
-        lastDate: lastProgress?.created_at ? new Date(lastProgress.created_at).toLocaleDateString('es-ES') : null
+        lastDate: lastProgress?.created_at ? new Date(lastProgress.created_at).toLocaleDateString('es-ES') : null,
       }
     })
   )
+
+  elapsedSeconds.value = 0
+  timerHandle = setInterval(() => { elapsedSeconds.value++ }, 1000)
 }
 
-watch(step, async () => {
-  await nextTick()
-  inputRefs.value[0]?.focus()
-})
+function addSet(exercise) {
+  const last = exercise.sets[exercise.sets.length - 1]
+  exercise.sets.push({
+    reps: '',
+    weight: '',
+    lastReps: last?.lastReps ?? null,
+    lastWeight: last?.lastWeight ?? null,
+    done: false,
+  })
+}
 
-const handleNext = async () => {
-  if (step.value < totalSteps.value - 1) {
-    step.value++
-  } else {
-    try {
-      await saveExerciseProgress(
-        userId.value,
-        routine.value.id,
-        selectedDay.value.day,
-        exerciseInputs.value
-      )
-      alert('¡Progreso guardado con éxito!')
-    } catch (error) {
-      console.error(error)
-      alert('Error al guardar el progreso.')
-    } finally {
-      router.push('/dashboard')
-    }
+function removeSet(exercise) {
+  if (exercise.sets.length <= 1) return
+  exercise.sets.pop()
+}
+
+// Al marcar una serie, si no se ha escrito nada se rellena con lo de la última vez
+// (o el objetivo de la rutina), igual que en apps como Hevy: un toque y listo.
+function toggleDone(set) {
+  if (!set.done) {
+    if (set.weight === '') set.weight = set.lastWeight ?? 0
+    if (set.reps === '') set.reps = set.lastReps ?? 0
+  }
+  set.done = !set.done
+}
+
+async function finishWorkout() {
+  const payload = exerciseInputs.value
+    .map((exercise) => ({
+      exerciseId: exercise.exerciseId,
+      name: exercise.name,
+      sets: exercise.sets
+        .filter((s) => s.done)
+        .map((s) => ({ reps: s.reps, weight: s.weight })),
+    }))
+    .filter((exercise) => exercise.sets.length)
+
+  if (!payload.length) {
+    alert('Marca al menos una serie como completada antes de finalizar.')
+    return
+  }
+
+  saving.value = true
+  try {
+    await saveExerciseProgress(userId.value, routine.value.id, selectedDay.value.day, payload)
+    router.push({ path: '/dashboard', query: { refresh: 'true' } })
+  } catch (error) {
+    console.error(error)
+    alert('Error al guardar el progreso.')
+  } finally {
+    saving.value = false
   }
 }
 
-const handleBack = () => {
-  if (step.value > 0) {
-    step.value--
+function confirmExit() {
+  if (completedSets.value > 0 && !confirm('¿Seguro que quieres salir? Perderás el progreso de este entrenamiento.')) {
+    return
   }
+  router.back()
 }
 </script>
 
 <template>
   <!-- Cargando -->
-  <div v-if="loading" class="text-center p-6 text-white">Cargando rutina...</div>
+  <div v-if="loading" class="fixed inset-0 flex items-center justify-center bg-[var(--color-primary)] text-white">
+    Cargando rutina...
+  </div>
 
   <!-- Sin rutina -->
-  <div v-else-if="!routine || !routine.days?.length" class="flex justify-center items-center text-center p-10">
+  <div v-else-if="!routine || !routine.days?.length" class="fixed inset-0 flex justify-center items-center bg-black/60 backdrop-blur-sm p-4">
     <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-gray-700 border border-red-200">
       <h2 class="text-lg font-semibold mb-4 text-red-600">Rutina no asignada</h2>
       <p class="mb-4">Debes asignarte una rutina antes de registrar un entrenamiento.</p>
@@ -116,121 +172,168 @@ const handleBack = () => {
   </div>
 
   <!-- Selección de día -->
-  <div v-else-if="showDaySelector" class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex justify-center items-center z-50">
+  <div v-else-if="showDaySelector" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
     <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-      <h2 class="text-xl font-bold text-[var(--color-primary)] mb-4">Selecciona un día</h2>
+      <h2 class="text-xl font-bold text-[var(--color-primary)] mb-4">¿Qué día vas a entrenar?</h2>
       <ul class="space-y-2">
         <li v-for="day in routine.days" :key="day.day">
           <button
             @click="handleDaySelection(day)"
-            class="w-full px-4 py-2 bg-[var(--color-primary)] text-white rounded hover:bg-[var(--color-secondary)] transition"
+            class="w-full px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-secondary)] transition font-medium"
           >
             {{ day.day }}
           </button>
         </li>
       </ul>
+      <button @click="$router.back()" class="w-full mt-3 px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">
+        Cancelar
+      </button>
     </div>
   </div>
 
-  <!-- Rutina paso a paso -->
-  <div v-else class="fixed inset-0 bg-[var(--color-primary)] bg-opacity-60 backdrop-blur-sm flex justify-center items-start overflow-y-auto py-6 z-50">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl h-auto flex flex-col relative overflow-hidden max-h-[90vh]">
-
-      <!-- Header -->
-      <div class="text-center py-6 border-b">
-        <h2 class="text-xl font-bold text-[var(--color-primary)]">
-          {{ routine.title }} — {{ selectedDay.day }}
-        </h2>
-        <div class="relative h-2 w-full bg-gray-200 rounded-full overflow-hidden mt-2 mx-6">
-          <div
-            class="absolute top-0 left-0 h-full bg-[var(--color-primary)] transition-all duration-500"
-            :style="{ width: ((step + 1) / totalSteps * 100) + '%' }"
-          ></div>
-        </div>
+  <!-- Entrenamiento en curso: todos los ejercicios visibles, sin pasos -->
+  <div v-else class="fixed inset-0 bg-gray-50 z-50 flex flex-col">
+    <!-- Barra superior -->
+    <header class="bg-white border-b shrink-0 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 px-4 flex items-center justify-between gap-3">
+      <button @click="confirmExit" class="text-gray-400 hover:text-gray-600 shrink-0" aria-label="Salir">
+        <IconX class="w-6 h-6" />
+      </button>
+      <div class="text-center flex-1 min-w-0">
+        <h1 class="font-bold text-[var(--color-primary)] truncate">{{ routine.title }}</h1>
+        <p class="text-xs text-gray-500">{{ selectedDay.day }}</p>
       </div>
+      <div class="flex items-center gap-1 text-sm font-semibold text-gray-600 tabular-nums shrink-0">
+        <IconClock class="w-4 h-4" />
+        {{ elapsedLabel }}
+      </div>
+    </header>
 
-      <!-- Ejercicio -->
-      <div :key="step" class="flex-1 flex flex-col items-center text-center p-6 gap-6 overflow-y-auto">
-        <h3 class="text-xl font-semibold text-gray-700">{{ currentExercise.name }}</h3>
-
-        <p class="text-sm text-gray-500 mb-4">
-          Último peso registrado: <strong>{{ exerciseInputs[step]?.lastWeight }} kg</strong>
-          <span v-if="exerciseInputs[step]?.lastDate"> ({{ exerciseInputs[step].lastDate }})</span>
-        </p>
-
-        <div class="w-full max-w-sm space-y-6">
-          <div
-  v-for="(set, i) in exerciseInputs[step]?.sets"
-  :key="i"
-  class="bg-gray-50 p-4 rounded-lg shadow-sm border"
->
-  <h4 class="text-lg font-bold text-[var(--color-primary)] mb-2">Serie {{ i + 1 }}</h4>
-
-  <div class="grid grid-cols-2 gap-4">
-    <div class="flex flex-col">
-      <label class="text-sm text-left text-gray-600 mb-2">Peso (kg)</label>
-      <input
-        v-model="set.weight"
-        type="number"
-        class="input"
-        :placeholder="set.lastWeight !== null ? `Anterior: ${set.lastWeight} kg` : 'Peso'"
-      />
-
+    <!-- Progreso general -->
+    <div class="px-4 py-2 bg-white border-b shrink-0">
+      <div class="flex items-center justify-between text-xs text-gray-500 mb-1">
+        <span>{{ completedSets }} / {{ totalSets }} series completadas</span>
+        <span>{{ progressPct }}%</span>
+      </div>
+      <div class="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+        <div
+          class="h-full bg-[var(--color-primary)] transition-all duration-300"
+          :style="{ width: progressPct + '%' }"
+        ></div>
+      </div>
     </div>
 
-    <div class="flex flex-col">
-      <label class="text-sm text-left text-gray-600 mb-2">Reps</label>
-      <input
-        v-model="set.reps"
-        type="number"
-        class="input"
-        :placeholder="set.lastReps !== null ? `Anterior: ${set.lastReps}` : 'Reps'"
-      />
-    </div>
-  </div>
+    <!-- Lista de ejercicios -->
+    <div class="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+      <div
+        v-for="exercise in exerciseInputs"
+        :key="exercise.exerciseId"
+        class="bg-white rounded-xl shadow-sm border overflow-hidden"
+      >
+        <div class="px-4 py-3 border-b bg-gray-50">
+          <h3 class="font-semibold text-[var(--color-primary)]">{{ exercise.name }}</h3>
+          <p v-if="exercise.lastDate" class="text-xs text-gray-400">Último entrenamiento: {{ exercise.lastDate }}</p>
+        </div>
 
-  <p v-if="exerciseInputs[step]?.lastDate" class="text-xs text-gray-400 mt-2">
-    Último entrenamiento: {{ exerciseInputs[step].lastDate }}
-  </p>
-</div>
+        <div class="px-2 pt-1">
+          <div class="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_2.5rem] gap-2 px-2 py-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wide">
+            <span>Serie</span>
+            <span>Anterior</span>
+            <span class="text-center">Kg</span>
+            <span class="text-center">Reps</span>
+            <span></span>
+          </div>
 
+          <div
+            v-for="(set, i) in exercise.sets"
+            :key="i"
+            class="grid grid-cols-[2rem_1fr_3.5rem_3.5rem_2.5rem] gap-2 items-center px-2 py-1.5 rounded-lg transition-colors"
+            :class="set.done ? 'bg-emerald-50' : ''"
+          >
+            <span class="text-sm font-bold text-gray-500">{{ i + 1 }}</span>
+            <span class="text-xs text-gray-400 truncate">
+              {{ set.lastWeight != null ? `${set.lastWeight}kg × ${set.lastReps}` : (set.lastReps != null ? `${set.lastReps} reps` : '—') }}
+            </span>
+            <input
+              v-model="set.weight"
+              type="number"
+              inputmode="decimal"
+              class="set-input"
+              :placeholder="set.lastWeight ?? '0'"
+              :disabled="set.done"
+            />
+            <input
+              v-model="set.reps"
+              type="number"
+              inputmode="numeric"
+              class="set-input"
+              :placeholder="set.lastReps ?? '0'"
+              :disabled="set.done"
+            />
+            <button
+              type="button"
+              @click="toggleDone(set)"
+              class="w-8 h-8 rounded-lg flex items-center justify-center border transition-colors"
+              :class="set.done
+                ? 'bg-[var(--color-primary)] border-[var(--color-primary)] text-white'
+                : 'border-gray-300 text-gray-300 hover:border-gray-400'"
+              :aria-label="set.done ? 'Serie completada' : 'Marcar serie como completada'"
+            >
+              <IconCheck class="w-4 h-4" />
+            </button>
+          </div>
+        </div>
 
+        <div class="px-4 py-3 flex items-center justify-between border-t bg-gray-50">
+          <button
+            type="button"
+            @click="addSet(exercise)"
+            class="text-sm font-medium text-[var(--color-primary)] hover:underline flex items-center gap-1"
+          >
+            <IconPlus class="w-4 h-4" /> Añadir serie
+          </button>
+          <button
+            v-if="exercise.sets.length > 1"
+            type="button"
+            @click="removeSet(exercise)"
+            class="text-sm text-gray-400 hover:text-red-500 flex items-center gap-1"
+          >
+            <IconTrash class="w-4 h-4" /> Quitar
+          </button>
         </div>
       </div>
+    </div>
 
-      <!-- Navegación -->
-      <div class="p-6 flex justify-between items-center border-t">
-        <button
-          v-if="step > 0"
-          @click="handleBack"
-          class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700"
-        >
-          Atrás
-        </button>
-
-        <button
-          @click="handleNext"
-          class="ml-auto px-6 py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-secondary)]"
-        >
-          {{ step === totalSteps - 1 ? 'Finalizar' : 'Siguiente' }}
-        </button>
-      </div>
+    <!-- Finalizar -->
+    <div class="shrink-0 border-t bg-white px-4 pt-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+      <button
+        type="button"
+        @click="finishWorkout"
+        :disabled="saving"
+        class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] disabled:opacity-60 text-white font-semibold py-3 rounded-xl transition"
+      >
+        {{ saving ? 'Guardando...' : 'Finalizar entrenamiento' }}
+      </button>
     </div>
   </div>
 </template>
 
 <style scoped>
-.input {
-  padding: 0.5rem 0.75rem;
+.set-input {
+  width: 100%;
+  padding: 0.4rem 0.25rem;
+  text-align: center;
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
-  font-size: 1rem;
-  width: 100%;
+  font-size: 0.95rem;
   outline: none;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
 }
-.input:focus {
+.set-input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 1px var(--color-primary);
+}
+.set-input:disabled {
+  background-color: #f3f4f6;
+  color: #6b7280;
 }
 </style>

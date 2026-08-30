@@ -1,1 +1,0 @@
-import{ut as e}from"./app-CDBW7Zeq.js";function t(t=200){let n=e(!0),r=e(!1),i=null;return{loading:n,showSkeleton:r,start:()=>{n.value=!0,r.value=!1,i=setTimeout(()=>{r.value=!0},t)},finish:()=>{clearTimeout(i),n.value=!1,r.value=!1}}}export{t};
