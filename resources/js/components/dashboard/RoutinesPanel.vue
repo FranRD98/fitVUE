@@ -128,10 +128,10 @@ const handleUnassign = async () => {
 <template>
   <section>
     <!-- Encabezado actualizado -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Rutinas</h1>
 
-      <div class="flex gap-4 items-center">
+      <div class="flex flex-wrap gap-3 items-center">
 
         <!-- Usuario con plan PREMIUM y rutina asignada -->
         <button

@@ -100,7 +100,7 @@ const loadExercises = async () => {
 <template>
   <section>
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Ejercicios</h1>
       <button
         @click="showModal = true"
