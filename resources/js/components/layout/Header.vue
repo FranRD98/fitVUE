@@ -37,7 +37,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
 
 <template>
   <!-- Navbar -->
-  <nav class="bg-white shadow-md sticky top-0 z-50">
+  <nav class="bg-white shadow-md sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
     <div class="max-w-7xl mx-auto px-6">
       
       <!-- Contenedor principal con 3 grupos -->
@@ -198,12 +198,14 @@ const userName = computed(() => userData.value?.name || 'Usuario')
 <transition name="fade">
   <div
     v-if="mobileMenuOpen"
-    class="fixed top-0 left-0 w-full h-full overflow-y-auto bg-white lg:hidden z-[999] px-6 py-28"
+    class="fixed top-0 left-0 w-full h-full overflow-y-auto bg-white lg:hidden z-[999] px-6 pb-28"
+    style="padding-top: calc(env(safe-area-inset-top) + 7rem)"
   >
     <!-- Botón cerrar -->
     <button
       @click="closeMenu"
-      class="absolute top-4 right-4 text-gray-500 hover:text-[var(--color-primary)]"
+      class="absolute right-4 text-gray-500 hover:text-[var(--color-primary)]"
+      style="top: calc(env(safe-area-inset-top) + 1rem)"
     >
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
         stroke="currentColor" stroke-width="2">

@@ -21,7 +21,10 @@ const emit = defineEmits(['toggleSidebar'])
 </script>
 
 <template>
-  <header v-if="userStore.userData" class="bg-white shadow-sm px-4 py-4 md:px-10 md:py-6">
+  <header
+    v-if="userStore.userData"
+    class="bg-white shadow-sm px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:px-10 md:py-6 md:pt-6"
+  >
     <div class="flex items-center gap-4">
       <!-- Botón hamburguesa solo en móvil -->
       <button class="md:hidden text-2xl" @click="$emit('toggleSidebar')">☰</button>

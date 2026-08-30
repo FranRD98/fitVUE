@@ -50,7 +50,7 @@ const upgradeUrl = computed(() => {
 
 <template>
   <aside class="flex flex-col h-full">
-    <div class="py-4 px-6 flex items-center justify-between">
+    <div class="pb-4 px-6 pt-[calc(env(safe-area-inset-top)+1rem)] flex items-center justify-between">
         <router-link to="/" class="text-4xl font-bold flex items-center">
         <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
     <span
@@ -104,7 +104,7 @@ const upgradeUrl = computed(() => {
     </div>
 
     <!-- Botón de cerrar sesión -->
-    <div class="p-4 border-t border-gray-200">
+    <div class="p-4 pb-[calc(env(safe-area-inset-bottom)+1rem)] border-t border-gray-200">
       <button
         @click="logout"
         class="w-full flex items-center justify-center gap-2 text-sm font-semibold text-gray-600 hover:text-red-600 transition"
