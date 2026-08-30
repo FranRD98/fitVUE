@@ -66,12 +66,13 @@ Dejar `APP_KEY` vacío: se rellena solo en el siguiente paso.
 ```bash
 composer install --no-dev --optimize-autoloader
 php artisan key:generate --force
-php artisan migrate --force
+php artisan migrate --force --seed
 php artisan storage:link
-php artisan admin:sync
 php artisan config:cache
 php artisan route:cache
 ```
+
+`--seed` ya deja la app lista para usar, sin pasos extra: crea la cuenta admin garantizada y carga un catálogo de arranque (categorías, ejercicios, rutinas, dietas, ingredientes y guías de ejemplo, todo atribuido a la cuenta admin, sin usuarios reales ni datos personales). Si prefieres migrar y sembrar por separado: `php artisan migrate --force` y luego `php artisan db:seed --force`.
 
 Da permisos de escritura a `storage/` y `bootstrap/cache/` si Plesk no lo hace automáticamente (`chmod -R 775`).
 
@@ -79,15 +80,15 @@ Da permisos de escritura a `storage/` y `bootstrap/cache/` si Plesk no lo hace a
 
 Activa el certificado Let's Encrypt para el dominio desde Plesk.
 
-## 7. Importar los datos reales (si vienes de Supabase)
+## 7. Importar tus datos reales (opcional, si vienes de Supabase)
 
-Sube tu dump de `pg_dumpall` al servidor (por SFTP, a una ruta fuera de `public/`) y ejecuta:
+El paso anterior ya deja la app funcional con contenido de catálogo. Si además quieres tus usuarios, rutinas y dietas reales de la antigua Supabase (con sus contraseñas originales, hashes bcrypt compatibles), sube tu dump de `pg_dumpall` al servidor (por SFTP, a una ruta fuera de `public/`) y ejecuta:
 
 ```bash
 php artisan app:import-supabase-dump /ruta/al/dump.sql
 ```
 
-Esto importa usuarios (con sus contraseñas originales, hashes bcrypt compatibles), rutinas, ejercicios, dietas, ingredientes, guías y revisiones. También fuerza la cuenta admin garantizada y reenlaza las imágenes de `storage/app/public` si ya las subiste ahí.
+Esto **sustituye** el catálogo de ejemplo por tus datos reales (usuarios, rutinas, ejercicios, dietas, ingredientes, guías y revisiones), fuerza la cuenta admin garantizada y reenlaza las imágenes de `storage/app/public` si ya las subiste ahí.
 
 **Borra el dump del servidor en cuanto termines** — contiene datos personales reales (emails, contraseñas hasheadas).
 
@@ -120,7 +121,7 @@ Luego actualiza el despliegue Git en Plesk (o `git pull` por SSH). Si solo cambi
 - [ ] BD MySQL creada en Plesk
 - [ ] Document Root → `public/` (raíz del repo)
 - [ ] `.env` creado a mano, con `DB_CONNECTION=mysql` (¡no `sqlite`!) y credenciales reales
-- [ ] `composer install --no-dev`, `migrate --force`, `storage:link`, `admin:sync` ejecutados
-- [ ] Datos reales importados (si aplica) y dump borrado del servidor
+- [ ] `composer install --no-dev`, `migrate --force --seed`, `storage:link` ejecutados
+- [ ] Datos reales importados (opcional) y dump borrado del servidor
 - [ ] Webhook y Payment Links de Stripe apuntando a producción
 - [ ] SSL activo
