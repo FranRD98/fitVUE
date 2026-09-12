@@ -99,12 +99,41 @@ class ExerciseProgressController extends Controller
         return response()->json(array_values($byDate));
     }
 
+    public function sessions(Request $request)
+    {
+        $data = $request->validate(['user_id' => ['required', 'integer']]);
+
+        $rows = ExerciseProgress::where('user_id', $data['user_id'])
+            ->with('routine:id,title')
+            ->orderByDesc('created_at')
+            ->get(['id_routine', 'sets', 'duration_seconds', 'created_at']);
+
+        $sessions = [];
+        foreach ($rows as $row) {
+            $key = $row->created_at->toDateTimeString().'|'.$row->id_routine;
+
+            $sessions[$key] ??= [
+                'created_at' => $row->created_at,
+                'routine_title' => $row->routine->title ?? 'Entrenamiento',
+                'exercise_count' => 0,
+                'set_count' => 0,
+                'duration_seconds' => $row->duration_seconds,
+            ];
+
+            $sessions[$key]['exercise_count']++;
+            $sessions[$key]['set_count'] += is_array($row->sets) ? count($row->sets) : 0;
+        }
+
+        return response()->json(collect($sessions)->values()->sortByDesc('created_at')->values());
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
             'user_id' => ['required', 'integer', 'exists:users,id'],
             'id_routine' => ['nullable', 'integer', 'exists:routines,id'],
             'day' => ['nullable', 'string'],
+            'duration_seconds' => ['nullable', 'integer', 'min:0'],
             'exercises' => ['required', 'array', 'min:1'],
             'exercises.*.exerciseId' => ['required', 'integer', 'exists:exercises,id'],
             'exercises.*.name' => ['nullable', 'string'],
@@ -120,6 +149,7 @@ class ExerciseProgressController extends Controller
             'exercise_name' => $exercise['name'] ?? null,
             'day' => $data['day'] ?? null,
             'sets' => json_encode($exercise['sets']),
+            'duration_seconds' => $data['duration_seconds'] ?? null,
             'created_at' => $now,
         ])->all();
 

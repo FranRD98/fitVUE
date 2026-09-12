@@ -60,7 +60,7 @@ export async function getLastExerciseProgress(exerciseId, userId) {
   }
 }
 
-export async function saveExerciseProgress(userId, routineId, day, exerciseInputs) {
+export async function saveExerciseProgress(userId, routineId, day, exerciseInputs, durationSeconds) {
   const exercises = exerciseInputs.filter((exercise) => exercise.exerciseId && exercise.sets?.length)
 
   if (!exercises.length) {
@@ -72,6 +72,7 @@ export async function saveExerciseProgress(userId, routineId, day, exerciseInput
     user_id: userId,
     id_routine: routineId,
     day,
+    duration_seconds: durationSeconds,
     exercises,
   })
 }
@@ -104,6 +105,17 @@ export async function getTrainingCalendar(userId) {
     return data
   } catch (error) {
     console.error('Error al obtener el calendario de entrenamientos:', error)
+    return []
+  }
+}
+
+// Histórico de sesiones de entrenamiento (rutina, fecha, duración, ejercicios)
+export async function getWorkoutSessions(userId) {
+  try {
+    const { data } = await api.get('/exercises-progress/sessions', { params: { user_id: userId } })
+    return data
+  } catch (error) {
+    console.error('Error al obtener el historial de entrenamientos:', error)
     return []
   }
 }

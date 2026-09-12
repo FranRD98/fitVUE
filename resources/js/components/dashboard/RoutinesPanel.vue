@@ -8,7 +8,7 @@ import {
   getRoutinesByUser, getCoachAssignedRoutine, deleteRoutine, duplicateRoutine
 } from '@/api/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
-import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.vue'
+import RoutineViewer from '@/components/dashboard/RoutineViewer.vue'
 
 import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconDotsVertical, IconPlayerPlay } from '@tabler/icons-vue'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
@@ -18,7 +18,8 @@ const FREE_ROUTINE_LIMIT = 3
 const router = useRouter()
 const routines = ref([])
 
-const viewAssignedRoutine = ref(false)
+const showViewer = ref(false)
+const viewedRoutine = ref(null)
 const userStore = useUserStore()
 const { isPro, isFree } = usePlan()
 const { randomMessage } = useGreeting()
@@ -129,6 +130,12 @@ onUnmounted(() => {
   document.removeEventListener('click', closeMenuOnOutsideClick)
 })
 
+function viewRoutine(routine) {
+  openMenuId.value = null
+  viewedRoutine.value = routine
+  showViewer.value = true
+}
+
 const openEditModal = (routine) => {
   openMenuId.value = null
 
@@ -137,7 +144,7 @@ const openEditModal = (routine) => {
     assignedCoachRoutine.value &&
     routine.id === assignedCoachRoutine.value.id
   ) {
-    viewAssignedRoutine.value = true // Mostrar la vista solo lectura
+    viewRoutine(routine) // no se puede editar una rutina asignada por el coach
   } else {
     selectedRoutine.value = routine
     showModal.value = true
@@ -168,7 +175,7 @@ function startRoutine(routine) {
         <!-- Usuario Pro con rutina asignada por su coach -->
         <button
           v-if="isPro && assignedCoachRoutine"
-          @click="openEditModal(assignedCoachRoutine)"
+          @click="viewRoutine(assignedCoachRoutine)"
           class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg cursor-pointer
                 hover:bg-green-700 transition-all duration-200"
           title="Rutina asignada — listo para despegar 🚀"
@@ -226,12 +233,12 @@ function startRoutine(routine) {
         </div>
       </div>
 
-      <!-- Vista solo lectura de rutina asignada -->
-      <RoutineAssignedViewer
-        v-if="viewAssignedRoutine"
-        :show="viewAssignedRoutine"
-        :routine="assignedCoachRoutine"
-        @close="viewAssignedRoutine = false"
+      <!-- Vista general de la rutina (solo lectura); editar vive en el menú "..." -->
+      <RoutineViewer
+        v-if="showViewer"
+        :show="showViewer"
+        :routine="viewedRoutine"
+        @close="showViewer = false; viewedRoutine = null"
       />
 
     <!-- Delay sin mostrar nada -->
@@ -281,7 +288,7 @@ function startRoutine(routine) {
         >
           <div class="p-4 flex flex-col flex-grow">
             <div class="flex justify-between items-start gap-2 mb-1">
-              <h3 class="text-lg font-semibold text-[var(--color-primary)] cursor-pointer" @click="openEditModal(routine)">
+              <h3 class="text-lg font-semibold text-[var(--color-primary)] cursor-pointer" @click="viewRoutine(routine)">
                 {{ routine.title }}
               </h3>
 
@@ -307,7 +314,7 @@ function startRoutine(routine) {
               </div>
             </div>
 
-            <p class="text-sm text-gray-500 mb-3 line-clamp-2 cursor-pointer" @click="openEditModal(routine)">
+            <p class="text-sm text-gray-500 mb-3 line-clamp-2 cursor-pointer" @click="viewRoutine(routine)">
               {{ exercisesSummary(routine) || 'Sin ejercicios todavía' }}
             </p>
             <p class="text-xs text-gray-400 mb-3">Ejercicios totales: {{ countExercises(routine) }}</p>
@@ -339,7 +346,7 @@ function startRoutine(routine) {
             :key="routine.id"
             class="border-t border-gray-200 hover:bg-gray-100 transition"
           >
-            <td class="py-3 px-2 font-semibold text-[var(--color-primary)] cursor-pointer" @click="openEditModal(routine)">{{ routine.title }}</td>
+            <td class="py-3 px-2 font-semibold text-[var(--color-primary)] cursor-pointer" @click="viewRoutine(routine)">{{ routine.title }}</td>
             <td class="py-3 px-2">{{ countExercises(routine) }}</td>
             <td class="py-3 px-2 text-right">
               <div class="flex items-center justify-end gap-2">

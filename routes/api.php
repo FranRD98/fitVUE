@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/exercises-progress/history', [ExerciseProgressController::class, 'history']);
     Route::get('/exercises-progress/stats', [ExerciseProgressController::class, 'stats']);
     Route::get('/exercises-progress/calendar', [ExerciseProgressController::class, 'calendar']);
+    Route::get('/exercises-progress/sessions', [ExerciseProgressController::class, 'sessions']);
     Route::post('/exercises-progress', [ExerciseProgressController::class, 'store']);
 
     Route::get('/diets', [DietController::class, 'index']);

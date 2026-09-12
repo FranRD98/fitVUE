@@ -174,9 +174,10 @@ function resetForm() {
             </div>
           </div>
 
-          <!-- Solo visible si el usuario es admin -->
-          <div v-if="userStore.userData?.role === 'admin'" class="flex items-center gap-3">
-            <label class="flex items-center gap-2 cursor-pointer select-none">
+          <!-- Solo visible si el usuario es admin: publica la rutina como rutina pública
+               de ejemplo, visible para cualquier visitante en la web (/rutinas) -->
+          <div v-if="userStore.userData?.role === 'admin'" class="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
+            <label class="flex items-center gap-2 cursor-pointer select-none shrink-0">
               <input type="checkbox" v-model="routine.published" class="sr-only" />
               <div
                 class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
@@ -187,8 +188,11 @@ function resetForm() {
                   :class="{ 'translate-x-4': routine.published }"
                 ></div>
               </div>
-              <span class="text-sm text-gray-700">Publicar rutina</span>
             </label>
+            <div>
+              <p class="text-sm font-medium text-gray-700">Publicar como rutina pública</p>
+              <p class="text-xs text-gray-500">Aparecerá en la web para cualquier visitante, en el listado público de rutinas (/rutinas). No afecta a tus rutinas personales.</p>
+            </div>
           </div>
 
           <!-- Lista plana de ejercicios -->

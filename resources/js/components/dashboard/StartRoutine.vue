@@ -131,7 +131,7 @@ async function finishWorkout() {
 
   saving.value = true
   try {
-    await saveExerciseProgress(userId.value, routine.value.id, null, payload)
+    await saveExerciseProgress(userId.value, routine.value.id, null, payload, elapsedSeconds.value)
     router.push({ path: '/dashboard', query: { refresh: 'true' } })
   } catch (error) {
     console.error(error)

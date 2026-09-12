@@ -109,7 +109,7 @@ async function handleExerciseCreated() {
           <button
             type="button"
             @click="activeFilterSheet = 'equipment'"
-            class="flex-1 flex items-center justify-center gap-1 border-2 rounded-full px-2 py-3 text-[13px] leading-tight font-semibold whitespace-nowrap overflow-hidden"
+            class="flex-1 flex items-center justify-center gap-1 border-2 rounded-xl px-2 py-3 text-[13px] leading-tight font-semibold whitespace-nowrap overflow-hidden"
             :class="equipmentFilter.length ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-gray-300 text-gray-600'"
           >
             <span class="truncate">{{ equipmentFilter.length ? `Equipamiento (${equipmentFilter.length})` : 'Equipamiento' }}</span>
@@ -118,7 +118,7 @@ async function handleExerciseCreated() {
           <button
             type="button"
             @click="activeFilterSheet = 'muscle'"
-            class="flex-1 flex items-center justify-center gap-1 border-2 rounded-full px-2 py-3 text-[13px] leading-tight font-semibold whitespace-nowrap overflow-hidden"
+            class="flex-1 flex items-center justify-center gap-1 border-2 rounded-xl px-2 py-3 text-[13px] leading-tight font-semibold whitespace-nowrap overflow-hidden"
             :class="muscleFilter.length ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-gray-300 text-gray-600'"
           >
             <span class="truncate">{{ muscleFilter.length ? `Músculos (${muscleFilter.length})` : 'Músculos' }}</span>

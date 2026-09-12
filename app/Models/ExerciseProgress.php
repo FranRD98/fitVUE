@@ -11,7 +11,7 @@ class ExerciseProgress extends Model
 
     protected $table = 'exercises_progress';
 
-    protected $fillable = ['user_id', 'id_routine', 'exercise_id', 'exercise_name', 'day', 'sets', 'created_at'];
+    protected $fillable = ['user_id', 'id_routine', 'exercise_id', 'exercise_name', 'day', 'sets', 'duration_seconds', 'created_at'];
 
     protected function casts(): array
     {

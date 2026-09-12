@@ -1,0 +1,1 @@
+import{t as e}from"./createVueComponent-CV4pZUmq.js";var t=e(`outline`,`ruler-2`,`Ruler2`,[[`path`,{d:`M17 3l4 4l-14 14l-4 -4l14 -14`,key:`svg-0`}],[`path`,{d:`M16 7l-1.5 -1.5`,key:`svg-1`}],[`path`,{d:`M13 10l-1.5 -1.5`,key:`svg-2`}],[`path`,{d:`M10 13l-1.5 -1.5`,key:`svg-3`}],[`path`,{d:`M7 16l-1.5 -1.5`,key:`svg-4`}]]);export{t};
