@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getCoachAssignedRoutine, getRoutineById } from '@/api/services/routines'
 import { getLastExerciseProgress, saveExerciseProgress } from '@/api/services/exercises'
+import { useSwipeBack } from '@/composables/useSwipeBack'
 import { IconCheck, IconPlus, IconTrash, IconX, IconClock } from '@tabler/icons-vue'
 
 const route = useRoute()
@@ -147,6 +148,9 @@ function confirmExit() {
   }
   router.back()
 }
+
+// Deslizar desde el borde izquierdo también sale del entrenamiento.
+useSwipeBack(confirmExit)
 </script>
 
 <template>

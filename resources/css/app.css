@@ -1,6 +1,16 @@
 @import "tailwindcss";
 @import "@fontsource/poppins";
 
+/* Tailwind v4 cambió el color de borde por defecto a currentColor (antes
+   gris claro en v3): sin esto, cualquier clase "border"/"border-b"/"border-t"
+   sin color explícito se pinta del color del texto (a menudo negro). Se
+   restaura el comportamiento anterior para toda la app de una vez. */
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: #e5e7eb;
+  }
+}
+
 :root {
   /* Tipografía */
   --font-display: "Poppins", "Arial", sans-serif;
@@ -29,6 +39,17 @@ body {
   color: var(--color-text);
   line-height: 1.5;
   overflow-x: hidden;
+}
+
+/* Modo oscuro: de momento solo el fondo base de la app (el ajuste de
+   Apariencia ya funciona y se guarda), el resto de pantallas siguen usando
+   colores fijos y se revisarán en una pasada de diseño aparte. */
+html.dark body {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+html.dark .bg-gray-100 {
+  background-color: #0f172a;
 }
 
 /* iOS hace zoom automático al enfocar un input/select/textarea con

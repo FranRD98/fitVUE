@@ -1,17 +1,21 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
-import { IconChevronRight, IconLogout, IconTrophy, IconBarbell, IconRuler2, IconCalendar } from '@tabler/icons-vue'
+import { ref, computed } from 'vue'
+import {
+  IconChevronRight, IconLogout, IconTrophy, IconBarbell, IconRuler2, IconCalendar,
+  IconPencil, IconSettings, IconMail, IconInfoCircle
+} from '@tabler/icons-vue'
 import { useUserStore } from '@/stores/user'
-import { storeToRefs } from 'pinia' // 👈 Importante para mantener reactividad
-import api from '@/api/client'
-import { uploadProfileImage, updateUserData } from '@/api/services/users'
+import { storeToRefs } from 'pinia'
 import { useDashboardNav } from '@/composables/useDashboardNav'
 import { useDashboardMenu } from '@/composables/useDashboardMenu'
+import EditProfileModal from '@/components/dashboard/modals/EditProfileModal.vue'
+import SettingsModal from '@/components/dashboard/modals/SettingsModal.vue'
+import ContactModal from '@/components/dashboard/modals/ContactModal.vue'
+import AboutModal from '@/components/dashboard/modals/AboutModal.vue'
 
-// Obtener el store y desestructurar con reactividad
 const userStore = useUserStore()
 const { userData } = storeToRefs(userStore)
-const { fetchUserData, logout } = userStore
+const { logout } = userStore
 const { goTo } = useDashboardNav()
 const { secondaryMenu } = useDashboardMenu()
 
@@ -26,85 +30,42 @@ const infoButtons = [
 // en la lista de otras secciones (Dietas, Platos...).
 const otherSections = computed(() => secondaryMenu.value.filter(i => i.key !== 'exercises'))
 
-// Campos del formulario
-const name = ref('')
-const lastName = ref('')
-const email = ref('')
-const password = ref('')
-const profileImage = ref('')
-const imageFile = ref(null)
-const updating = ref(false)
-
-const handleImageChange = async (e) => {
-  const file = e.target.files[0]
-  if (!file) return
-
-  imageFile.value = file
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    profileImage.value = e.target.result
-  }
-  reader.readAsDataURL(file)
-}
-
-const handleSave = async () => {
-  updating.value = true
-
-  try {
-    if (!userData.value?.uid) throw new Error('Falta el ID del usuario')
-
-    let imageUrl = profileImage.value
-
-    if (imageFile.value) {
-      imageUrl = await uploadProfileImage(imageFile.value, userData.value.uid)
-    }
-
-    const updates = {
-      name: name.value,
-      last_name: lastName.value,
-      email: email.value,
-      profile_image: imageUrl
-    }
-
-    const accountChanges = {}
-    if (email.value && email.value !== userData.value.email) accountChanges.email = email.value
-    if (password.value) accountChanges.password = password.value
-
-    if (Object.keys(accountChanges).length) {
-      await api.patch('/me', accountChanges)
-    }
-
-    await updateUserData(userData.value.uid, updates)
-    await fetchUserData()
-
-    alert('Datos actualizados correctamente.')
-  } catch (err) {
-    console.error('Error al guardar los cambios:', err)
-    alert(`Error al guardar los cambios: ${err.message || 'Error desconocido'}`)
-  } finally {
-    updating.value = false
-  }
-}
-
-// Rellenar el formulario cuando se carguen los datos del usuario
-watch(
-  () => userData.value,
-  (newVal) => {
-    if (newVal) {
-      name.value = newVal.name || ''
-      lastName.value = newVal.last_name || ''
-      email.value = newVal.email || ''
-      profileImage.value = newVal.profile_image || ''
-    }
-  },
-  { immediate: true }
-)
+const showEditProfile = ref(false)
+const showSettings = ref(false)
+const showContact = ref(false)
+const showAbout = ref(false)
 </script>
 
 <template>
   <section>
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div class="flex items-start justify-between gap-3 mb-6">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Perfil</h1>
+      <div class="flex items-center gap-1 pt-1">
+        <button type="button" @click="showEditProfile = true" class="p-2 text-gray-500 hover:text-[var(--color-primary)] transition" aria-label="Editar perfil">
+          <IconPencil class="w-5 h-5" />
+        </button>
+        <button type="button" @click="showSettings = true" class="p-2 text-gray-500 hover:text-[var(--color-primary)] transition" aria-label="Configuración">
+          <IconSettings class="w-5 h-5" />
+        </button>
+        <button type="button" @click="showContact = true" class="p-2 text-gray-500 hover:text-[var(--color-primary)] transition" aria-label="Contáctanos">
+          <IconMail class="w-5 h-5" />
+        </button>
+        <button type="button" @click="showAbout = true" class="p-2 text-gray-500 hover:text-[var(--color-primary)] transition" aria-label="Acerca de">
+          <IconInfoCircle class="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3 mb-6">
+      <img
+        :src="userData?.profile_image || '/img/default-profile.svg'"
+        alt="Imagen de perfil"
+        class="w-14 h-14 rounded-full object-cover"
+      />
+      <div class="min-w-0">
+        <p class="font-semibold text-gray-800 truncate">{{ userData?.name }} {{ userData?.last_name }}</p>
+        <p class="text-sm text-gray-500 truncate">{{ userData?.email }}</p>
+      </div>
     </div>
 
     <!-- Información: histórico de estadísticas, ejercicios, medidas y calendario -->
@@ -125,7 +86,7 @@ watch(
     </div>
 
     <!-- Accesos a las demás secciones: solo en móvil, en escritorio ya están en el menú lateral -->
-    <div class="md:hidden bg-white shadow rounded-xl divide-y divide-gray-100 mb-6 overflow-hidden">
+    <div v-if="otherSections.length" class="md:hidden bg-white shadow rounded-xl divide-y divide-gray-100 mb-6 overflow-hidden">
       <button
         v-for="item in otherSections"
         :key="item.key"
@@ -137,78 +98,21 @@ watch(
         <span class="flex-1 text-sm font-medium text-gray-700">{{ item.label }}</span>
         <IconChevronRight class="w-4 h-4 text-gray-400" />
       </button>
-      <button
-        type="button"
-        @click="logout"
-        class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition"
-      >
-        <IconLogout class="w-5 h-5 text-red-500" :stroke-width="2" />
-        <span class="flex-1 text-sm font-medium text-red-500">Cerrar sesión</span>
-      </button>
     </div>
 
-<div class="bg-white shadow rounded-xl p-6 max-w-3xl w-full mx-auto space-y-6">
-      <!-- Imagen de perfil -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Imagen de perfil</label>
-        <div class="image-upload-container">
-          <input
-            type="file"
-            accept="image/*"
-            @change="handleImageChange"
-            class="hidden"
-            id="profile-image-upload"
-          />
-          <label
-            for="profile-image-upload"
-            class="cursor-pointer border-dashed border-2 border-gray-300 p-4 w-full text-center rounded-lg hover:border-gray-400 flex flex-col items-center justify-center"
-          >
-            <span v-if="!profileImage" class="text-gray-600">Haz clic para subir una imagen</span>
-            <div v-else class="relative w-32 h-32">
-              <img :src="profileImage" alt="Imagen de perfil" class="w-full h-full object-cover rounded-full border" />
-              <button
-                @click.prevent="profileImage = null"
-                class="absolute top-1 right-1 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"
-                title="Eliminar imagen"
-              >
-                ✖
-              </button>
-            </div>
-          </label>
-        </div>
-      </div>
+    <!-- Cerrar sesión: siempre lo último de la página (en escritorio ya está en el menú lateral) -->
+    <button
+      type="button"
+      @click="logout"
+      class="md:hidden w-full flex items-center justify-center gap-2 bg-white shadow rounded-xl px-4 py-3 text-red-500 font-medium hover:bg-red-50 transition"
+    >
+      <IconLogout class="w-5 h-5" :stroke-width="2" />
+      Cerrar sesión
+    </button>
 
-      <!-- Campos -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-        <input v-model="name" type="text" class="w-full border rounded p-2 text-sm" />
-      </div>
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
-        <input v-model="lastName" type="text" class="w-full border rounded p-2 text-sm" />
-      </div>
-
-      <!--<div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
-        <input v-model="email" type="email" class="w-full border rounded p-2 text-sm" />
-      </div>-->
-
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
-        <input v-model="password" type="password" placeholder="Deja en blanco para no cambiarla" class="w-full border rounded p-2 text-sm" />
-      </div>
-
-      <!-- Botones -->
-      <div class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t">
-        <button
-          @click="handleSave"
-          :disabled="updating"
-          class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] disabled:opacity-50 transition"
-        >
-          {{ updating ? 'Guardando...' : 'Guardar cambios' }}
-        </button>
-      </div>
-    </div>
+    <EditProfileModal :show="showEditProfile" @close="showEditProfile = false" />
+    <SettingsModal :show="showSettings" @close="showSettings = false" />
+    <ContactModal :show="showContact" @close="showContact = false" />
+    <AboutModal :show="showAbout" @close="showAbout = false" />
   </section>
 </template>

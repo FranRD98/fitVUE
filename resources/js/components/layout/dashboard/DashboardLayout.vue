@@ -3,11 +3,20 @@ import { computed, defineAsyncComponent, onMounted } from 'vue'
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardHeader from './DashboardHeader.vue'
 import BottomNavBar from './BottomNavBar.vue'
-import { useDashboardMenu } from '@/composables/useDashboardMenu'
+import { useDashboardMenu, isSecondaryPanel } from '@/composables/useDashboardMenu'
 import { useDashboardNav } from '@/composables/useDashboardNav'
+import { useSwipeBack } from '@/composables/useSwipeBack'
 
 const { visibleMenu } = useDashboardMenu()
 const { activeKey } = useDashboardNav()
+
+// Gesto de deslizar desde el borde izquierdo para volver a Perfil, ya que
+// las secciones secundarias no son rutas reales con "atrás" nativo.
+useSwipeBack(() => {
+  if (isSecondaryPanel(activeKey.value)) {
+    activeKey.value = 'config'
+  }
+})
 
 const ActiveComponent = computed(() => componentsMap[activeKey.value])
 

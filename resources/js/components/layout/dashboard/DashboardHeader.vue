@@ -17,13 +17,14 @@ const showBackToProfile = computed(() => isSecondaryPanel(activeKey.value))
 </script>
 
 <template>
-  <!-- Móvil: solo una barra mínima para volver a Perfil desde una sección
-       secundaria (el saludo vive dentro de "Entrenamiento", para ganar espacio). -->
+  <!-- Móvil: barra mínima siempre presente (reserva la zona segura del notch
+       en todas las pantallas); solo muestra la flecha en secciones secundarias
+       (el saludo vive dentro de "Entrenamiento", para ganar espacio). -->
   <header
-    v-if="userStore.userData && showBackToProfile"
-    class="md:hidden bg-white shadow-sm px-4 py-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] flex items-center"
+    v-if="userStore.userData"
+    class="md:hidden bg-white shadow-sm px-4 pb-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] flex items-center min-h-[2.75rem]"
   >
-    <button class="text-gray-500" aria-label="Volver a Perfil" @click="goTo('config')">
+    <button v-if="showBackToProfile" class="text-gray-500" aria-label="Volver a Perfil" @click="goTo('config')">
       <IconChevronLeft class="w-7 h-7" />
     </button>
   </header>

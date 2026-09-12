@@ -87,9 +87,9 @@ async function handleExerciseCreated() {
 
       <!-- Header -->
       <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
-        <button type="button" @click="emit('close')" class="text-blue-500 font-medium">Cancelar</button>
+        <button type="button" @click="emit('close')" class="text-[var(--color-primary)] font-medium">Cancelar</button>
         <h2 class="font-semibold text-[var(--color-primary)]">Agregar Ejercicio</h2>
-        <button type="button" @click="showCreateModal = true" class="text-blue-500 font-medium">Crear</button>
+        <button type="button" @click="showCreateModal = true" class="text-[var(--color-primary)] font-medium">Crear</button>
       </header>
 
       <div class="px-4 pt-3 pb-2 space-y-3 shrink-0">

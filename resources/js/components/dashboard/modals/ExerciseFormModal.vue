@@ -207,13 +207,13 @@ function formatDate(dateString) {
         <IconX class="h-6 w-6" />
       </button>
 
-      <!-- Tabs -->
+      <!-- Tabs: "Historial" no tiene sentido si el ejercicio aún no existe -->
       <div class="flex border-b divide-x pt-[calc(env(safe-area-inset-top)+0.5rem)] md:pt-0 shrink-0">
         <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
              :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'info' }"
              @click="selectedTab = 'info'">Información</div>
 
-        <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
+        <div v-if="exercise.id" class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
              :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'history' }"
              @click="selectedTab = 'history'">Historial</div>
       </div>
@@ -250,7 +250,7 @@ function formatDate(dateString) {
               <button type="button" :disabled="!isEditable" @click="activePicker = 'equipment'"
                 class="w-full flex items-center justify-between py-3 border-b text-left disabled:cursor-default">
                 <span class="text-sm font-medium text-gray-700">Equipamiento</span>
-                <span class="flex items-center gap-1 text-sm" :class="exercise.equipment ? 'text-[var(--color-primary)]' : 'text-blue-500'">
+                <span class="flex items-center gap-1 text-sm" :class="exercise.equipment ? 'text-[var(--color-primary)]' : 'text-[var(--color-primary)]/70'">
                   {{ exercise.equipment ? equipmentLabel(exercise.equipment) : 'Seleccionar' }}
                   <IconChevronRight class="w-4 h-4 text-gray-400" />
                 </span>
@@ -260,7 +260,7 @@ function formatDate(dateString) {
               <button type="button" :disabled="!isEditable" @click="activePicker = 'primary'"
                 class="w-full flex items-center justify-between py-3 border-b text-left disabled:cursor-default">
                 <span class="text-sm font-medium text-gray-700">Grupo Muscular Primario</span>
-                <span class="flex items-center gap-1 text-sm" :class="primaryMuscleLabel ? 'text-[var(--color-primary)]' : 'text-blue-500'">
+                <span class="flex items-center gap-1 text-sm" :class="primaryMuscleLabel ? 'text-[var(--color-primary)]' : 'text-[var(--color-primary)]/70'">
                   {{ primaryMuscleLabel || 'Seleccionar' }}
                   <IconChevronRight class="w-4 h-4 text-gray-400" />
                 </span>
@@ -270,7 +270,7 @@ function formatDate(dateString) {
               <button type="button" :disabled="!isEditable" @click="activePicker = 'secondary'"
                 class="w-full flex items-center justify-between py-3 border-b text-left disabled:cursor-default">
                 <span class="text-sm font-medium text-gray-700">Otros músculos</span>
-                <span class="flex items-center gap-1 text-sm text-blue-500 max-w-[60%] justify-end text-right">
+                <span class="flex items-center gap-1 text-sm text-[var(--color-primary)]/70 max-w-[60%] justify-end text-right">
                   <span class="truncate">{{ secondaryMuscleLabels.length ? secondaryMuscleLabels.join(', ') : 'Seleccionar (opcional)' }}</span>
                   <IconChevronRight class="w-4 h-4 text-gray-400 shrink-0" />
                 </span>
