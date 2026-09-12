@@ -48,18 +48,18 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col md:flex-row min-h-screen bg-white md:bg-gray-100 dark:bg-[#0f172a]">
+  <div class="flex flex-col md:flex-row min-h-dvh bg-white md:bg-gray-100 dark:bg-[#0f172a]">
     <!-- Sidebar: solo escritorio -->
     <div class="hidden md:block md:static md:z-auto">
       <DashboardSidebar
         :menu="visibleMenu"
         v-model:activeKey="activeKey"
-        class="w-64 h-screen bg-white shadow-lg"
+        class="w-64 h-dvh bg-white shadow-lg"
       />
     </div>
 
     <!-- Contenido principal -->
-    <div class="flex flex-col flex-1 h-screen overflow-hidden">
+    <div class="flex flex-col flex-1 h-dvh overflow-hidden">
       <DashboardHeader />
       <main class="flex-1 overflow-y-auto px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-24 md:px-6 md:py-6 md:pb-6 md:pt-6">
         <!-- Volver a Perfil: solo en móvil, dentro de una sección secundaria.

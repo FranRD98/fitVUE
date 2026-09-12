@@ -134,7 +134,7 @@ class UserController extends Controller
             abort(403);
         }
 
-        $request->validate(['image' => ['required', 'image', 'max:4096']]);
+        $request->validate(['image' => ['required', 'image', 'max:8192']]);
 
         if ($user->profile_image) {
             Storage::disk('public')->delete($user->profile_image);

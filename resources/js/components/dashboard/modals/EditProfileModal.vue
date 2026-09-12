@@ -84,7 +84,10 @@ const handleSave = async () => {
     close()
   } catch (err) {
     console.error('Error al guardar los cambios:', err)
-    alert(`Error al guardar los cambios: ${err.message || 'Error desconocido'}`)
+    const backendMessage = err.response?.data?.errors
+      ? Object.values(err.response.data.errors).flat().join(' ')
+      : err.response?.data?.message
+    alert(`Error al guardar los cambios: ${backendMessage || err.message || 'Error desconocido'}`)
   } finally {
     updating.value = false
   }

@@ -17,8 +17,33 @@
     <link rel="apple-touch-icon" href="/img/icons/apple-touch-icon.png">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+    <style>
+      #app-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #ffffff;
+        transition: opacity 0.25s ease;
+      }
+      #app-splash img {
+        width: 96px;
+        height: 96px;
+        border-radius: 22px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+    </style>
   </head>
   <body>
+    <!-- Splash visible desde el primer pintado (antes de que cargue el JS de
+         Vue), para que la primera carga se vea como una app nativa arrancando
+         en vez de una pantalla en blanco. Se retira desde app.js al montar. -->
+    <div id="app-splash">
+      <img src="/img/icons/apple-touch-icon.png" alt="fitVUE">
+    </div>
     <div id="app"></div>
 
     <script>

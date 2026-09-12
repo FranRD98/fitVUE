@@ -80,6 +80,37 @@ class RoutineController extends Controller
         return response()->json($copy, 201);
     }
 
+    // Envía una copia propia de la rutina a un usuario: a diferencia de assign()
+    // (que solo enlaza a la rutina original de forma de solo lectura), aquí el
+    // usuario recibe su propia rutina independiente, editable y borrable por él.
+    public function sendToUser(Request $request, User $user)
+    {
+        $sender = $request->user();
+
+        if (! in_array($sender->role, ['coach', 'admin'], true)) {
+            abort(403);
+        }
+
+        if ($sender->role === 'coach' && $user->coach_uid !== $sender->id) {
+            abort(403);
+        }
+
+        $data = $request->validate(['routine_id' => ['required', 'integer', 'exists:routines,id']]);
+
+        $routine = Routine::findOrFail($data['routine_id']);
+
+        if ($routine->user_id !== $sender->id) {
+            abort(403, 'Solo puedes enviar rutinas que hayas creado tú.');
+        }
+
+        $copy = $routine->replicate();
+        $copy->user_id = $user->id;
+        $copy->published = false;
+        $copy->save();
+
+        return response()->json($copy, 201);
+    }
+
     public function assign(Request $request, User $user)
     {
         $data = $request->validate(['routine_id' => ['required', 'integer', 'exists:routines,id']]);

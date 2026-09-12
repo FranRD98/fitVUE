@@ -48,6 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users/{user}', [UserController::class, 'destroy']);
     Route::post('/users/{user}/profile-image', [UserController::class, 'uploadProfileImage']);
     Route::get('/users/{user}/routines', [RoutineController::class, 'byUser']);
+    Route::post('/users/{user}/send-routine', [RoutineController::class, 'sendToUser']);
     Route::post('/users/{user}/assign-routine', [RoutineController::class, 'assign']);
     Route::delete('/users/{user}/assign-routine', [RoutineController::class, 'unassign']);
     Route::get('/users/{user}/assigned-routine', [RoutineController::class, 'assigned']);
