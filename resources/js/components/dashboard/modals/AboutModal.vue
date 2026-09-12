@@ -1,6 +1,10 @@
 <script setup>
-defineProps({ show: Boolean })
-const emit = defineEmits(['close'])
+import { ref } from 'vue'
+
+const show = ref(false)
+function open() { show.value = true }
+function close() { show.value = false }
+defineExpose({ open, close })
 </script>
 
 <template>
@@ -9,7 +13,7 @@ const emit = defineEmits(['close'])
       <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
         <span class="w-6"></span>
         <h2 class="font-semibold text-[var(--color-primary)]">Acerca de</h2>
-        <button type="button" @click="emit('close')" class="text-[var(--color-primary)] font-medium">Hecho</button>
+        <button type="button" @click="close" class="text-[var(--color-primary)] font-medium">Hecho</button>
       </header>
 
       <div class="p-8 overflow-y-auto flex-1 flex flex-col items-center text-center gap-4">

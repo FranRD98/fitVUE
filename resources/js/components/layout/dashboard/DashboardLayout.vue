@@ -1,5 +1,6 @@
 <script setup>
 import { computed, defineAsyncComponent, onMounted } from 'vue'
+import { IconChevronLeft } from '@tabler/icons-vue'
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardHeader from './DashboardHeader.vue'
 import BottomNavBar from './BottomNavBar.vue'
@@ -8,7 +9,9 @@ import { useDashboardNav } from '@/composables/useDashboardNav'
 import { useSwipeBack } from '@/composables/useSwipeBack'
 
 const { visibleMenu } = useDashboardMenu()
-const { activeKey } = useDashboardNav()
+const { activeKey, goTo } = useDashboardNav()
+
+const showBackLink = computed(() => isSecondaryPanel(activeKey.value))
 
 // Gesto de deslizar desde el borde izquierdo para volver a Perfil, ya que
 // las secciones secundarias no son rutas reales con "atrás" nativo.
@@ -45,7 +48,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col md:flex-row min-h-screen bg-gray-100">
+  <div class="flex flex-col md:flex-row min-h-screen bg-gray-100 dark:bg-[#0f172a]">
     <!-- Sidebar: solo escritorio -->
     <div class="hidden md:block md:static md:z-auto">
       <DashboardSidebar
@@ -58,8 +61,22 @@ onMounted(() => {
     <!-- Contenido principal -->
     <div class="flex flex-col flex-1 h-screen overflow-hidden">
       <DashboardHeader />
-      <main class="flex-1 overflow-y-auto px-4 py-4 pb-24 md:px-6 md:py-6 md:pb-6">
-        <component :is="ActiveComponent" />
+      <main class="flex-1 overflow-y-auto px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-24 md:px-6 md:py-6 md:pb-6 md:pt-6">
+        <!-- Volver a Perfil: solo en móvil, dentro de una sección secundaria.
+             Vive dentro del contenido con scroll (no es una barra fija) para
+             no añadir otra capa de cabecera encima del notch. -->
+        <button
+          v-if="showBackLink"
+          type="button"
+          @click="goTo('config')"
+          class="md:hidden flex items-center gap-1 text-sm font-medium text-gray-500 dark:text-gray-300 mb-3 -ml-1 px-1 py-1"
+        >
+          <IconChevronLeft class="w-4 h-4" /> Perfil
+        </button>
+
+        <Transition name="panel-fade" mode="out-in">
+          <component :is="ActiveComponent" :key="activeKey" />
+        </Transition>
       </main>
     </div>
 

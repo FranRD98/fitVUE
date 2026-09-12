@@ -1,6 +1,12 @@
 @import "tailwindcss";
 @import "@fontsource/poppins";
 
+/* El modo oscuro se activa a mano (ajuste en Perfil > Configuración), no por
+   preferencia del sistema, así que las utilidades "dark:" deben reaccionar a
+   la clase .dark en <html> en vez de a prefers-color-scheme (comportamiento
+   por defecto de Tailwind v4). */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Tailwind v4 cambió el color de borde por defecto a currentColor (antes
    gris claro en v3): sin esto, cualquier clase "border"/"border-b"/"border-t"
    sin color explícito se pinta del color del texto (a menudo negro). Se
@@ -41,15 +47,36 @@ body {
   overflow-x: hidden;
 }
 
-/* Modo oscuro: de momento solo el fondo base de la app (el ajuste de
-   Apariencia ya funciona y se guarda), el resto de pantallas siguen usando
+/* El dashboard usa gray-100 como fondo de página (detrás de las tarjetas
+   blancas); si el body se queda en blanco puro, el rebote de scroll en iOS
+   muestra un destello blanco que no pega con el resto de la pantalla. La
+   web pública sigue con el body en blanco (--color-bg). */
+body.dashboard-bg {
+  background-color: #f3f4f6;
+}
+
+/* Modo oscuro: de momento el fondo base y la barra de navegación/Perfil (lo
+   que se ha revisado hasta ahora); el resto de pantallas siguen usando
    colores fijos y se revisarán en una pasada de diseño aparte. */
 html.dark body {
   background-color: #0f172a;
   color: #e2e8f0;
 }
+html.dark body.dashboard-bg {
+  background-color: #0f172a;
+}
 html.dark .bg-gray-100 {
   background-color: #0f172a;
+}
+
+/* Transición suave entre paneles del dashboard (Inicio, Entrenamiento, Perfil, Ejercicios...). */
+.panel-fade-enter-active,
+.panel-fade-leave-active {
+  transition: opacity 0.18s ease;
+}
+.panel-fade-enter-from,
+.panel-fade-leave-to {
+  opacity: 0;
 }
 
 /* iOS hace zoom automático al enfocar un input/select/textarea con

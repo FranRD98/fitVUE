@@ -20,7 +20,7 @@ const tabs = [
 
 <template>
   <nav
-    class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-gray-200 flex pb-[env(safe-area-inset-bottom)]"
+    class="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white dark:bg-transparent border-t border-gray-200 dark:border-white/10 flex pb-[env(safe-area-inset-bottom)]"
   >
     <button
       v-for="tab in tabs"
@@ -29,8 +29,8 @@ const tabs = [
       @click="goTo(tab.key)"
       class="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 transition-colors"
       :class="(tab.key === 'config' ? isProfileActive : activeKey === tab.key)
-        ? 'text-[var(--color-primary)]'
-        : 'text-gray-400'"
+        ? 'text-[var(--color-primary)] dark:text-white'
+        : 'text-gray-400 dark:text-gray-300'"
     >
       <component :is="tab.icon" class="w-6 h-6" :stroke-width="2" />
       <span class="text-[11px] font-medium">{{ tab.label }}</span>

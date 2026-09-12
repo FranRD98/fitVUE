@@ -1,7 +1,7 @@
 <script setup>
 import Header from '@/components/layout/Header.vue'
 import Footer from '@/components/layout/MainFooter.vue'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
@@ -12,6 +12,18 @@ const userStore = useUserStore()
 const showLayout = computed(() => {
   return !route.path.startsWith('/dashboard') && !route.path.startsWith('/empezar') && !route.path.startsWith('/user')
 })
+
+// El dashboard usa un fondo de página gris (detrás de tarjetas blancas); la
+// web pública usa blanco. Se marca en <body> para que el rebote de scroll en
+// iOS muestre el mismo color en vez de un destello blanco fuera de lugar.
+watch(
+  () => route.path,
+  (path) => {
+    document.body.classList.toggle('dashboard-bg', !showLayout.value || path.startsWith('/user'))
+  },
+  { immediate: true }
+)
+
 // Llamar a la función para obtener los datos del usuario al montar
 userStore.fetchUserData()
 userStore.initAuthListener()

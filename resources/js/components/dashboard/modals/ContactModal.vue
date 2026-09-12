@@ -2,14 +2,16 @@
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 
-const props = defineProps({ show: Boolean })
-const emit = defineEmits(['close'])
-
 const CONTACT_EMAIL = 'fran@franriera.es'
 
 const userStore = useUserStore()
+const show = ref(false)
 const type = ref('sugerencia') // 'sugerencia' | 'error'
 const message = ref('')
+
+function open() { show.value = true }
+function close() { show.value = false }
+defineExpose({ open, close })
 
 function send() {
   if (!message.value.trim()) return
@@ -20,7 +22,7 @@ function send() {
   window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   message.value = ''
-  emit('close')
+  close()
 }
 </script>
 
@@ -28,7 +30,7 @@ function send() {
   <div v-if="show" class="fixed inset-0 z-50 bg-white md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
     <div class="w-full h-full md:h-auto md:max-w-lg md:max-h-[85vh] bg-white md:rounded-xl shadow-xl flex flex-col overflow-hidden">
       <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
-        <button type="button" @click="emit('close')" class="text-[var(--color-primary)] font-medium">Cancelar</button>
+        <button type="button" @click="close" class="text-[var(--color-primary)] font-medium">Cancelar</button>
         <h2 class="font-semibold text-[var(--color-primary)]">Contáctanos</h2>
         <button type="button" @click="send" class="text-[var(--color-primary)] font-semibold">Enviar</button>
       </header>

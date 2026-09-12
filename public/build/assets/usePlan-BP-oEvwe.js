@@ -1,0 +1,1 @@
+import{m as e,n as t}from"./createVueComponent-fFN2j1ch.js";function n(){let n=t(),r=e(()=>[`coach`,`admin`].includes(n.userData?.role)),i=e(()=>r.value||n.userData?.plan_id!==1);return{isPro:i,isFree:e(()=>!i.value),isCoachOrAdmin:r}}export{n as t};

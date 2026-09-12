@@ -1,17 +1,38 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { IconX } from '@tabler/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import api from '@/api/client'
 import { uploadProfileImage, updateUserData } from '@/api/services/users'
 
-const props = defineProps({ show: Boolean })
-const emit = defineEmits(['close'])
-
 const userStore = useUserStore()
 const { userData } = storeToRefs(userStore)
 const { fetchUserData } = userStore
+
+const show = ref(false)
+
+function fillForm() {
+  const newVal = userData.value
+  if (!newVal) return
+  name.value = newVal.name || ''
+  lastName.value = newVal.last_name || ''
+  email.value = newVal.email || ''
+  profileImage.value = newVal.profile_image || ''
+  password.value = ''
+  imageFile.value = null
+}
+
+function open() {
+  fillForm()
+  show.value = true
+}
+
+function close() {
+  show.value = false
+}
+
+defineExpose({ open, close })
 
 const name = ref('')
 const lastName = ref('')
@@ -60,7 +81,7 @@ const handleSave = async () => {
     await updateUserData(userData.value.uid, updates)
     await fetchUserData()
 
-    emit('close')
+    close()
   } catch (err) {
     console.error('Error al guardar los cambios:', err)
     alert(`Error al guardar los cambios: ${err.message || 'Error desconocido'}`)
@@ -69,27 +90,13 @@ const handleSave = async () => {
   }
 }
 
-watch(
-  () => [props.show, userData.value],
-  ([show, newVal]) => {
-    if (show && newVal) {
-      name.value = newVal.name || ''
-      lastName.value = newVal.last_name || ''
-      email.value = newVal.email || ''
-      profileImage.value = newVal.profile_image || ''
-      password.value = ''
-      imageFile.value = null
-    }
-  },
-  { immediate: true }
-)
 </script>
 
 <template>
   <div v-if="show" class="fixed inset-0 z-50 bg-white md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
     <div class="w-full h-full md:h-auto md:max-w-lg md:max-h-[85vh] bg-white md:rounded-xl shadow-xl flex flex-col overflow-hidden">
       <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
-        <button type="button" @click="emit('close')" class="text-[var(--color-primary)] font-medium">Cancelar</button>
+        <button type="button" @click="close" class="text-[var(--color-primary)] font-medium">Cancelar</button>
         <h2 class="font-semibold text-[var(--color-primary)]">Editar perfil</h2>
         <button type="button" @click="handleSave" :disabled="updating" class="text-[var(--color-primary)] font-semibold disabled:opacity-50">
           {{ updating ? 'Guardando...' : 'Guardar' }}

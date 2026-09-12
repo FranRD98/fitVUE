@@ -1,16 +1,23 @@
 <script setup>
-import { computed } from 'vue'
-import { IconCheck } from '@tabler/icons-vue'
+import { ref, computed } from 'vue'
+import { IconCheck, IconChevronRight, IconLogout } from '@tabler/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { usePlan } from '@/composables/usePlan'
 import { useTheme } from '@/composables/useTheme'
-
-const props = defineProps({ show: Boolean })
-const emit = defineEmits(['close'])
+import ContactModal from '@/components/dashboard/modals/ContactModal.vue'
+import AboutModal from '@/components/dashboard/modals/AboutModal.vue'
 
 const userStore = useUserStore()
 const { isPro } = usePlan()
 const { theme, setTheme } = useTheme()
+
+const show = ref(false)
+const contactModal = ref(null)
+const aboutModal = ref(null)
+
+function open() { show.value = true }
+function close() { show.value = false }
+defineExpose({ open, close })
 
 const planLabel = computed(() => {
   switch (userStore.userData?.plan_id) {
@@ -33,6 +40,11 @@ const themeOptions = [
   { value: 'dark', label: 'Oscuro' },
   { value: 'system', label: 'Dispositivo' },
 ]
+
+function handleLogout() {
+  close()
+  userStore.logout()
+}
 </script>
 
 <template>
@@ -41,7 +53,7 @@ const themeOptions = [
       <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
         <span class="w-6"></span>
         <h2 class="font-semibold text-[var(--color-primary)]">Configuración</h2>
-        <button type="button" @click="emit('close')" class="text-[var(--color-primary)] font-medium">Hecho</button>
+        <button type="button" @click="close" class="text-[var(--color-primary)] font-medium">Hecho</button>
       </header>
 
       <div class="p-4 overflow-y-auto flex-1 space-y-6">
@@ -77,10 +89,36 @@ const themeOptions = [
             </button>
           </div>
           <p class="text-xs text-gray-400 mt-2">
-            El ajuste ya se guarda; el rediseño visual completo del modo oscuro para todas las pantallas llegará en una actualización aparte.
+            El rediseño visual completo del modo oscuro para todas las pantallas llegará en una actualización aparte.
           </p>
         </div>
+
+        <div>
+          <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Más</h3>
+          <div class="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100 overflow-hidden">
+            <button type="button" @click="contactModal.open()" class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition">
+              <span class="text-sm font-medium text-gray-700">Contáctanos</span>
+              <IconChevronRight class="w-4 h-4 text-gray-400" />
+            </button>
+            <button type="button" @click="aboutModal.open()" class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition">
+              <span class="text-sm font-medium text-gray-700">Acerca de</span>
+              <IconChevronRight class="w-4 h-4 text-gray-400" />
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          @click="handleLogout"
+          class="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-red-500 font-medium hover:bg-red-50 transition"
+        >
+          <IconLogout class="w-5 h-5" :stroke-width="2" />
+          Cerrar sesión
+        </button>
       </div>
     </div>
+
+    <ContactModal ref="contactModal" />
+    <AboutModal ref="aboutModal" />
   </div>
 </template>

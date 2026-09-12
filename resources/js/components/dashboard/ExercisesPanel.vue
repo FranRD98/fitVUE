@@ -2,29 +2,29 @@
   import { ref, computed, watch } from 'vue'
   import { getExercises, deleteExercise, getExerciseCategories } from '@/api/services/exercises'
   import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
+  import ExerciseFilterSheet from '@/components/dashboard/pickers/ExerciseFilterSheet.vue'
+  import { EQUIPMENT_OPTIONS, equipmentLabel, groupMusclesByRegion } from '@/constants/exerciseOptions'
 
-  import { IconPlus, IconLayoutGrid, IconLayoutList, IconTrash } from '@tabler/icons-vue'
-  
+  import { IconPlus, IconLayoutGrid, IconLayoutList, IconTrash, IconChevronDown } from '@tabler/icons-vue'
+
   import { useUserStore } from '@/stores/user'
   import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
-
-  const props = defineProps({
-    userData: Object
-  })
 
   const userStore = useUserStore()
   const exercises = ref([])
   const exerciseCategories = ref([])
   const showModal = ref(false)
   const selectedExercise = ref(null)
-  const viewMode = ref('grid')
+  // Lista compacta por defecto; la vista de tarjetas con imagen queda como alternativa.
+  const viewMode = ref('table')
   const searchQuery = ref('')
-  const selectedCategory = ref('')
-
+  const equipmentFilter = ref([])
+  const muscleFilter = ref([])
+  const activeFilterSheet = ref(null) // 'equipment' | 'muscle' | null
 
   /* Paginación */
   const currentPage = ref(1)
-  const itemsPerPage = ref(16) 
+  const itemsPerPage = ref(16)
 
   const totalPages = computed(() => {
     return Math.ceil(filteredExercises.value.length / itemsPerPage.value)
@@ -32,31 +32,34 @@
 
   const paginatedExercises = computed(() => {
     const start = (currentPage.value - 1) * itemsPerPage.value
-  
     return filteredExercises.value.slice(start, start + itemsPerPage.value)
   })
 
-watch([searchQuery, selectedCategory], () => {
-  currentPage.value = 1
-})
+  watch([searchQuery, equipmentFilter, muscleFilter], () => {
+    currentPage.value = 1
+  }, { deep: true })
 
-  const { loading, showSkeleton, start, finish } = useDelayedSkeleton(300) // <-- 300ms
+  const { loading, showSkeleton, start, finish } = useDelayedSkeleton(300)
+
+  const loadExercises = async () => {
+    if (!userStore.userData?.uid) return
+
+    start()
+    try {
+      exercises.value = await getExercises(userStore.userData?.uid)
+      exerciseCategories.value = await getExerciseCategories()
+    } catch (err) {
+      console.error('Error al cargar ejercicios:', err)
+    } finally {
+      finish()
+    }
+  }
 
   watch(
     () => userStore.userData?.uid,
     async (uid) => {
       if (!uid) return
-
-      start()
-
-      try {
-        exercises.value = await getExercises(userStore.userData?.uid)        
-        exerciseCategories.value = await getExerciseCategories()
-      } catch (err) {
-        console.error('Error al cargar ejercicios:', error)
-      } finally {
-        finish()
-      }
+      await loadExercises()
     },
     { immediate: true }
   )
@@ -66,20 +69,6 @@ watch([searchQuery, selectedCategory], () => {
     showModal.value = true
   }
 
-const loadExercises = async () => {
-  if (!userStore.userData?.uid) return
-
-  start()
-  try {
-    exercises.value = await getExercises(userStore.userData?.uid)        
-    exerciseCategories.value = await getExerciseCategories()
-  } catch (err) {
-    console.error('Error al cargar ejercicios:', err)
-  } finally {
-    finish()
-  }
-}
-
   const handleDelete = async (exercise) => {
     if (confirm(`¿Seguro que quieres eliminar el ejercicio "${exercise.name}"?`)) {
       await deleteExercise(exercise.id)
@@ -87,11 +76,17 @@ const loadExercises = async () => {
     }
   }
 
+  const equipmentGroups = computed(() => [{ region: null, label: null, items: EQUIPMENT_OPTIONS }])
+  const muscleGroups = computed(() => groupMusclesByRegion(exerciseCategories.value))
+
   const filteredExercises = computed(() => {
     return exercises.value.filter(ex => {
       const matchesSearch = ex.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-      const matchesCategory = !selectedCategory.value || ex.exercises_categories?.category_name === selectedCategory.value
-      return matchesSearch && matchesCategory
+      const matchesEquipment = !equipmentFilter.value.length || equipmentFilter.value.includes(ex.equipment)
+      const matchesMuscle = !muscleFilter.value.length ||
+        muscleFilter.value.includes(ex.id_category) ||
+        (ex.secondary_muscles || []).some(m => muscleFilter.value.includes(m.id))
+      return matchesSearch && matchesEquipment && matchesMuscle
     })
   })
 </script>
@@ -129,48 +124,75 @@ const loadExercises = async () => {
     </div>
 
     <!-- Panel -->
-    <div v-else class="mb-6 flex flex-col md:flex-row md:items-end justify-between gap-4 w-full">
-      
-      <!-- Buscador -->
-      <div class="flex-1">
-        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar ejercicio</label>
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Nombre del ejercicio..."
-          class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
-        />
-      </div>
+    <div v-else class="mb-6 space-y-3">
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 w-full">
+        <div class="flex-1">
+          <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Buscar ejercicio</label>
+          <input
+            v-model="searchQuery"
+            type="text"
+            placeholder="Nombre del ejercicio..."
+            class="w-full border border-gray-300 rounded p-2 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+          />
+        </div>
 
-      <!-- Filtro grupo muscular -->
-      <div>
-        <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Grupo muscular</label>
-        <select v-model="selectedCategory" class="w-full border border-gray-300 p-2 rounded text-sm text-gray-700">
-          <option value="">Todos</option>
-          <option v-for="category in exerciseCategories" :key="category.id" :value="category.category_name">
-            {{ category.category_name }}
-          </option>
-        </select>
-      </div>
-
-      <!-- View Mode -->
-      <div class="flex items-center gap-1">
-        <button
-          @click="viewMode = 'grid'"
-          :class="['p-2 rounded', viewMode === 'grid' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
-          title="Vista de tarjetas"
+        <div class="flex items-center gap-1 shrink-0">
+          <button
+            @click="viewMode = 'table'"
+            :class="['p-2 rounded', viewMode === 'table' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
+            title="Vista de lista"
           >
-          <IconLayoutGrid/>
+            <IconLayoutList/>
+          </button>
+          <button
+            @click="viewMode = 'grid'"
+            :class="['p-2 rounded', viewMode === 'grid' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
+            title="Vista de tarjetas"
+          >
+            <IconLayoutGrid/>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros de equipamiento / grupo muscular: mismo patrón que al agregar un ejercicio a una rutina -->
+      <div class="flex gap-2">
+        <button
+          type="button"
+          @click="activeFilterSheet = 'equipment'"
+          class="flex-1 md:flex-none flex items-center justify-center gap-1 border-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
+          :class="equipmentFilter.length ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-gray-300 text-gray-600'"
+        >
+          {{ equipmentFilter.length ? `Equipamiento (${equipmentFilter.length})` : 'Equipamiento' }}
+          <IconChevronDown class="w-4 h-4" />
         </button>
         <button
-          @click="viewMode = 'table'"
-          :class="['p-2 rounded', viewMode === 'table' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
-          title="Vista de tabla"
-          >
-          <IconLayoutList/>
+          type="button"
+          @click="activeFilterSheet = 'muscle'"
+          class="flex-1 md:flex-none flex items-center justify-center gap-1 border-2 rounded-xl px-4 py-2.5 text-sm font-semibold"
+          :class="muscleFilter.length ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-gray-300 text-gray-600'"
+        >
+          {{ muscleFilter.length ? `Músculos (${muscleFilter.length})` : 'Grupo muscular' }}
+          <IconChevronDown class="w-4 h-4" />
         </button>
       </div>
     </div>
+
+    <ExerciseFilterSheet
+      :show="activeFilterSheet === 'equipment'"
+      title="Equipamiento"
+      :groups="equipmentGroups"
+      v-model="equipmentFilter"
+      :results-count="filteredExercises.length"
+      @close="activeFilterSheet = null"
+    />
+    <ExerciseFilterSheet
+      :show="activeFilterSheet === 'muscle'"
+      title="Grupo Muscular"
+      :groups="muscleGroups"
+      v-model="muscleFilter"
+      :results-count="filteredExercises.length"
+      @close="activeFilterSheet = null"
+    />
 
     <!-- Grid -->
     <div v-if="viewMode === 'grid' && filteredExercises.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -181,33 +203,38 @@ const loadExercises = async () => {
           @click="openEditModal(exercise)"
         >
         <img
-          :src="(!exercise.image || exercise.image === '') ? `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}` : exercise.image"          
+          :src="(!exercise.image || exercise.image === '') ? `https://placehold.co/600x400?text=${encodeURIComponent(exercise.name)}` : exercise.image"
           alt="Imagen del ejercicio"
           class="w-full aspect-video object-cover"
         />
 
         <div class="p-5 flex flex-col flex-grow justify-between">
-            
+
           <!-- Nombre -->
           <h3 class="text-xl font-bold text-gray-800 mb-1 truncate">{{ exercise.name }}</h3>
-          
+
           <!-- Descripción con espacio reservado aunque esté vacía -->
           <p v-if="exercise.description" class="text-sm text-gray-600 mb-2 line-clamp-2">
             {{ exercise.description }}
           </p>
 
           <!-- Badge + acciones -->
-          <div class="mt-2 flex justify-between items-center">
-            <p
-              class="inline-block px-2 py-1 rounded text-xs font-bold w-fit"
-              style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);"
-            >
-              {{ exercise?.exercises_categories.category_name || '—' }}
-            </p>
+          <div class="mt-2 flex justify-between items-center gap-2">
+            <div class="flex flex-wrap gap-1">
+              <p
+                class="inline-block px-2 py-1 rounded text-xs font-bold w-fit"
+                style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);"
+              >
+                {{ exercise?.exercises_categories?.category_name || '—' }}
+              </p>
+              <p v-if="exercise.equipment" class="inline-block px-2 py-1 rounded text-xs font-bold w-fit bg-gray-100 text-gray-600">
+                {{ equipmentLabel(exercise.equipment) }}
+              </p>
+            </div>
 
               <button
                 @click.prevent.stop="handleDelete(exercise)"
-                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
+                class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200 shrink-0"
                 title="Eliminar"
               >
                 <IconTrash class="w-5 h-5" />
@@ -226,7 +253,7 @@ const loadExercises = async () => {
         <tr>
           <th class="py-3 px-2">Nombre</th>
           <th class="px-2">Grupo muscular</th>
-          <th class="px-2">Descripción</th>
+          <th class="px-2">Equipamiento</th>
           <th class="px-2 text-right">Acciones</th>
         </tr>
       </thead>
@@ -243,11 +270,11 @@ const loadExercises = async () => {
               class="inline-block px-2 py-1 rounded-full text-xs font-bold w-fit"
               style="background-color: rgba(var(--color-primary-rgb), 0.2); color: var(--color-primary);"
             >
-            {{ exercise?.exercises_categories.category_name || '—' }}
+            {{ exercise?.exercises_categories?.category_name || '—' }}
 
             </p>
           </td>
-          <td class="py-3 px-2 text-gray-600 line-clamp-2">{{ exercise.description }}</td>
+          <td class="py-3 px-2 text-gray-600">{{ exercise.equipment ? equipmentLabel(exercise.equipment) : '—' }}</td>
           <td class="py-3 px-2 text-right relative">
             <button
                 @click.prevent.stop="handleDelete(exercise)"
