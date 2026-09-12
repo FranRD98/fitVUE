@@ -117,7 +117,7 @@ onMounted(async () => {
 
     <div v-else class="space-y-4">
       <div class="grid grid-cols-2 gap-4">
-        <div class="bg-white shadow rounded-xl p-4 flex items-center gap-3">
+        <div class="bg-gray-100 md:bg-white shadow rounded-xl p-4 flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
             <IconFlame class="w-6 h-6 text-orange-500" />
           </div>
@@ -126,13 +126,13 @@ onMounted(async () => {
             <p class="text-xs text-gray-500">Racha actual (días)</p>
           </div>
         </div>
-        <div class="bg-white shadow rounded-xl p-4">
+        <div class="bg-gray-100 md:bg-white shadow rounded-xl p-4">
           <p class="text-xl font-bold text-gray-800">{{ trainedDaysCount }}</p>
           <p class="text-xs text-gray-500">Días entrenados en total</p>
         </div>
       </div>
 
-      <div class="bg-white shadow rounded-xl p-4">
+      <div class="bg-gray-100 md:bg-white shadow rounded-xl p-4">
         <div class="flex items-center justify-between mb-4">
           <button type="button" @click="changeMonth(-1)" class="p-1.5 rounded-full hover:bg-gray-100 text-gray-500">
             <IconChevronLeft class="w-5 h-5" />
@@ -171,7 +171,7 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-if="selectedDate" class="bg-white shadow rounded-xl p-4">
+      <div v-if="selectedDate" class="bg-gray-100 md:bg-white shadow rounded-xl p-4">
         <p class="text-sm font-semibold text-[var(--color-primary)] capitalize mb-1">{{ selectedDateLabel }}</p>
         <p v-if="selectedDateRoutines" class="text-sm text-gray-600">
           Entrenaste: {{ selectedDateRoutines.join(', ') }}

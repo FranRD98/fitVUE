@@ -46,7 +46,7 @@ onMounted(async () => {
         class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 mb-4 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)]"
       />
 
-      <div v-if="filteredStats.length" class="bg-white shadow rounded-xl divide-y divide-gray-100 overflow-hidden">
+      <div v-if="filteredStats.length" class="bg-gray-100 md:bg-white shadow rounded-xl divide-y divide-gray-100 overflow-hidden">
         <div v-for="stat in filteredStats" :key="stat.exercise_id" class="flex items-center gap-3 px-4 py-3">
           <div class="w-9 h-9 rounded-full bg-[rgba(var(--color-primary-rgb),0.1)] flex items-center justify-center shrink-0">
             <IconTrophy class="w-5 h-5 text-[var(--color-primary)]" />

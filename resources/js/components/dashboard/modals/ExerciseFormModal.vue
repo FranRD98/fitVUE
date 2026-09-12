@@ -30,7 +30,9 @@ const imageFile = ref(null)
 const activePicker = ref(null) // 'equipment' | 'primary' | 'secondary' | null
 
 const isEditable = computed(() => {
-  return !exercise.value.id || exercise.value.created_by === userStore.userData?.uid
+  return !exercise.value.id
+    || exercise.value.created_by === userStore.userData?.uid
+    || userStore.userData?.role === 'admin'
 })
 
 const muscleGroups = computed(() => groupMusclesByRegion(exerciseCategories.value))

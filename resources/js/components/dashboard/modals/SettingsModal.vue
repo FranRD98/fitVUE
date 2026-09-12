@@ -48,9 +48,9 @@ function handleLogout() {
 </script>
 
 <template>
-  <div v-if="show" class="fixed inset-0 z-50 bg-white md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
-    <div class="w-full h-full md:h-auto md:max-w-lg md:max-h-[85vh] bg-white md:rounded-xl shadow-xl flex flex-col overflow-hidden">
-      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
+  <div v-if="show" class="fixed inset-0 z-50 bg-white dark:bg-[#0f172a] md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
+    <div class="w-full h-full md:h-auto md:max-w-lg md:max-h-[85vh] bg-white dark:bg-[#1e293b] md:rounded-xl shadow-xl flex flex-col overflow-hidden">
+      <header class="flex items-center justify-between px-4 py-3 border-b dark:border-white/10 pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
         <span class="w-6"></span>
         <h2 class="font-semibold text-[var(--color-primary)]">Configuración</h2>
         <button type="button" @click="close" class="text-[var(--color-primary)] font-medium">Hecho</button>
@@ -58,11 +58,11 @@ function handleLogout() {
 
       <div class="p-4 overflow-y-auto flex-1 space-y-6">
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Suscripción</h3>
-          <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-3">
+          <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">Suscripción</h3>
+          <div class="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl p-4 flex items-center justify-between gap-3">
             <div>
-              <p class="text-sm text-gray-500">Plan actual</p>
-              <p class="font-semibold text-gray-800">{{ planLabel }}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Plan actual</p>
+              <p class="font-semibold text-gray-800 dark:text-white">{{ planLabel }}</p>
             </div>
             <a
               v-if="!isPro"
@@ -75,33 +75,30 @@ function handleLogout() {
         </div>
 
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Apariencia</h3>
-          <div class="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100 overflow-hidden">
+          <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">Apariencia</h3>
+          <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl divide-y divide-gray-100 dark:divide-white/10 overflow-hidden">
             <button
               v-for="option in themeOptions"
               :key="option.value"
               type="button"
               @click="setTheme(option.value)"
-              class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition"
+              class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-white/10 transition"
             >
-              <span class="text-sm font-medium text-gray-700">{{ option.label }}</span>
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-100">{{ option.label }}</span>
               <IconCheck v-if="theme === option.value" class="w-4 h-4 text-[var(--color-primary)]" />
             </button>
           </div>
-          <p class="text-xs text-gray-400 mt-2">
-            El rediseño visual completo del modo oscuro para todas las pantallas llegará en una actualización aparte.
-          </p>
         </div>
 
         <div>
-          <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mb-2">Más</h3>
-          <div class="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100 overflow-hidden">
-            <button type="button" @click="contactModal.open()" class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition">
-              <span class="text-sm font-medium text-gray-700">Contáctanos</span>
+          <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">Más</h3>
+          <div class="bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl divide-y divide-gray-100 dark:divide-white/10 overflow-hidden">
+            <button type="button" @click="contactModal.open()" class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-white/10 transition">
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-100">Contáctanos</span>
               <IconChevronRight class="w-4 h-4 text-gray-400" />
             </button>
-            <button type="button" @click="aboutModal.open()" class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 transition">
-              <span class="text-sm font-medium text-gray-700">Acerca de</span>
+            <button type="button" @click="aboutModal.open()" class="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-white/10 transition">
+              <span class="text-sm font-medium text-gray-700 dark:text-gray-100">Acerca de</span>
               <IconChevronRight class="w-4 h-4 text-gray-400" />
             </button>
           </div>
@@ -110,7 +107,7 @@ function handleLogout() {
         <button
           type="button"
           @click="handleLogout"
-          class="w-full flex items-center justify-center gap-2 bg-white border border-gray-200 rounded-xl px-4 py-3 text-red-500 font-medium hover:bg-red-50 transition"
+          class="w-full flex items-center justify-center gap-2 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-red-500 font-medium hover:bg-red-50 dark:hover:bg-red-500/10 transition"
         >
           <IconLogout class="w-5 h-5" :stroke-width="2" />
           Cerrar sesión

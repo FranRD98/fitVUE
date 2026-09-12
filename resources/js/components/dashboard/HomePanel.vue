@@ -46,7 +46,7 @@ onMounted(async () => {
       <div
         v-for="(session, i) in sessions"
         :key="i"
-        class="bg-white shadow rounded-xl p-4 flex items-center gap-4"
+        class="bg-gray-100 md:bg-white shadow rounded-xl p-4 flex items-center gap-4"
       >
         <div class="w-11 h-11 rounded-full bg-[rgba(var(--color-primary-rgb),0.1)] flex items-center justify-center shrink-0">
           <IconBarbell class="w-6 h-6 text-[var(--color-primary)]" />

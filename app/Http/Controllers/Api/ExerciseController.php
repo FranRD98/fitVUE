@@ -58,6 +58,8 @@ class ExerciseController extends Controller
 
     public function update(Request $request, Exercise $exercise)
     {
+        $this->authorizeOwner($request, $exercise);
+
         $data = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
@@ -84,11 +86,24 @@ class ExerciseController extends Controller
         return response()->json($this->withCategory($exercise->fresh(['category', 'secondaryMuscles'])));
     }
 
-    public function destroy(Exercise $exercise)
+    public function destroy(Request $request, Exercise $exercise)
     {
+        $this->authorizeOwner($request, $exercise);
+
         $exercise->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    // Solo quien creó el ejercicio (o un admin) puede editarlo o borrarlo.
+    // Los ejercicios de otros usuarios no se comparten ni son modificables.
+    private function authorizeOwner(Request $request, Exercise $exercise): void
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'admin' && $exercise->created_by !== $user->id) {
+            abort(403, 'No puedes modificar un ejercicio que no has creado.');
+        }
     }
 
     private function withCategory(Exercise $exercise): array

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { createUserByCoach, getAllCoaches, updateUser } from '@/api/services/users.js'
-import { getRoutines } from '@/api/services/routines.js'
+import { getRoutinesByUser } from '@/api/services/routines.js'
 import { getDiets } from '@/api/services/diets.js'
 import { useUserStore } from '@/stores/user'
 
@@ -39,7 +39,8 @@ onMounted(async () => {
 
   if (userStore.userData?.role === 'coach' || userStore.userData?.role === 'admin') {
     try {
-      routines.value = await getRoutines()
+      // Solo las rutinas propias del coach/admin: son las que puede "enviar" a un cliente.
+      routines.value = await getRoutinesByUser(userStore.userData.uid)
       diets.value = await getDiets(userStore.userData.uid)
     } catch (error) {
       console.error('Error cargando rutinas o dietas:', error)
@@ -59,7 +60,9 @@ watch(
         role: val.role || 'user',
         plan_id: val.plan_id || 1,
         password: '',
-        assigned_routine: val.assigned_routine || null,
+        // Ojo: es la rutina que le asignó su coach/admin (assigned_routine_by_coach),
+        // no la que el propio usuario se marcó como activa (assigned_routine).
+        assigned_routine: val.assigned_routine_by_coach || null,
         assigned_diet: val.assigned_diet || null,
         coach_uid: val.coach_uid || null
       }

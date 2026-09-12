@@ -76,6 +76,12 @@
     }
   }
 
+  // Un ejercicio ajeno (p. ej. de la biblioteca del admin) no se puede borrar;
+  // solo quien lo creó (o un admin) puede eliminarlo.
+  function canDelete(exercise) {
+    return userStore.userData?.role === 'admin' || exercise.created_by === userStore.userData?.uid
+  }
+
   const equipmentGroups = computed(() => [{ region: null, label: null, items: EQUIPMENT_OPTIONS }])
   const muscleGroups = computed(() => groupMusclesByRegion(exerciseCategories.value))
 
@@ -199,7 +205,7 @@
         <div
         v-for="exercise in paginatedExercises"
           :key="exercise.id"
-          class="bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition cursor-pointer w-full"
+          class="bg-gray-100 md:bg-white rounded-xl shadow-lg overflow-hidden flex flex-col transition cursor-pointer w-full"
           @click="openEditModal(exercise)"
         >
         <img
@@ -233,6 +239,7 @@
             </div>
 
               <button
+                v-if="canDelete(exercise)"
                 @click.prevent.stop="handleDelete(exercise)"
                 class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200 shrink-0"
                 title="Eliminar"
@@ -277,12 +284,14 @@
           <td class="py-3 px-2 text-gray-600">{{ exercise.equipment ? equipmentLabel(exercise.equipment) : '—' }}</td>
           <td class="py-3 px-2 text-right relative">
             <button
+                v-if="canDelete(exercise)"
                 @click.prevent.stop="handleDelete(exercise)"
                 class="text-red-600 hover:bg-red-600 hover:text-white p-2 rounded-full transition duration-200"
                 title="Eliminar"
               >
                 <IconTrash class="w-5 h-5" />
               </button>
+              <span v-else class="text-gray-300 text-xs">—</span>
           </td>
         </tr>
       </tbody>

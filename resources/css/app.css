@@ -47,12 +47,17 @@ body {
   overflow-x: hidden;
 }
 
-/* El dashboard usa gray-100 como fondo de página (detrás de las tarjetas
-   blancas); si el body se queda en blanco puro, el rebote de scroll en iOS
-   muestra un destello blanco que no pega con el resto de la pantalla. La
-   web pública sigue con el body en blanco (--color-bg). */
+/* Fondo de página del dashboard: en escritorio gris (detrás de tarjetas
+   blancas); en móvil blanco (las tarjetas pasan a ser grisáceas). Si el body
+   no coincide, el rebote de scroll en iOS muestra un destello del color que
+   no toca. La web pública sigue con el body en blanco (--color-bg). */
 body.dashboard-bg {
-  background-color: #f3f4f6;
+  background-color: #ffffff;
+}
+@media (min-width: 768px) {
+  body.dashboard-bg {
+    background-color: #f3f4f6;
+  }
 }
 
 /* Modo oscuro: de momento el fondo base y la barra de navegación/Perfil (lo

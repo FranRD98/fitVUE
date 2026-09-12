@@ -62,7 +62,7 @@ onMounted(async () => {
     </div>
 
     <div v-else-if="reviews.length" class="space-y-4">
-      <div v-for="review in reviews" :key="review.id" class="bg-white shadow rounded-xl p-4">
+      <div v-for="review in reviews" :key="review.id" class="bg-gray-100 md:bg-white shadow rounded-xl p-4">
         <p class="text-sm font-semibold text-[var(--color-primary)] mb-3">{{ formatDate(review.created_at) }}</p>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div v-for="field in filledFields(review)" :key="field.key">

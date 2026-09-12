@@ -48,7 +48,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col md:flex-row min-h-screen bg-gray-100 dark:bg-[#0f172a]">
+  <div class="flex flex-col md:flex-row min-h-screen bg-white md:bg-gray-100 dark:bg-[#0f172a]">
     <!-- Sidebar: solo escritorio -->
     <div class="hidden md:block md:static md:z-auto">
       <DashboardSidebar

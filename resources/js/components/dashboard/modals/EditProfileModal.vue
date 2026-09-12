@@ -93,9 +93,9 @@ const handleSave = async () => {
 </script>
 
 <template>
-  <div v-if="show" class="fixed inset-0 z-50 bg-white md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
-    <div class="w-full h-full md:h-auto md:max-w-lg md:max-h-[85vh] bg-white md:rounded-xl shadow-xl flex flex-col overflow-hidden">
-      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
+  <div v-if="show" class="fixed inset-0 z-50 bg-white dark:bg-[#0f172a] md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
+    <div class="w-full h-full md:h-auto md:max-w-lg md:max-h-[85vh] bg-white dark:bg-[#1e293b] md:rounded-xl shadow-xl flex flex-col overflow-hidden">
+      <header class="flex items-center justify-between px-4 py-3 border-b dark:border-white/10 pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
         <button type="button" @click="close" class="text-[var(--color-primary)] font-medium">Cancelar</button>
         <h2 class="font-semibold text-[var(--color-primary)]">Editar perfil</h2>
         <button type="button" @click="handleSave" :disabled="updating" class="text-[var(--color-primary)] font-semibold disabled:opacity-50">
@@ -105,16 +105,16 @@ const handleSave = async () => {
 
       <div class="p-6 overflow-y-auto flex-1 space-y-6">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Imagen de perfil</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Imagen de perfil</label>
           <div class="relative">
             <input type="file" accept="image/*" @change="handleImageChange" class="hidden" id="profile-image-upload" />
             <label
               for="profile-image-upload"
-              class="cursor-pointer border-dashed border-2 border-gray-300 p-4 w-full text-center rounded-lg hover:border-gray-400 flex flex-col items-center justify-center"
+              class="cursor-pointer border-dashed border-2 border-gray-300 dark:border-white/20 p-4 w-full text-center rounded-lg hover:border-gray-400 dark:hover:border-white/40 flex flex-col items-center justify-center"
             >
-              <span v-if="!profileImage" class="text-gray-600">Haz clic para subir una imagen</span>
+              <span v-if="!profileImage" class="text-gray-600 dark:text-gray-300">Haz clic para subir una imagen</span>
               <div v-else class="relative w-32 h-32">
-                <img :src="profileImage" alt="Imagen de perfil" class="w-full h-full object-cover rounded-full border border-gray-200" />
+                <img :src="profileImage" alt="Imagen de perfil" class="w-full h-full object-cover rounded-full border border-gray-200 dark:border-white/10" />
                 <button
                   @click.prevent="profileImage = null"
                   class="absolute top-1 right-1 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"
@@ -128,18 +128,18 @@ const handleSave = async () => {
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-          <input v-model="name" type="text" class="w-full border border-gray-300 rounded p-2 text-sm" />
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nombre</label>
+          <input v-model="name" type="text" class="w-full border border-gray-300 dark:border-white/10 dark:bg-white/5 dark:text-white rounded p-2 text-sm" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Apellidos</label>
-          <input v-model="lastName" type="text" class="w-full border border-gray-300 rounded p-2 text-sm" />
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Apellidos</label>
+          <input v-model="lastName" type="text" class="w-full border border-gray-300 dark:border-white/10 dark:bg-white/5 dark:text-white rounded p-2 text-sm" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
-          <input v-model="password" type="password" placeholder="Deja en blanco para no cambiarla" class="w-full border border-gray-300 rounded p-2 text-sm" />
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Nueva contraseña</label>
+          <input v-model="password" type="password" placeholder="Deja en blanco para no cambiarla" class="w-full border border-gray-300 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500 rounded p-2 text-sm" />
         </div>
       </div>
     </div>

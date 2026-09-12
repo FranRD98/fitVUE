@@ -50,7 +50,7 @@ const settingsModal = ref(null)
       </div>
     </div>
 
-    <div class="flex items-center gap-3 bg-white dark:bg-white/5 shadow rounded-xl p-4 mb-6">
+    <div class="flex items-center gap-3 bg-gray-100 md:bg-white dark:bg-white/5 shadow rounded-xl p-4 mb-6">
       <img
         :src="userData?.profile_image || '/img/default-profile.svg'"
         alt="Imagen de perfil"
@@ -71,7 +71,7 @@ const settingsModal = ref(null)
           :key="item.key"
           type="button"
           @click="goTo(item.key)"
-          class="flex items-center gap-3 bg-white dark:bg-white/5 shadow rounded-xl px-4 py-3.5 text-left hover:shadow-md transition"
+          class="flex items-center gap-3 bg-gray-100 md:bg-white dark:bg-white/5 shadow rounded-xl px-4 py-3.5 text-left hover:shadow-md transition"
         >
           <component :is="item.icon" class="w-5 h-5 text-[var(--color-primary)] dark:text-white" :stroke-width="2" />
           <span class="text-sm font-semibold text-gray-700 dark:text-gray-100">{{ item.label }}</span>
@@ -80,7 +80,7 @@ const settingsModal = ref(null)
     </div>
 
     <!-- Accesos a las demás secciones (Guías, Usuarios...): solo en móvil, en escritorio ya están en el menú lateral -->
-    <div v-if="otherSections.length" class="md:hidden bg-white dark:bg-white/5 shadow rounded-xl divide-y divide-gray-100 dark:divide-white/10 mb-6 overflow-hidden">
+    <div v-if="otherSections.length" class="md:hidden bg-gray-100 dark:bg-white/5 shadow rounded-xl divide-y divide-gray-200 dark:divide-white/10 mb-6 overflow-hidden">
       <button
         v-for="item in otherSections"
         :key="item.key"

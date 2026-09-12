@@ -21,7 +21,7 @@ const routines = ref([])
 const showViewer = ref(false)
 const viewedRoutine = ref(null)
 const userStore = useUserStore()
-const { isPro, isFree } = usePlan()
+const { isFree } = usePlan()
 const { randomMessage } = useGreeting()
 const showModal = ref(false)
 const showUpgradePrompt = ref(false)
@@ -140,7 +140,6 @@ const openEditModal = (routine) => {
   openMenuId.value = null
 
   if (
-    isPro.value &&
     assignedCoachRoutine.value &&
     routine.id === assignedCoachRoutine.value.id
   ) {
@@ -172,9 +171,9 @@ function startRoutine(routine) {
 
       <div class="flex flex-wrap gap-3 items-center">
 
-        <!-- Usuario Pro con rutina asignada por su coach -->
+        <!-- Rutina enviada por un coach/admin: visible siempre, sin importar el plan -->
         <button
-          v-if="isPro && assignedCoachRoutine"
+          v-if="assignedCoachRoutine"
           @click="viewRoutine(assignedCoachRoutine)"
           class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg cursor-pointer
                 hover:bg-green-700 transition-all duration-200"
@@ -284,7 +283,7 @@ function startRoutine(routine) {
         <div
           v-for="routine in paginatedRoutines"
           :key="routine.id"
-          class="bg-white shadow rounded-xl overflow-hidden flex flex-col justify-between w-full relative"
+          class="bg-gray-100 md:bg-white shadow rounded-xl overflow-hidden flex flex-col justify-between w-full relative"
         >
           <div class="p-4 flex flex-col flex-grow">
             <div class="flex justify-between items-start gap-2 mb-1">
