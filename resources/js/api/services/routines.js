@@ -57,12 +57,6 @@ export async function getRoutineById(id) {
   return data
 }
 
-// Obtener rutina asignada actual
-export async function getAssignedRoutine(uid) {
-  const { data } = await api.get(`/users/${uid}/assigned-routine`)
-  return nullIfEmpty(data)
-}
-
 // Obtener rutina asignada del coach
 export async function getCoachAssignedRoutine(uid) {
   const { data } = await api.get(`/users/${uid}/coach-assigned-routine`)
@@ -92,16 +86,6 @@ export async function duplicateRoutine(id) {
 export async function createRoutineCategory(title) {
   const { data } = await api.post('/routines/categories', { title })
   return data
-}
-
-// Asignar rutina a usuario
-export async function assignRoutineToUser(uid, routineId) {
-  await api.post(`/users/${uid}/assign-routine`, { routine_id: routineId })
-}
-
-// Quitar rutina asignada
-export async function unassignRoutineFromUser(uid) {
-  await api.delete(`/users/${uid}/assign-routine`)
 }
 
 // Eliminar rutina

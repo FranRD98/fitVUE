@@ -3,14 +3,14 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { usePlan } from '@/composables/usePlan'
+import { useGreeting } from '@/composables/useGreeting'
 import {
-  getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser,
-  updateRoutine, getCoachAssignedRoutine, deleteRoutine, duplicateRoutine
+  getRoutinesByUser, getCoachAssignedRoutine, deleteRoutine, duplicateRoutine
 } from '@/api/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
 import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.vue'
 
-import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconLockOpen2, IconDotsVertical, IconPlayerPlay } from '@tabler/icons-vue'
+import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconDotsVertical, IconPlayerPlay } from '@tabler/icons-vue'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
 const FREE_ROUTINE_LIMIT = 3
@@ -21,6 +21,7 @@ const routines = ref([])
 const viewAssignedRoutine = ref(false)
 const userStore = useUserStore()
 const { isPro, isFree } = usePlan()
+const { randomMessage } = useGreeting()
 const showModal = ref(false)
 const showUpgradePrompt = ref(false)
 const selectedRoutine = ref(null)
@@ -44,8 +45,6 @@ function openCreateModal() {
   showModal.value = true
 }
 
-const assignedRoutine = ref(null)
-const assignedRoutineId = ref(null)
 const assignedCoachRoutine = ref(null)
 const assignedCoachRoutineId = ref(null)
 
@@ -106,8 +105,6 @@ const loadRoutines = async () => {
 
   try {
     routines.value = await getRoutinesByUser(userStore.userData?.uid)
-    assignedRoutine.value = await getAssignedRoutine(userStore.userData?.uid)
-    assignedRoutineId.value = assignedRoutine.value?.id || null
 
     assignedCoachRoutine.value = await getCoachAssignedRoutine(userStore.userData?.uid)
     assignedCoachRoutineId.value = assignedCoachRoutine.value?.id || null
@@ -150,34 +147,25 @@ const openEditModal = (routine) => {
 function startRoutine(routine) {
   router.push({ path: `/user/${userStore.userData?.uid}/iniciar-rutina`, query: { routineId: routine.id } })
 }
-
-const handleAssign = async (routineId) => {
-  if (assignedRoutineId.value && assignedRoutineId.value !== routineId) {
-    const confirmChange = confirm('Este usuario ya tiene una rutina asignada. ¿Deseas reemplazarla?')
-    if (!confirmChange) return
-  }
-
-  await assignRoutineToUser(userStore.userData?.uid, routineId)
-  assignedRoutineId.value = routineId
-}
-
-const handleUnassign = async () => {
-  await unassignRoutineFromUser(userStore.userData?.uid)
-  assignedRoutineId.value = null
-}
 </script>
 
 
 
 <template>
   <section>
-    <!-- Encabezado actualizado -->
+    <!-- Encabezado: saludo en móvil (ganamos el espacio de la cabecera superior), "Entrenamiento" en escritorio -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-      <h1 class="text-3xl font-bold text-[var(--color-primary)]">Entrenamiento</h1>
+      <div>
+        <h1 class="md:hidden text-2xl font-bold text-[var(--color-primary)]">
+          ¡Hola, {{ userStore.userData?.name || 'Usuario' }}!
+        </h1>
+        <p class="md:hidden text-sm text-gray-500">{{ randomMessage }}</p>
+        <h1 class="hidden md:block text-3xl font-bold text-[var(--color-primary)]">Entrenamiento</h1>
+      </div>
 
       <div class="flex flex-wrap gap-3 items-center">
 
-        <!-- Usuario con plan PREMIUM y rutina asignada -->
+        <!-- Usuario Pro con rutina asignada por su coach -->
         <button
           v-if="isPro && assignedCoachRoutine"
           @click="openEditModal(assignedCoachRoutine)"
@@ -187,28 +175,6 @@ const handleUnassign = async () => {
         >
           <IconRocket class="w-5 h-5" />
           Rutina del coach
-        </button>
-
-        <!-- Usuario con plan PREMIUM pero sin rutina asignada aún -->
-        <button
-          v-else-if="isPro && !assignedCoachRoutine"
-          disabled
-          class="flex items-center gap-2 bg-neutral-200 text-neutral-500 px-4 py-2 rounded-lg cursor-not-allowed"
-          title="Aún no tienes una rutina asignada"
-        >
-          <IconLockOpen2 class="w-5 h-5" />
-          Sin rutina del coach
-        </button>
-
-        <!-- Usuario con plan Free -->
-        <button
-          v-else-if="isFree"
-          disabled
-          class="flex items-center gap-2 bg-yellow-100 text-yellow-700 border border-yellow-300 px-4 py-2 rounded-lg cursor-not-allowed"
-          title="Actualiza a Pro para recibir una rutina personalizada"
-        >
-          <IconLockOff class="w-5 h-5" />
-          Requiere plan Pro
         </button>
 
         <!-- Crear rutina -->
@@ -348,38 +314,10 @@ const handleUnassign = async () => {
 
             <button
               @click="startRoutine(routine)"
-              class="w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2.5 rounded-lg transition mb-2"
+              class="w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2.5 rounded-lg transition"
             >
               <IconPlayerPlay class="w-4 h-4" /> Empezar Rutina
             </button>
-
-            <!-- Marcar como rutina activa: control secundario -->
-            <label class="flex items-center gap-2 cursor-pointer select-none justify-center" @click.stop>
-              <input
-                type="checkbox"
-                class="sr-only"
-                :checked="assignedRoutineId === routine.id"
-                @change="($event) => {
-                  if ($event.target.checked) {
-                    handleAssign(routine.id)
-                  } else {
-                    handleUnassign()
-                  }
-                }"
-              />
-              <div
-                class="w-8 h-5 flex items-center bg-gray-300 rounded-full p-0.5 duration-300 ease-in-out"
-                :class="{ 'bg-green-500': assignedRoutineId === routine.id }"
-              >
-                <div
-                  class="bg-white w-3.5 h-3.5 rounded-full shadow-md transform duration-300 ease-in-out"
-                  :class="{ 'translate-x-3': assignedRoutineId === routine.id }"
-                ></div>
-              </div>
-              <span class="text-xs text-gray-500">
-                {{ assignedRoutineId === routine.id ? 'Rutina activa' : 'Marcar como activa' }}
-              </span>
-            </label>
         </div>
         </div>
       </div>

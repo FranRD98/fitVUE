@@ -1,64 +1,51 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { IconChevronLeft } from '@tabler/icons-vue'
 import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
 import { useDashboardNav } from '@/composables/useDashboardNav'
-import { useDashboardMenu } from '@/composables/useDashboardMenu'
+import { isSecondaryPanel } from '@/composables/useDashboardMenu'
+import { useGreeting } from '@/composables/useGreeting'
 
 const userStore = useUserStore()  // Usamos el store de usuario
 const { activeKey, goTo } = useDashboardNav()
-const { secondaryMenu } = useDashboardMenu()
+const { randomMessage } = useGreeting()
 
-// En móvil, las secciones secundarias (Ejercicios, Dietas...) se abren desde
-// Perfil, así que aquí se muestra una flecha para volver a Perfil en vez del
-// menú hamburguesa que existía antes.
-const showBackToProfile = computed(() =>
-  secondaryMenu.value.some(i => i.key === activeKey.value)
-)
-
-const welcomeMessages = [
-  'Estás haciendo un gran progreso hoy, ¡sigue así! 💪',
-  '¡Hoy es un gran día para avanzar en tus metas! 🚀',
-  '¡Vamos con todo, estás imparable! 🔥',
-  'No te detengas, cada paso cuenta 🏃‍♂️',
-  '¡Excelente trabajo, sigue construyendo tu mejor versión! 🛠️',
-  'Hoy entrenas el cuerpo… y la disciplina 🧠💪',
-  '¡Eres más constante que el WiFi del gimnasio! 📶',
-  '¡A romperla! 💥 Tu constancia es tu superpoder.'
-]
-
-const randomMessage = ref(welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)])
+// En móvil, las secciones secundarias (Ejercicios, Dietas, Estadísticas...)
+// se abren desde Perfil, así que aquí se muestra una flecha para volver a
+// Perfil en vez del menú hamburguesa que existía antes.
+const showBackToProfile = computed(() => isSecondaryPanel(activeKey.value))
 </script>
 
 <template>
+  <!-- Móvil: solo una barra mínima para volver a Perfil desde una sección
+       secundaria (el saludo vive dentro de "Entrenamiento", para ganar espacio). -->
+  <header
+    v-if="userStore.userData && showBackToProfile"
+    class="md:hidden bg-white shadow-sm px-4 py-3 pt-[calc(env(safe-area-inset-top)+0.75rem)] flex items-center"
+  >
+    <button class="text-gray-500" aria-label="Volver a Perfil" @click="goTo('config')">
+      <IconChevronLeft class="w-7 h-7" />
+    </button>
+  </header>
+
+  <!-- Escritorio: cabecera completa con avatar, saludo y frase -->
   <header
     v-if="userStore.userData"
-    class="bg-white shadow-sm px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:px-10 md:py-6 md:pt-6"
+    class="hidden md:flex bg-white shadow-sm px-10 py-6"
   >
     <div class="flex items-center gap-4">
-      <!-- Volver a Perfil: solo en móvil, dentro de una sección secundaria -->
-      <button
-        v-if="showBackToProfile"
-        class="md:hidden text-gray-500"
-        aria-label="Volver a Perfil"
-        @click="goTo('config')"
-      >
-        <IconChevronLeft class="w-7 h-7" />
-      </button>
-
       <img
         :src="userStore.userData.profile_image || '/img/default-profile.svg'"
         alt="profile"
-        class="w-10 h-10 md:w-12 md:h-12 rounded-full"
+        class="w-12 h-12 rounded-full"
       />
       <div class="flex-1">
-        <h1 class="text-lg md:text-xl font-bold text-[var(--color-primary)]">
+        <h1 class="text-xl font-bold text-[var(--color-primary)]">
           ¡Hola, {{ userStore.userData?.name || 'Usuario' }}!
         </h1>
-        <p class="text-xs md:text-sm text-gray-500 leading-snug max-h-[3.5rem] overflow-hidden">
+        <p class="text-sm text-gray-500 leading-snug max-h-[3.5rem] overflow-hidden">
           {{ randomMessage }}
         </p>
-
       </div>
     </div>
   </header>

@@ -40,6 +40,65 @@ class ExerciseProgressController extends Controller
         return response()->json($history);
     }
 
+    public function stats(Request $request)
+    {
+        $data = $request->validate(['user_id' => ['required', 'integer']]);
+
+        $rows = ExerciseProgress::where('user_id', $data['user_id'])
+            ->orderBy('created_at')
+            ->get(['exercise_id', 'exercise_name', 'sets', 'created_at']);
+
+        $best = [];
+        foreach ($rows as $row) {
+            $maxWeight = 0;
+            foreach (is_array($row->sets) ? $row->sets : [] as $set) {
+                $weight = (float) ($set['weight'] ?? 0);
+                if ($weight > $maxWeight) {
+                    $maxWeight = $weight;
+                }
+            }
+
+            if ($maxWeight <= 0) {
+                continue;
+            }
+
+            $existing = $best[$row->exercise_id] ?? null;
+            if (! $existing || $maxWeight > $existing['max_weight']) {
+                $best[$row->exercise_id] = [
+                    'exercise_id' => $row->exercise_id,
+                    'exercise_name' => $row->exercise_name,
+                    'max_weight' => $maxWeight,
+                    'achieved_at' => $row->created_at,
+                ];
+            }
+        }
+
+        return response()->json(collect($best)->values()->sortBy('exercise_name')->values());
+    }
+
+    public function calendar(Request $request)
+    {
+        $data = $request->validate(['user_id' => ['required', 'integer']]);
+
+        $rows = ExerciseProgress::where('user_id', $data['user_id'])
+            ->with('routine:id,title')
+            ->orderBy('created_at')
+            ->get(['id_routine', 'created_at']);
+
+        $byDate = [];
+        foreach ($rows as $row) {
+            $date = $row->created_at->format('Y-m-d');
+            $byDate[$date] ??= ['date' => $date, 'routines' => []];
+
+            $title = $row->routine->title ?? 'Entrenamiento';
+            if (! in_array($title, $byDate[$date]['routines'], true)) {
+                $byDate[$date]['routines'][] = $title;
+            }
+        }
+
+        return response()->json(array_values($byDate));
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([

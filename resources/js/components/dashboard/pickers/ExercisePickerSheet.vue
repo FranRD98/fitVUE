@@ -109,20 +109,20 @@ async function handleExerciseCreated() {
           <button
             type="button"
             @click="activeFilterSheet = 'equipment'"
-            class="flex-1 flex items-center justify-center gap-1 border rounded-full px-3 py-1.5 text-xs font-medium"
+            class="flex-1 flex items-center justify-center gap-1 border-2 rounded-full px-2 py-3 text-[13px] leading-tight font-semibold whitespace-nowrap overflow-hidden"
             :class="equipmentFilter.length ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-gray-300 text-gray-600'"
           >
-            {{ equipmentFilter.length ? `Equipamiento (${equipmentFilter.length})` : 'Todo el Equipamiento' }}
-            <IconChevronDown class="w-3.5 h-3.5" />
+            <span class="truncate">{{ equipmentFilter.length ? `Equipamiento (${equipmentFilter.length})` : 'Equipamiento' }}</span>
+            <IconChevronDown class="w-4 h-4 shrink-0" />
           </button>
           <button
             type="button"
             @click="activeFilterSheet = 'muscle'"
-            class="flex-1 flex items-center justify-center gap-1 border rounded-full px-3 py-1.5 text-xs font-medium"
+            class="flex-1 flex items-center justify-center gap-1 border-2 rounded-full px-2 py-3 text-[13px] leading-tight font-semibold whitespace-nowrap overflow-hidden"
             :class="muscleFilter.length ? 'border-[var(--color-primary)] text-[var(--color-primary)]' : 'border-gray-300 text-gray-600'"
           >
-            {{ muscleFilter.length ? `Músculos (${muscleFilter.length})` : 'Todos los Músculos' }}
-            <IconChevronDown class="w-3.5 h-3.5" />
+            <span class="truncate">{{ muscleFilter.length ? `Músculos (${muscleFilter.length})` : 'Músculos' }}</span>
+            <IconChevronDown class="w-4 h-4 shrink-0" />
           </button>
         </div>
       </div>

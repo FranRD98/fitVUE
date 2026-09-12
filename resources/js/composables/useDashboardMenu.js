@@ -18,6 +18,13 @@ import {
 // repiten en la lista de "otras secciones" de Perfil.
 const PRIMARY_KEYS = ['home', 'routines', 'config']
 
+// Cualquier otra clave (incluidas las de histórico: stats/measurements/
+// calendar, que no están en menuItems) se considera "dentro de Perfil" a
+// efectos de resaltar la pestaña y mostrar la flecha de volver en móvil.
+export function isSecondaryPanel(key) {
+  return !PRIMARY_KEYS.includes(key)
+}
+
 export function useDashboardMenu() {
   const userStore = useUserStore()
 

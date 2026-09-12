@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getAssignedRoutine, getCoachAssignedRoutine, getRoutineById } from '@/api/services/routines'
+import { getCoachAssignedRoutine, getRoutineById } from '@/api/services/routines'
 import { getLastExerciseProgress, saveExerciseProgress } from '@/api/services/exercises'
 import { IconCheck, IconPlus, IconTrash, IconX, IconClock } from '@tabler/icons-vue'
 
@@ -42,7 +42,7 @@ onMounted(async () => {
     const routineId = route.query.routineId
     const routineData = routineId
       ? await getRoutineById(routineId)
-      : (await getCoachAssignedRoutine(userId.value) || await getAssignedRoutine(userId.value))
+      : await getCoachAssignedRoutine(userId.value)
     routine.value = routineData
 
     if (routineData?.exercises?.length) {

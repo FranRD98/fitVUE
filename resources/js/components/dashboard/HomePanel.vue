@@ -5,11 +5,13 @@
   import { useUserStore } from '@/stores/user'
   import { getReviewsById } from '@/api/services/progress'
   import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
+  import { useDashboardNav } from '@/composables/useDashboardNav'
   import ProgressChart from '@/components/dashboard/charts/ProgressChart.vue'
 
   const userStore = useUserStore()
-  const router = useRouter()  
+  const router = useRouter()
 const route = useRoute()
+const { goTo } = useDashboardNav()
 
   const reviews = ref([])
   const lastReview = computed(() => reviews.value[0])
@@ -169,8 +171,9 @@ watch(
           <p class="text-[var(--color-primary)] font-semibold">Empieza tu rutina</p>
         </div>
 
-          <router-link
-          :to="`/user/${userStore.userData?.uid}/iniciar-rutina`"
+          <button
+            type="button"
+            @click="goTo('routines')"
             class="relative bottom-0 flex justify-center items-center gap-2 rounded-xl text-white bg-[var(--color-primary)] px-12 py-3 text-sm shadow-sm transition duration-300 group hover:bg-cyan-500 hover:text-white active:scale-95 focus:outline-none focus:ring-2 focus:ring-cyan-500"
           >
             <span class="truncate transition-all duration-300 group-hover:opacity-0 group-hover:-translate-x-4">
@@ -181,7 +184,7 @@ watch(
               ¡A tope!
             </div>
 
-          </router-link>
+          </button>
 
       </div>
     </div>

@@ -2,17 +2,14 @@
 import { computed } from 'vue'
 import { IconHome, IconBarbell, IconUserCircle } from '@tabler/icons-vue'
 import { useDashboardNav } from '@/composables/useDashboardNav'
-import { useDashboardMenu } from '@/composables/useDashboardMenu'
+import { isSecondaryPanel } from '@/composables/useDashboardMenu'
 
 const { activeKey, goTo } = useDashboardNav()
-const { secondaryMenu } = useDashboardMenu()
 
-// Las secciones "secundarias" (Ejercicios, Dietas, Platos...) viven dentro de
-// Perfil en móvil, así que la pestaña Perfil se marca activa también cuando
-// se está viendo una de ellas.
-const isProfileActive = computed(() =>
-  activeKey.value === 'config' || secondaryMenu.value.some(i => i.key === activeKey.value)
-)
+// Las secciones "secundarias" (Ejercicios, Dietas, Estadísticas...) viven
+// dentro de Perfil en móvil, así que la pestaña Perfil se marca activa
+// también cuando se está viendo una de ellas.
+const isProfileActive = computed(() => isSecondaryPanel(activeKey.value))
 
 const tabs = [
   { key: 'home', label: 'Inicio', icon: IconHome },

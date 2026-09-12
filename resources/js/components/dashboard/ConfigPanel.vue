@@ -1,6 +1,6 @@
 <script setup>
-import { ref, watch } from 'vue'
-import { IconChevronRight, IconLogout } from '@tabler/icons-vue'
+import { ref, watch, computed } from 'vue'
+import { IconChevronRight, IconLogout, IconTrophy, IconBarbell, IconRuler2, IconCalendar } from '@tabler/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia' // 👈 Importante para mantener reactividad
 import api from '@/api/client'
@@ -14,6 +14,17 @@ const { userData } = storeToRefs(userStore)
 const { fetchUserData, logout } = userStore
 const { goTo } = useDashboardNav()
 const { secondaryMenu } = useDashboardMenu()
+
+const infoButtons = [
+  { key: 'stats', label: 'Estadísticas', icon: IconTrophy },
+  { key: 'exercises', label: 'Ejercicios', icon: IconBarbell },
+  { key: 'measurements', label: 'Medidas', icon: IconRuler2 },
+  { key: 'calendar', label: 'Calendario', icon: IconCalendar },
+]
+
+// "Ejercicios" ya vive en el grid de Información, así que no se repite
+// en la lista de otras secciones (Dietas, Platos...).
+const otherSections = computed(() => secondaryMenu.value.filter(i => i.key !== 'exercises'))
 
 // Campos del formulario
 const name = ref('')
@@ -96,10 +107,27 @@ watch(
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Perfil</h1>
     </div>
 
+    <!-- Información: histórico de estadísticas, ejercicios, medidas y calendario -->
+    <div class="mb-6">
+      <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-2">Información</h2>
+      <div class="grid grid-cols-2 gap-3">
+        <button
+          v-for="item in infoButtons"
+          :key="item.key"
+          type="button"
+          @click="goTo(item.key)"
+          class="flex items-center gap-3 bg-white shadow rounded-xl px-4 py-3.5 text-left hover:shadow-md transition"
+        >
+          <component :is="item.icon" class="w-5 h-5 text-[var(--color-primary)]" :stroke-width="2" />
+          <span class="text-sm font-semibold text-gray-700">{{ item.label }}</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Accesos a las demás secciones: solo en móvil, en escritorio ya están en el menú lateral -->
     <div class="md:hidden bg-white shadow rounded-xl divide-y divide-gray-100 mb-6 overflow-hidden">
       <button
-        v-for="item in secondaryMenu"
+        v-for="item in otherSections"
         :key="item.key"
         type="button"
         @click="goTo(item.key)"

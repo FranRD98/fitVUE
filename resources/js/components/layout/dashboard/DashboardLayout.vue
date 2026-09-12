@@ -20,7 +20,10 @@ const componentsMap = {
   ingredients: defineAsyncComponent(() => import('@/components/dashboard/IngredientsPanel.vue')),
   guides: defineAsyncComponent(() => import('@/components/dashboard/GuidesPanel.vue')),
   users: defineAsyncComponent(() => import('@/components/dashboard/UsersPanel.vue')),
-  config: defineAsyncComponent(() => import('@/components/dashboard/ConfigPanel.vue'))
+  config: defineAsyncComponent(() => import('@/components/dashboard/ConfigPanel.vue')),
+  stats: defineAsyncComponent(() => import('@/components/dashboard/StatsPanel.vue')),
+  measurements: defineAsyncComponent(() => import('@/components/dashboard/MeasurementsPanel.vue')),
+  calendar: defineAsyncComponent(() => import('@/components/dashboard/CalendarPanel.vue'))
 }
 
 // En móvil la app se abre directamente en "Entrenamiento" (estilo Hevy);

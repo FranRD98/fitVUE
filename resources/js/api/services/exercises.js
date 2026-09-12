@@ -85,3 +85,25 @@ export async function getExerciseHistory(exerciseId, userId) {
     return []
   }
 }
+
+// Peso máximo alcanzado en cada ejercicio, con la fecha
+export async function getExerciseStats(userId) {
+  try {
+    const { data } = await api.get('/exercises-progress/stats', { params: { user_id: userId } })
+    return data
+  } catch (error) {
+    console.error('Error al obtener las estadísticas de ejercicios:', error)
+    return []
+  }
+}
+
+// Días entrenados (para el calendario), con la(s) rutina(s) de cada día
+export async function getTrainingCalendar(userId) {
+  try {
+    const { data } = await api.get('/exercises-progress/calendar', { params: { user_id: userId } })
+    return data
+  } catch (error) {
+    console.error('Error al obtener el calendario de entrenamientos:', error)
+    return []
+  }
+}
