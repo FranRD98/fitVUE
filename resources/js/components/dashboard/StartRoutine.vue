@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getAssignedRoutine, getCoachAssignedRoutine } from '@/api/services/routines'
+import { getAssignedRoutine, getCoachAssignedRoutine, getRoutineById } from '@/api/services/routines'
 import { getLastExerciseProgress, saveExerciseProgress } from '@/api/services/exercises'
 import { IconCheck, IconPlus, IconTrash, IconX, IconClock } from '@tabler/icons-vue'
 
@@ -11,8 +11,6 @@ const router = useRouter()
 const routine = ref(null)
 const loading = ref(true)
 const exerciseInputs = ref([])
-const selectedDay = ref(null)
-const showDaySelector = ref(false)
 const userId = ref(null)
 const saving = ref(false)
 
@@ -41,11 +39,14 @@ onMounted(async () => {
   if (!userId.value) return
 
   try {
-    const routineData = await getCoachAssignedRoutine(userId.value) || await getAssignedRoutine(userId.value)
+    const routineId = route.query.routineId
+    const routineData = routineId
+      ? await getRoutineById(routineId)
+      : (await getCoachAssignedRoutine(userId.value) || await getAssignedRoutine(userId.value))
     routine.value = routineData
 
-    if (routineData?.days?.length) {
-      showDaySelector.value = true
+    if (routineData?.exercises?.length) {
+      await loadExercises(routineData.exercises)
     }
   } catch (error) {
     console.error('Error al cargar la rutina:', error)
@@ -58,12 +59,9 @@ onUnmounted(() => {
   if (timerHandle) clearInterval(timerHandle)
 })
 
-const handleDaySelection = async (dayObj) => {
-  selectedDay.value = dayObj
-  showDaySelector.value = false
-
+const loadExercises = async (exercises) => {
   exerciseInputs.value = await Promise.all(
-    dayObj.exercises.map(async (exercise) => {
+    exercises.map(async (exercise) => {
       const lastProgress = await getLastExerciseProgress(exercise.id, userId.value)
       const lastSets = lastProgress?.sets || []
       const plannedSets = exercise.sets || 1
@@ -133,7 +131,7 @@ async function finishWorkout() {
 
   saving.value = true
   try {
-    await saveExerciseProgress(userId.value, routine.value.id, selectedDay.value.day, payload)
+    await saveExerciseProgress(userId.value, routine.value.id, null, payload)
     router.push({ path: '/dashboard', query: { refresh: 'true' } })
   } catch (error) {
     console.error(error)
@@ -158,7 +156,7 @@ function confirmExit() {
   </div>
 
   <!-- Sin rutina -->
-  <div v-else-if="!routine || !routine.days?.length" class="fixed inset-0 flex justify-center items-center bg-black/60 backdrop-blur-sm p-4">
+  <div v-else-if="!routine || !routine.exercises?.length" class="fixed inset-0 flex justify-center items-center bg-black/60 backdrop-blur-sm p-4">
     <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full text-gray-700 border border-red-200">
       <h2 class="text-lg font-semibold mb-4 text-red-600">Rutina no asignada</h2>
       <p class="mb-4">Debes asignarte una rutina antes de registrar un entrenamiento.</p>
@@ -167,26 +165,6 @@ function confirmExit() {
         class="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-medium py-2 px-4 rounded"
       >
         Volver atrás
-      </button>
-    </div>
-  </div>
-
-  <!-- Selección de día -->
-  <div v-else-if="showDaySelector" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-    <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-      <h2 class="text-xl font-bold text-[var(--color-primary)] mb-4">¿Qué día vas a entrenar?</h2>
-      <ul class="space-y-2">
-        <li v-for="day in routine.days" :key="day.day">
-          <button
-            @click="handleDaySelection(day)"
-            class="w-full px-4 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-secondary)] transition font-medium"
-          >
-            {{ day.day }}
-          </button>
-        </li>
-      </ul>
-      <button @click="$router.back()" class="w-full mt-3 px-4 py-2 text-gray-500 hover:text-gray-700 text-sm">
-        Cancelar
       </button>
     </div>
   </div>
@@ -200,7 +178,6 @@ function confirmExit() {
       </button>
       <div class="text-center flex-1 min-w-0">
         <h1 class="font-bold text-[var(--color-primary)] truncate">{{ routine.title }}</h1>
-        <p class="text-xs text-gray-500">{{ selectedDay.day }}</p>
       </div>
       <div class="flex items-center gap-1 text-sm font-semibold text-gray-600 tabular-nums shrink-0">
         <IconClock class="w-4 h-4" />

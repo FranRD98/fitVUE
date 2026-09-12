@@ -27,13 +27,11 @@
             <p class="text-gray-600">{{ routine.description }}</p>
           </header>
 
-          <!-- Días -->
-          <div v-for="(day, index) in routine.days" :key="index" class="space-y-4">
-            <h2 class="text-xl font-semibold text-[var(--color-secondary)]">{{ day.day }}</h2>
-
-            <div v-if="day.exercises.length > 0" class="space-y-4">
+          <!-- Ejercicios -->
+          <div class="space-y-4">
+            <div v-if="routine.exercises?.length" class="space-y-4">
               <div
-                v-for="exercise in day.exercises"
+                v-for="exercise in routine.exercises"
                 :key="exercise.id"
                 class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 hover:shadow-md transition"
               >
@@ -57,7 +55,7 @@
               </div>
             </div>
 
-            <p v-else class="text-sm text-gray-400">Sin ejercicios asignados para este día.</p>
+            <p v-else class="text-sm text-gray-400">Sin ejercicios en esta rutina.</p>
           </div>
         </div>
 

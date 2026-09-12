@@ -1,8 +1,20 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { IconChevronLeft } from '@tabler/icons-vue'
 import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
+import { useDashboardNav } from '@/composables/useDashboardNav'
+import { useDashboardMenu } from '@/composables/useDashboardMenu'
 
 const userStore = useUserStore()  // Usamos el store de usuario
+const { activeKey, goTo } = useDashboardNav()
+const { secondaryMenu } = useDashboardMenu()
+
+// En móvil, las secciones secundarias (Ejercicios, Dietas...) se abren desde
+// Perfil, así que aquí se muestra una flecha para volver a Perfil en vez del
+// menú hamburguesa que existía antes.
+const showBackToProfile = computed(() =>
+  secondaryMenu.value.some(i => i.key === activeKey.value)
+)
 
 const welcomeMessages = [
   'Estás haciendo un gran progreso hoy, ¡sigue así! 💪',
@@ -16,8 +28,6 @@ const welcomeMessages = [
 ]
 
 const randomMessage = ref(welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)])
-const emit = defineEmits(['toggleSidebar'])
-
 </script>
 
 <template>
@@ -26,8 +36,15 @@ const emit = defineEmits(['toggleSidebar'])
     class="bg-white shadow-sm px-4 pb-4 pt-[calc(env(safe-area-inset-top)+1rem)] md:px-10 md:py-6 md:pt-6"
   >
     <div class="flex items-center gap-4">
-      <!-- Botón hamburguesa solo en móvil -->
-      <button class="md:hidden text-2xl" @click="$emit('toggleSidebar')">☰</button>
+      <!-- Volver a Perfil: solo en móvil, dentro de una sección secundaria -->
+      <button
+        v-if="showBackToProfile"
+        class="md:hidden text-gray-500"
+        aria-label="Volver a Perfil"
+        @click="goTo('config')"
+      >
+        <IconChevronLeft class="w-7 h-7" />
+      </button>
 
       <img
         :src="userStore.userData.profile_image || '/img/default-profile.svg'"

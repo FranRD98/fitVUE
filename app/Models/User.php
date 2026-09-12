@@ -24,7 +24,7 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $appends = ['uid'];
+    protected $appends = ['uid', 'is_pro'];
 
     protected function casts(): array
     {
@@ -43,6 +43,16 @@ class User extends Authenticatable
     public function getUidAttribute(): int
     {
         return $this->id;
+    }
+
+    public function isCoachOrAdmin(): bool
+    {
+        return in_array($this->role, ['coach', 'admin'], true);
+    }
+
+    public function getIsProAttribute(): bool
+    {
+        return $this->isCoachOrAdmin() || (int) $this->plan_id !== 1;
     }
 
     public function coach(): BelongsTo

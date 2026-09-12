@@ -8,13 +8,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Routine extends Model
 {
     protected $fillable = [
-        'title', 'description', 'id_category', 'days', 'published', 'user_id',
+        'title', 'description', 'id_category', 'exercises', 'published', 'user_id',
     ];
 
     protected function casts(): array
     {
         return [
-            'days' => 'array',
+            'exercises' => 'array',
             'published' => 'boolean',
         ];
     }

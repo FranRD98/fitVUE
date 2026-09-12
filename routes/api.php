@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/routines', [RoutineController::class, 'store']);
     Route::patch('/routines/{routine}', [RoutineController::class, 'update']);
     Route::delete('/routines/{routine}', [RoutineController::class, 'destroy']);
+    Route::post('/routines/{routine}/duplicate', [RoutineController::class, 'duplicate']);
     Route::post('/routines/categories', [RoutineCategoryController::class, 'store']);
 
     Route::get('/exercises/categories', [ExerciseCategoryController::class, 'index']);

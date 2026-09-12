@@ -1,22 +1,30 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
-import { getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser, updateRoutine, getCoachAssignedRoutine, deleteRoutine } from '@/api/services/routines.js'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { usePlan } from '@/composables/usePlan'
+import {
+  getRoutinesByUser, assignRoutineToUser, getAssignedRoutine, unassignRoutineFromUser,
+  updateRoutine, getCoachAssignedRoutine, deleteRoutine, duplicateRoutine
+} from '@/api/services/routines.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
 import RoutineAssignedViewer from '@/components/dashboard/RoutineAssignedViewer.vue'
 
-import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconLockOpen2, IconTrash } from '@tabler/icons-vue'
+import { IconPlus, IconLayoutGrid, IconLayoutList, IconLockOff, IconRocket, IconLockOpen2, IconDotsVertical, IconPlayerPlay } from '@tabler/icons-vue'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
 const FREE_ROUTINE_LIMIT = 3
 
+const router = useRouter()
 const routines = ref([])
 
 const viewAssignedRoutine = ref(false)
 const userStore = useUserStore()
+const { isPro, isFree } = usePlan()
 const showModal = ref(false)
 const showUpgradePrompt = ref(false)
 const selectedRoutine = ref(null)
+const openMenuId = ref(null)
 
 // El client_reference_id permite al webhook de Stripe identificar a qué usuario aplicar el plan tras el pago.
 const upgradeUrl = computed(() => {
@@ -28,7 +36,7 @@ const upgradeUrl = computed(() => {
 
 // routines.value ya viene filtrada por el backend a solo las del usuario actual
 function openCreateModal() {
-  if (userStore.userData?.plan_id === 1 && routines.value.length >= FREE_ROUTINE_LIMIT) {
+  if (isFree.value && routines.value.length >= FREE_ROUTINE_LIMIT) {
     showUpgradePrompt.value = true
     return
   }
@@ -62,9 +70,6 @@ watch(searchQuery, () => {
   currentPage.value = 1
 })
 
-
-
-
 // Skeleton/loading state
 const { loading, showSkeleton, start, finish } = useDelayedSkeleton(200)
 
@@ -74,32 +79,37 @@ const filteredRoutines = computed(() =>
   )
 )
 
-const togglePublished = async (routine) => {
-  try {
-    const newValue = !routine.published
-    await updateRoutine(routine.id, { published: newValue })
-    routine.published = newValue
-  } catch (error) {
-    console.error('Error al publicar rutina:', error)
-  }
+function exercisesSummary(routine) {
+  return (routine.exercises || []).map(e => e.name).join(', ')
+}
+
+function countExercises(routine) {
+  return routine.exercises?.length || 0
 }
 
 async function removeRoutine(routine) {
-  if (confirm(`¿Eliminar la dieta "${routine.title}"?`)) {
+  if (confirm(`¿Eliminar la rutina "${routine.title}"?`)) {
     await deleteRoutine(routine.id)
     await loadRoutines()
   }
+  openMenuId.value = null
+}
+
+async function handleDuplicate(routine) {
+  await duplicateRoutine(routine.id)
+  await loadRoutines()
+  openMenuId.value = null
 }
 
 const loadRoutines = async () => {
   start()
-  
+
   try {
     routines.value = await getRoutinesByUser(userStore.userData?.uid)
-    assignedRoutine.value = await getAssignedRoutine(userStore.userData?.uid)  
+    assignedRoutine.value = await getAssignedRoutine(userStore.userData?.uid)
     assignedRoutineId.value = assignedRoutine.value?.id || null
 
-    assignedCoachRoutine.value = await getCoachAssignedRoutine(userStore.userData?.uid)  
+    assignedCoachRoutine.value = await getCoachAssignedRoutine(userStore.userData?.uid)
     assignedCoachRoutineId.value = assignedCoachRoutine.value?.id || null
   } catch (error) {
     console.error('Error al cargar rutinas:', error)
@@ -109,11 +119,24 @@ const loadRoutines = async () => {
   }
 }
 
-onMounted(loadRoutines)
+function closeMenuOnOutsideClick() {
+  openMenuId.value = null
+}
+
+onMounted(() => {
+  loadRoutines()
+  document.addEventListener('click', closeMenuOnOutsideClick)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeMenuOnOutsideClick)
+})
 
 const openEditModal = (routine) => {
+  openMenuId.value = null
+
   if (
-    userStore.userData?.plan_id !== 1 &&
+    isPro.value &&
     assignedCoachRoutine.value &&
     routine.id === assignedCoachRoutine.value.id
   ) {
@@ -124,8 +147,8 @@ const openEditModal = (routine) => {
   }
 }
 
-const countExercises = (routine) => {
-  return routine.days?.reduce((acc, day) => acc + (day.exercises?.length || 0), 0)
+function startRoutine(routine) {
+  router.push({ path: `/user/${userStore.userData?.uid}/iniciar-rutina`, query: { routineId: routine.id } })
 }
 
 const handleAssign = async (routineId) => {
@@ -150,13 +173,13 @@ const handleUnassign = async () => {
   <section>
     <!-- Encabezado actualizado -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-      <h1 class="text-3xl font-bold text-[var(--color-primary)]">Rutinas</h1>
+      <h1 class="text-3xl font-bold text-[var(--color-primary)]">Entrenamiento</h1>
 
       <div class="flex flex-wrap gap-3 items-center">
 
         <!-- Usuario con plan PREMIUM y rutina asignada -->
         <button
-          v-if="userStore.userData?.plan_id !== 1 && assignedCoachRoutine"
+          v-if="isPro && assignedCoachRoutine"
           @click="openEditModal(assignedCoachRoutine)"
           class="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg cursor-pointer
                 hover:bg-green-700 transition-all duration-200"
@@ -168,7 +191,7 @@ const handleUnassign = async () => {
 
         <!-- Usuario con plan PREMIUM pero sin rutina asignada aún -->
         <button
-          v-else-if="userStore.userData?.plan_id !== 1 && !assignedCoachRoutine"
+          v-else-if="isPro && !assignedCoachRoutine"
           disabled
           class="flex items-center gap-2 bg-neutral-200 text-neutral-500 px-4 py-2 rounded-lg cursor-not-allowed"
           title="Aún no tienes una rutina asignada"
@@ -179,7 +202,7 @@ const handleUnassign = async () => {
 
         <!-- Usuario con plan Free -->
         <button
-          v-else-if="userStore.userData?.plan_id === 1"
+          v-else-if="isFree"
           disabled
           class="flex items-center gap-2 bg-yellow-100 text-yellow-700 border border-yellow-300 px-4 py-2 rounded-lg cursor-not-allowed"
           title="Actualiza a Pro para recibir una rutina personalizada"
@@ -194,7 +217,7 @@ const handleUnassign = async () => {
           class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition cursor-pointer"
         >
           <IconPlus class="w-5 h-5" />
-          Nueva rutina
+          Crear rutina
         </button>
       </div>
     </div>
@@ -265,7 +288,7 @@ const handleUnassign = async () => {
             class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
           />
         </div>
-        <div class="flex items-center gap-1">
+        <div class="hidden md:flex items-center gap-1">
           <button
             @click="viewMode = 'grid'"
             :class="['p-2 rounded', viewMode === 'grid' ? 'bg-[var(--color-primary)] text-white' : 'bg-gray-200']"
@@ -283,105 +306,131 @@ const handleUnassign = async () => {
         </div>
       </div>
 
-      <!-- Vista Grid -->
-      <div v-if="viewMode === 'grid' && filteredRoutines.length" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <!-- Vista Grid (única vista en móvil) -->
+      <div v-if="viewMode === 'grid' && filteredRoutines.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
           v-for="routine in paginatedRoutines"
           :key="routine.id"
-          class="bg-white shadow rounded-xl overflow-hidden flex flex-col hover:shadow-md transition cursor-pointer justify-between w-full"
-          @click="openEditModal(routine)"
+          class="bg-white shadow rounded-xl overflow-hidden flex flex-col justify-between w-full relative"
         >
-          <div class="p-5 flex flex-col flex-grow">
-            <h3 class="text-lg font-semibold text-[var(--color-primary)] mb-1">{{ routine.title }}</h3>
-            <p class="text-sm text-gray-600 mb-3 line-clamp-3">{{ routine.description }}</p>
-            <p class="text-xs text-gray-500 mt-auto">Ejercicios totales: {{ countExercises(routine) }}</p>
+          <div class="p-4 flex flex-col flex-grow">
+            <div class="flex justify-between items-start gap-2 mb-1">
+              <h3 class="text-lg font-semibold text-[var(--color-primary)] cursor-pointer" @click="openEditModal(routine)">
+                {{ routine.title }}
+              </h3>
 
-            <div class="mt-4 flex justify-between items-center">
-              <!-- Asignar Rutina -->
-              <label class="flex items-center gap-2 cursor-pointer select-none" @click.stop>
-                <input
-                  type="checkbox"
-                  class="sr-only"
-                  :checked="assignedRoutineId"
-                  @change="($event) => {
-                    if ($event.target.checked) {
-                      handleAssign(routine.id)
-                    } else {
-                      handleUnassign()
-                    }
-                  }"
-                />
-                <div
-                  class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
-                  :class="{ 'bg-green-500': assignedRoutineId === routine.id }"
+              <div class="relative shrink-0">
+                <button
+                  type="button"
+                  @click.stop="openMenuId = openMenuId === routine.id ? null : routine.id"
+                  class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
+                  aria-label="Más opciones"
                 >
-                  <div
-                    class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
-                    :class="{ 'translate-x-4': assignedRoutineId === routine.id }"
-                  ></div>
-                </div>
-                <span class="text-sm text-gray-700">
-                  {{ assignedRoutineId === routine.id ? 'Asignada' : 'Sin asignar' }}
-                </span>
-              </label>
+                  <IconDotsVertical class="w-5 h-5" />
+                </button>
 
-              <!-- Botón eliminar -->
-              <button
-                @click.stop="removeRoutine(routine)"
-                class="text-red-600 hover:text-white hover:bg-red-600 p-2 rounded-full transition"
-                title="Eliminar rutina"
-              >
-                <IconTrash class="w-5 h-5" />
-              </button>
+                <div
+                  v-if="openMenuId === routine.id"
+                  class="absolute right-0 top-8 z-10 bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
+                  @click.stop
+                >
+                  <button @click="handleDuplicate(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
+                  <button @click="openEditModal(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
+                  <button @click="removeRoutine(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
+                </div>
+              </div>
             </div>
+
+            <p class="text-sm text-gray-500 mb-3 line-clamp-2 cursor-pointer" @click="openEditModal(routine)">
+              {{ exercisesSummary(routine) || 'Sin ejercicios todavía' }}
+            </p>
+            <p class="text-xs text-gray-400 mb-3">Ejercicios totales: {{ countExercises(routine) }}</p>
+
+            <button
+              @click="startRoutine(routine)"
+              class="w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2.5 rounded-lg transition mb-2"
+            >
+              <IconPlayerPlay class="w-4 h-4" /> Empezar Rutina
+            </button>
+
+            <!-- Marcar como rutina activa: control secundario -->
+            <label class="flex items-center gap-2 cursor-pointer select-none justify-center" @click.stop>
+              <input
+                type="checkbox"
+                class="sr-only"
+                :checked="assignedRoutineId === routine.id"
+                @change="($event) => {
+                  if ($event.target.checked) {
+                    handleAssign(routine.id)
+                  } else {
+                    handleUnassign()
+                  }
+                }"
+              />
+              <div
+                class="w-8 h-5 flex items-center bg-gray-300 rounded-full p-0.5 duration-300 ease-in-out"
+                :class="{ 'bg-green-500': assignedRoutineId === routine.id }"
+              >
+                <div
+                  class="bg-white w-3.5 h-3.5 rounded-full shadow-md transform duration-300 ease-in-out"
+                  :class="{ 'translate-x-3': assignedRoutineId === routine.id }"
+                ></div>
+              </div>
+              <span class="text-xs text-gray-500">
+                {{ assignedRoutineId === routine.id ? 'Rutina activa' : 'Marcar como activa' }}
+              </span>
+            </label>
         </div>
         </div>
       </div>
 
-      <!-- Vista Tabla -->
-       <div v-else-if="viewMode === 'table' && filteredRoutines.length" class="overflow-x-auto">
+      <!-- Vista Tabla (solo escritorio) -->
+       <div v-else-if="viewMode === 'table' && filteredRoutines.length" class="hidden md:block overflow-x-auto">
       <table class="min-w-[600px] w-full text-left text-sm">
-        
+
         <thead class="bg-gray-200 text-gray-600 font-medium">
           <tr>
             <th class="py-3 px-2">Nombre</th>
-            <th class="px-2">Descripción</th>
             <th class="px-2">Ejercicios</th>
-            <th class="px-2 text-right">Asignar</th>
+            <th class="px-2 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody class="bg-white">
           <tr
             v-for="routine in paginatedRoutines"
             :key="routine.id"
-            @click="openEditModal(routine)"
-            class="border-t border-gray-200 hover:bg-gray-100 transition cursor-pointer"
+            class="border-t border-gray-200 hover:bg-gray-100 transition"
           >
-            <td class="py-3 px-2 font-semibold text-[var(--color-primary)]">{{ routine.title }}</td>
-            <td class="py-3 px-2 text-gray-600 line-clamp-2">{{ routine.description }}</td>
+            <td class="py-3 px-2 font-semibold text-[var(--color-primary)] cursor-pointer" @click="openEditModal(routine)">{{ routine.title }}</td>
             <td class="py-3 px-2">{{ countExercises(routine) }}</td>
             <td class="py-3 px-2 text-right">
-              <label class="relative inline-flex items-center cursor-pointer" @click.stop>
-                <input
-                  type="checkbox"
-                  class="sr-only peer"
-                  :checked="assignedRoutineId === routine.id"
-                  @change="($event) => {
-                    if ($event.target.checked) {
-                      handleAssign(routine.id)
-                    } else {
-                      handleUnassign()
-                    }
-                  }"
-                />
-                <div
-                  class="group peer bg-white rounded-full duration-300 w-12 h-6 ring-2 ring-[var(--color-primary)]
-                    after:transition-transform after:duration-300 after:bg-[var(--color-primary)]
-                    peer-checked:after:bg-green-500 peer-checked:ring-green-500
-                    after:rounded-full after:absolute after:h-4 after:w-4 after:top-1 after:left-1
-                    after:content-[''] peer-checked:after:translate-x-6 peer-hover:after:scale-95"
-                ></div>
-              </label>
+              <div class="flex items-center justify-end gap-2">
+                <button
+                  @click="startRoutine(routine)"
+                  class="flex items-center gap-1 bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[var(--color-secondary)]"
+                >
+                  <IconPlayerPlay class="w-3.5 h-3.5" /> Empezar
+                </button>
+                <div class="relative">
+                  <button
+                    type="button"
+                    @click.stop="openMenuId = openMenuId === routine.id ? null : routine.id"
+                    class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100"
+                    aria-label="Más opciones"
+                  >
+                    <IconDotsVertical class="w-5 h-5" />
+                  </button>
+                  <div
+                    v-if="openMenuId === routine.id"
+                    class="absolute right-0 top-8 z-10 bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
+                    @click.stop
+                  >
+                    <button @click="handleDuplicate(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
+                    <button @click="openEditModal(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
+                    <button @click="removeRoutine(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
+                  </div>
+                </div>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -430,4 +479,3 @@ const handleUnassign = async () => {
 
   </section>
 </template>
-

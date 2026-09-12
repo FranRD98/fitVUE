@@ -4,6 +4,9 @@ import { useUserStore } from '@/stores/user'
 import api from '@/api/client'
 import { createExercise, updateExercise, getExerciseCategories, getExerciseHistory } from '@/api/services/exercises'
 import ExerciseProgressChart from '@/components/dashboard/charts/ExerciseProgressChart.vue'
+import MuscleEquipmentPicker from '@/components/dashboard/pickers/MuscleEquipmentPicker.vue'
+import { EQUIPMENT_OPTIONS, equipmentLabel, groupMusclesByRegion } from '@/constants/exerciseOptions'
+import { IconCamera, IconChevronRight, IconX } from '@tabler/icons-vue'
 
 const props = defineProps({ show: Boolean, initialData: Object })
 const emit = defineEmits(['close', 'saved'])
@@ -18,14 +21,29 @@ const exercise = ref({
   name: '',
   description: '',
   id_category: '',
+  equipment: '',
   image: '',
-  created_by: ''
+  created_by: '',
+  secondary_muscle_ids: []
 })
 const imageFile = ref(null)
+const activePicker = ref(null) // 'equipment' | 'primary' | 'secondary' | null
 
 const isEditable = computed(() => {
   return !exercise.value.id || exercise.value.created_by === userStore.userData?.uid
 })
+
+const muscleGroups = computed(() => groupMusclesByRegion(exerciseCategories.value))
+const equipmentGroups = computed(() => [{ region: null, label: null, items: EQUIPMENT_OPTIONS }])
+
+const primaryMuscleLabel = computed(() =>
+  exerciseCategories.value.find(c => c.id === exercise.value.id_category)?.category_name
+)
+const secondaryMuscleLabels = computed(() =>
+  exerciseCategories.value
+    .filter(c => exercise.value.secondary_muscle_ids.includes(c.id))
+    .map(c => c.category_name)
+)
 
 onMounted(async () => {
   try {
@@ -41,7 +59,10 @@ watch(
   () => props.initialData,
   async (newVal) => {
     if (newVal) {
-      exercise.value = { ...newVal }
+      exercise.value = {
+        ...newVal,
+        secondary_muscle_ids: (newVal.secondary_muscles || []).map(m => m.id)
+      }
       if (selectedTab.value === 'info') {
         await loadExerciseHistory()
       }
@@ -100,6 +121,11 @@ const deleteImage = async () => {
 }
 
 const submitForm = async () => {
+  if (!exercise.value.equipment || !exercise.value.id_category) {
+    alert('El equipamiento y el grupo muscular primario son obligatorios.')
+    return
+  }
+
   if (imageFile.value) await uploadImage()
   if (exercise.value.id) {
     await updateExercise(exercise.value.id, exercise.value)
@@ -121,8 +147,10 @@ function resetForm() {
     name: '',
     description: '',
     id_category: '',
+    equipment: '',
     image: '',
-    created_by: ''
+    created_by: '',
+    secondary_muscle_ids: []
   }
   imageFile.value = null
   exerciseHistory.value = []
@@ -171,18 +199,16 @@ function formatDate(dateString) {
 </script>
 
 <template>
-  <div v-if="show" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-center px-4">
-    <div class="bg-white rounded-xl shadow-xl w-full max-w-6xl h-[90vh] flex flex-col relative overflow-hidden">
-      
+  <div v-if="show" class="fixed inset-0 z-50 bg-white md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
+    <div class="w-full h-full md:h-auto md:max-w-3xl md:max-h-[90vh] bg-white md:rounded-xl shadow-xl flex flex-col relative overflow-hidden">
+
       <!-- Botón cerrar -->
-      <button @click="emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-        </svg>
+      <button @click="emit('close')" class="absolute top-3 right-3 z-10 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
+        <IconX class="h-6 w-6" />
       </button>
 
       <!-- Tabs -->
-      <div class="flex border-b divide-x">
+      <div class="flex border-b divide-x pt-[calc(env(safe-area-inset-top)+0.5rem)] md:pt-0 shrink-0">
         <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
              :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'info' }"
              @click="selectedTab = 'info'">Información</div>
@@ -195,7 +221,7 @@ function formatDate(dateString) {
       <!-- Contenido dinámico -->
       <transition name="fade" mode="out-in">
         <div :key="selectedTab" class="p-6 overflow-y-auto flex-1">
-          
+
           <!-- Info -->
           <div v-if="selectedTab === 'info'" class="space-y-4">
             <p v-if="!isEditable" class="text-sm text-red-500 mt-2">⚠️ No puedes modificar un ejercicio de la plataforma.</p>
@@ -204,39 +230,81 @@ function formatDate(dateString) {
             </h2>
 
             <form @submit.prevent="submitForm" class="space-y-4">
-              <input v-model="exercise.name" :disabled="!isEditable" placeholder="Nombre del ejercicio" class="input" required />
-              <input v-model="exercise.description" :disabled="!isEditable" placeholder="Descripción" class="input" />
-
-              <label class="block text-sm font-medium text-gray-700">Grupo muscular</label>
-              <select v-model="exercise.id_category" :disabled="!isEditable" class="w-full border border-gray-300 p-2 rounded" required>
-                <option disabled value="">Selecciona un grupo</option>
-                <option v-for="category in exerciseCategories" :key="category.id" :value="category.id">
-                  {{ category.category_name }}
-                </option>
-              </select>
-
               <!-- Imagen -->
-              <label v-if="isEditable" class="block text-sm font-medium text-gray-700">Imagen</label>
-              <div v-if="isEditable" class="image-upload-container">
-                <input type="file" accept="image/*" @change="handleImageChange" class="hidden" id="image-upload-input" />
-                <label for="image-upload-input" class="cursor-pointer border-dashed border-2 border-gray-300 p-6 text-center rounded-lg hover:border-gray-400 block">
-                  <span v-if="!exercise.image" class="text-gray-600">Haz clic para subir una imagen</span>
-                  <div v-if="exercise.image" class="relative mt-4">
-                    <img :src="exercise.image" alt="Imagen del ejercicio" class="w-full h-40 object-cover rounded" />
-                    <button
-                      @click.prevent="deleteImage"
-                      class="absolute top-2 right-2 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"
-                      title="Eliminar imagen">✖</button>
-                  </div>
+              <div v-if="isEditable" class="flex flex-col items-center gap-2 py-2">
+                <label for="image-upload-input" class="relative cursor-pointer w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 hover:border-gray-400">
+                  <img v-if="exercise.image" :src="exercise.image" alt="Imagen del ejercicio" class="w-full h-full object-cover" />
+                  <IconCamera v-else class="w-7 h-7 text-gray-400" />
                 </label>
+                <input type="file" accept="image/*" @change="handleImageChange" class="hidden" id="image-upload-input" />
+                <label v-if="!exercise.image" for="image-upload-input" class="text-sm text-[var(--color-primary)] font-medium cursor-pointer">
+                  Añadir multimedia
+                </label>
+                <button v-else type="button" @click="deleteImage" class="text-sm text-red-500 hover:underline">Quitar imagen</button>
               </div>
 
-              <div class="text-right">
+              <input v-model="exercise.name" :disabled="!isEditable" placeholder="Nombre de Ejercicio" class="input" required />
+              <input v-model="exercise.description" :disabled="!isEditable" placeholder="Descripción (opcional)" class="input" />
+
+              <!-- Equipamiento -->
+              <button type="button" :disabled="!isEditable" @click="activePicker = 'equipment'"
+                class="w-full flex items-center justify-between py-3 border-b text-left disabled:cursor-default">
+                <span class="text-sm font-medium text-gray-700">Equipamiento</span>
+                <span class="flex items-center gap-1 text-sm" :class="exercise.equipment ? 'text-[var(--color-primary)]' : 'text-blue-500'">
+                  {{ exercise.equipment ? equipmentLabel(exercise.equipment) : 'Seleccionar' }}
+                  <IconChevronRight class="w-4 h-4 text-gray-400" />
+                </span>
+              </button>
+
+              <!-- Grupo Muscular Primario -->
+              <button type="button" :disabled="!isEditable" @click="activePicker = 'primary'"
+                class="w-full flex items-center justify-between py-3 border-b text-left disabled:cursor-default">
+                <span class="text-sm font-medium text-gray-700">Grupo Muscular Primario</span>
+                <span class="flex items-center gap-1 text-sm" :class="primaryMuscleLabel ? 'text-[var(--color-primary)]' : 'text-blue-500'">
+                  {{ primaryMuscleLabel || 'Seleccionar' }}
+                  <IconChevronRight class="w-4 h-4 text-gray-400" />
+                </span>
+              </button>
+
+              <!-- Otros músculos -->
+              <button type="button" :disabled="!isEditable" @click="activePicker = 'secondary'"
+                class="w-full flex items-center justify-between py-3 border-b text-left disabled:cursor-default">
+                <span class="text-sm font-medium text-gray-700">Otros músculos</span>
+                <span class="flex items-center gap-1 text-sm text-blue-500 max-w-[60%] justify-end text-right">
+                  <span class="truncate">{{ secondaryMuscleLabels.length ? secondaryMuscleLabels.join(', ') : 'Seleccionar (opcional)' }}</span>
+                  <IconChevronRight class="w-4 h-4 text-gray-400 shrink-0" />
+                </span>
+              </button>
+
+              <div class="text-right pt-2">
                 <button v-if="isEditable" type="submit" class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-secondary)]">
                   {{ exercise.id ? 'Guardar cambios' : 'Crear ejercicio' }}
                 </button>
               </div>
             </form>
+
+            <MuscleEquipmentPicker
+              :show="activePicker === 'equipment'"
+              title="Equipamiento"
+              :groups="equipmentGroups"
+              v-model="exercise.equipment"
+              @close="activePicker = null"
+            />
+            <MuscleEquipmentPicker
+              :show="activePicker === 'primary'"
+              title="Grupo Muscular Primario"
+              :groups="muscleGroups"
+              v-model="exercise.id_category"
+              @close="activePicker = null"
+            />
+            <MuscleEquipmentPicker
+              :show="activePicker === 'secondary'"
+              title="Otros músculos"
+              multiple
+              :groups="muscleGroups"
+              v-model="exercise.secondary_muscle_ids"
+              @close="activePicker = null"
+            />
           </div>
 
           <!-- Historial -->
@@ -289,18 +357,6 @@ function formatDate(dateString) {
 .input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 1px var(--color-primary);
-}
-
-.image-upload-container {
-  position: relative;
-  text-align: center;
-}
-
-.image-upload-container img {
-  object-fit: cover;
-  width: 100%;
-  height: 8rem;
-  border-radius: 0.5rem;
 }
 
 .fade-enter-active,

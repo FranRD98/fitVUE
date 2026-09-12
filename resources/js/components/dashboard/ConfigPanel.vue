@@ -1,14 +1,19 @@
 <script setup>
 import { ref, watch } from 'vue'
+import { IconChevronRight, IconLogout } from '@tabler/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia' // 👈 Importante para mantener reactividad
 import api from '@/api/client'
 import { uploadProfileImage, updateUserData } from '@/api/services/users'
+import { useDashboardNav } from '@/composables/useDashboardNav'
+import { useDashboardMenu } from '@/composables/useDashboardMenu'
 
 // Obtener el store y desestructurar con reactividad
 const userStore = useUserStore()
 const { userData } = storeToRefs(userStore)
-const { fetchUserData } = userStore
+const { fetchUserData, logout } = userStore
+const { goTo } = useDashboardNav()
+const { secondaryMenu } = useDashboardMenu()
 
 // Campos del formulario
 const name = ref('')
@@ -87,8 +92,31 @@ watch(
 
 <template>
   <section>
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
-      <h1 class="text-3xl font-bold text-[var(--color-primary)]">Configuración</h1>
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <h1 class="text-3xl font-bold text-[var(--color-primary)]">Perfil</h1>
+    </div>
+
+    <!-- Accesos a las demás secciones: solo en móvil, en escritorio ya están en el menú lateral -->
+    <div class="md:hidden bg-white shadow rounded-xl divide-y divide-gray-100 mb-6 overflow-hidden">
+      <button
+        v-for="item in secondaryMenu"
+        :key="item.key"
+        type="button"
+        @click="goTo(item.key)"
+        class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition"
+      >
+        <component :is="item.icon" class="w-5 h-5 text-[var(--color-primary)]" :stroke-width="2" />
+        <span class="flex-1 text-sm font-medium text-gray-700">{{ item.label }}</span>
+        <IconChevronRight class="w-4 h-4 text-gray-400" />
+      </button>
+      <button
+        type="button"
+        @click="logout"
+        class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition"
+      >
+        <IconLogout class="w-5 h-5 text-red-500" :stroke-width="2" />
+        <span class="flex-1 text-sm font-medium text-red-500">Cerrar sesión</span>
+      </button>
     </div>
 
 <div class="bg-white shadow rounded-xl p-6 max-w-3xl w-full mx-auto space-y-6">

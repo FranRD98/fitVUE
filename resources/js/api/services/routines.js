@@ -75,10 +75,16 @@ export async function updateRoutine(id, routineData) {
     title: routineData.title,
     description: routineData.description,
     id_category: routineData.id_category,
-    days: routineData.days,
+    exercises: routineData.exercises,
     published: routineData.published,
   })
 
+  return data
+}
+
+// Duplicar una rutina existente
+export async function duplicateRoutine(id) {
+  const { data } = await api.post(`/routines/${id}/duplicate`)
   return data
 }
 

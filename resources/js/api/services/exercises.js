@@ -24,19 +24,23 @@ export async function getExerciseCategories() {
 
 // Crear ejercicio
 export async function createExercise(exerciseData) {
-  const { name, description, id_category, image, created_by } = exerciseData
+  const { name, description, id_category, equipment, image, created_by, secondary_muscle_ids } = exerciseData
 
-  const { data } = await api.post('/exercises', { name, description, id_category, image, created_by })
+  const { data } = await api.post('/exercises', {
+    name, description, id_category, equipment, image, created_by,
+    secondary_muscle_ids: secondary_muscle_ids || [],
+  })
   return data
 }
 
 // Actualizar ejercicio
 export async function updateExercise(exerciseId, exerciseData) {
-  const { name, description, id_category, image, image_url } = exerciseData
+  const { name, description, id_category, equipment, image, image_url, secondary_muscle_ids } = exerciseData
 
-  const { data } = await api.patch(`/exercises/${exerciseId}`, {
-    name, description, id_category, image: image ?? image_url,
-  })
+  const payload = { name, description, id_category, equipment, image: image ?? image_url }
+  if (secondary_muscle_ids !== undefined) payload.secondary_muscle_ids = secondary_muscle_ids
+
+  const { data } = await api.patch(`/exercises/${exerciseId}`, payload)
 
   return data
 }

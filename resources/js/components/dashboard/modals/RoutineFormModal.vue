@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { useUserStore } from '@/stores/user'  // Importamos el store de Pinia
-
-import { getExercises } from '@/api/services/exercises'
+import { useUserStore } from '@/stores/user'
 import { getRoutineCategories, createRoutine, updateRoutine, createRoutineCategory } from '@/api/services/routines'
+import ExercisePickerSheet from '@/components/dashboard/pickers/ExercisePickerSheet.vue'
+import { IconX, IconPlus } from '@tabler/icons-vue'
 
 // Props y emits
 const props = defineProps({
@@ -14,14 +14,11 @@ const props = defineProps({
 const emit = defineEmits(['close', 'saved'])
 
 // Estado
-const userStore = useUserStore()  // Usamos el store de usuario
-const exercises = ref([])
+const userStore = useUserStore()
 const categories = ref([])
-const defaultDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-const selectedDays = ref([])
-const newCategoryName = ref('')
-const showNewCategoryInput = ref(false)
 const newCategoryTitle = ref('')
+const showNewCategoryInput = ref(false)
+const showExercisePicker = ref(false)
 
 const handleCreateCategory = async () => {
   if (!newCategoryTitle.value.trim()) return
@@ -42,14 +39,12 @@ const routine = ref({
   title: '',
   description: '',
   id_category: '',
-  days: [],
+  exercises: [],
   user_id: '',
   published: false
 })
 
-// Cargar datos al montar
 onMounted(async () => {
-  exercises.value = await getExercises(userStore.userData.uid)
   categories.value = await getRoutineCategories()
 })
 
@@ -61,42 +56,26 @@ watch(() => props.initialData, (newVal) => {
       title: newVal.title || '',
       description: newVal.description || '',
       id_category: newVal.id_category || '',
-      days: [],
+      exercises: (newVal.exercises || []).map(ex => ({ ...ex })),
       published: newVal.published ?? false,
     }
-
-    selectedDays.value = defaultDays.map(dayName => {
-      const existing = newVal.days?.find(d => d.day === dayName || d.name === dayName)
-      return {
-        day: dayName,
-        enabled: !!existing,
-        exercises: existing?.exercises || [],
-        selectedExercise: ''
-      }
-    })
   } else {
     resetForm()
   }
 }, { immediate: true })
 
-// Función para agregar ejercicio a un día
-function addExerciseToDay(day) {
-  const selectedId = day.selectedExercise
-  const found = exercises.value.find(e => e.id === selectedId)
-  if (!found) return
-
-  day.exercises.push({
-    id: found.id,
-    name: found.name,
+function addExercise(exercise) {
+  routine.value.exercises.push({
+    id: exercise.id,
+    name: exercise.name,
     sets: null,
     reps: null
   })
-  day.selectedExercise = ''
+  showExercisePicker.value = false
 }
 
-// Quitar ejercicio de un día
-function removeExercise(day, index) {
-  day.exercises.splice(index, 1)
+function removeExercise(index) {
+  routine.value.exercises.splice(index, 1)
 }
 
 // Enviar el formulario
@@ -106,23 +85,11 @@ async function submitForm() {
     return
   }
 
-  routine.value.days = selectedDays.value
-    .filter(d => d.enabled && d.exercises.length)
-    .map(d => ({
-      day: d.day,
-      exercises: d.exercises.map(ex => ({
-        id: ex.id,
-        name: ex.name,
-        sets: ex.sets,
-        reps: ex.reps
-      }))
-    }))
-
   try {
     if (routine.value.id) {
       await updateRoutine(routine.value.id, routine.value)
     } else {
-      routine.value.user_id = userStore.userData?.uid // Nos aseguramos de que el uid ya esté disponible y lo asignamos antes de crearla
+      routine.value.user_id = userStore.userData?.uid
       await createRoutine(routine.value)
     }
 
@@ -146,197 +113,131 @@ function resetForm() {
     title: '',
     description: '',
     id_category: '',
-    days: []
+    exercises: []
   }
-
-  selectedDays.value = defaultDays.map(day => ({
-    day: day,
-    enabled: false,
-    exercises: [],
-    selectedExercise: ''
-  }))
 }
 </script>
 
 
 <template>
-  <div v-if="show" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-center items-center px-4">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-3xl relative overflow-y-auto max-h-[90vh]">
-      
-      <!-- Botón de cerrar -->
-      <button @click="emit('close')" class="absolute top-3 right-3 text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
-        </svg>
-      </button>
+  <div v-if="show" class="fixed inset-0 z-50 bg-white md:bg-black/50 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
+    <div class="w-full h-full md:h-auto md:max-w-3xl md:max-h-[90vh] bg-white md:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
 
-      <!-- Título -->
-      <h2 class="text-2xl font-bold text-[var(--color-primary)] mb-4">
-        {{ routine.id ? 'Editar rutina' : 'Crear nueva rutina' }}
-      </h2>
+      <!-- Header -->
+      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
+        <button type="button" @click="emit('close')" class="text-blue-500 font-medium">Cancelar</button>
+        <h2 class="font-semibold text-[var(--color-primary)]">
+          {{ routine.id ? 'Editar Rutina' : 'Crear Rutina' }}
+        </h2>
+        <button type="button" @click="submitForm" class="text-blue-500 font-semibold">Guardar</button>
+      </header>
 
       <!-- Formulario -->
-      <form @submit.prevent="submitForm" class="space-y-6">
+      <div class="flex-1 overflow-y-auto px-4 py-4">
+        <form @submit.prevent="submitForm" class="space-y-5">
 
-        <!-- Datos básicos -->
-        <div class="grid md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-sm text-gray-700 font-medium mb-1 block">Título</label>
-            <input v-model="routine.title" placeholder="Ej: Rutina fuerza Lunes-Miércoles" class="input" required />
-          </div>
-          <div>
-            <label class="text-sm text-gray-700 font-medium mb-1 block">Descripción</label>
-            <input v-model="routine.description" placeholder="Opcional..." class="input" />
-          </div>
-        </div>
+          <input v-model="routine.title" placeholder="Título de la Rutina" class="input text-lg font-semibold" required />
+          <input v-model="routine.description" placeholder="Descripción (opcional)" class="input" />
 
-        <!-- Selección de categoría -->
-        <div class="space-y-2">
-          <label class="text-sm text-gray-700 font-medium mb-1 block">Tipo</label>
+          <!-- Selección de categoría -->
+          <div class="space-y-2">
+            <label class="text-sm text-gray-700 font-medium mb-1 block">Tipo</label>
 
-          <select v-model="routine.id_category" class="input" required>
-            <option disabled value="">Selecciona un tipo</option>
-            <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.title }}</option>
-          </select>
+            <select v-model="routine.id_category" class="input" required>
+              <option disabled value="">Selecciona un tipo</option>
+              <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.title }}</option>
+            </select>
 
-          <!-- Botón para mostrar input de nueva categoría -->
-          <button
-            type="button"
-            @click="showNewCategoryInput = true"
-            v-if="!showNewCategoryInput"
-            class="text-sm text-blue-600 hover:underline mt-1"
-          >
-            + Crear nueva categoría
-          </button>
-
-          <!-- Input de nueva categoría -->
-          <div v-if="showNewCategoryInput" class="flex gap-2 mt-2">
-            <input
-              v-model="newCategoryTitle"
-              type="text"
-              placeholder="Nombre de la nueva categoría"
-              class="input flex-1"
-            />
             <button
               type="button"
-              @click="handleCreateCategory"
-              class="bg-[var(--color-primary)] text-white px-4 rounded hover:bg-[var(--color-secondary)]"
+              @click="showNewCategoryInput = true"
+              v-if="!showNewCategoryInput"
+              class="text-sm text-blue-600 hover:underline mt-1"
             >
-              Crear
+              + Crear nueva categoría
             </button>
-          </div>
-        </div>
 
-        <!-- Solo visible si el usuario es admin -->
-        <div v-if="userStore.userData?.role === 'admin'" class="flex items-center gap-3 mt-4">
-          <label class="flex items-center gap-2 cursor-pointer select-none">
-            <input type="checkbox" v-model="routine.published" class="sr-only" />
-            <div
-              class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
-              :class="{ 'bg-green-500': routine.published }"
-            >
-              <div
-                class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
-                :class="{ 'translate-x-4': routine.published }"
-              ></div>
+            <div v-if="showNewCategoryInput" class="flex gap-2 mt-2">
+              <input
+                v-model="newCategoryTitle"
+                type="text"
+                placeholder="Nombre de la nueva categoría"
+                class="input flex-1"
+              />
+              <button
+                type="button"
+                @click="handleCreateCategory"
+                class="bg-[var(--color-primary)] text-white px-4 rounded hover:bg-[var(--color-secondary)]"
+              >
+                Crear
+              </button>
             </div>
-            <span class="text-sm text-gray-700">Publicar rutina</span>
-          </label>
-        </div>
+          </div>
 
-        <!-- Días de rutina -->
-        <div class="space-y-6">
-          <div
-            v-for="day in selectedDays"
-            :key="day.day"
-            class="border-2 border-dashed border-gray-300 rounded-xl p-4 bg-white hover:border-gray-400 transition-all duration-300"
-          >
-            <label class="flex items-center justify-between mb-2">
-              <div class="flex items-center gap-2">
-                <input type="checkbox" v-model="day.enabled" />
-                <span class="font-semibold text-[var(--color-primary)] text-base">{{ day.day }}</span>
+          <!-- Solo visible si el usuario es admin -->
+          <div v-if="userStore.userData?.role === 'admin'" class="flex items-center gap-3">
+            <label class="flex items-center gap-2 cursor-pointer select-none">
+              <input type="checkbox" v-model="routine.published" class="sr-only" />
+              <div
+                class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
+                :class="{ 'bg-green-500': routine.published }"
+              >
+                <div
+                  class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
+                  :class="{ 'translate-x-4': routine.published }"
+                ></div>
               </div>
+              <span class="text-sm text-gray-700">Publicar rutina</span>
             </label>
+          </div>
 
-            <Transition name="slide-fade">
-              <div v-if="day.enabled" class="space-y-2">
-                <div class="flex gap-2">
-                  <select v-model="day.selectedExercise" class="input">
-                    <option disabled selected value="">Selecciona un ejercicio</option>
-                    <option v-for="ex in exercises" :key="ex.id" :value="ex.id">{{ ex.name }} ({{ ex.exercises_categories.category_name }})</option>
-                  </select>
-                  <button
-                    type="button"
-                    @click="addExerciseToDay(day)"
-                    class="bg-[var(--color-primary)] text-white px-4 rounded"
-                  >
-                    Agregar
+          <!-- Lista plana de ejercicios -->
+          <div class="space-y-3 pt-2">
+            <TransitionGroup name="drop-fade" tag="div" class="space-y-3">
+              <div
+                v-for="(exercise, index) in routine.exercises"
+                :key="index"
+                class="bg-white border border-gray-200 rounded-xl shadow-sm px-4 py-3"
+              >
+                <div class="flex justify-between items-center mb-2">
+                  <h3 class="text-[var(--color-primary)] font-semibold text-base">
+                    {{ exercise.name }}
+                  </h3>
+                  <button type="button" @click="removeExercise(index)" class="text-red-500 text-sm hover:underline flex items-center gap-1">
+                    <IconX class="w-4 h-4" /> Quitar
                   </button>
                 </div>
 
-                <TransitionGroup name="drop-fade" tag="div" class="space-y-2">
-                  <div
-                    v-for="(exercise, index) in day.exercises"
-                    :key="index"
-                    class="bg-white border border-gray-200 rounded-xl shadow-sm px-4 py-3 mb-3"
-                  >
-                    <!-- Cabecera -->
-                    <div class="flex justify-between items-center mb-2">
-                      <h3 class="text-[var(--color-primary)] font-semibold text-base">
-                        {{ exercise.name }}
-                      </h3>
-                      <button
-                        @click="removeExercise(day, index)"
-                        class="text-red-500 text-sm hover:underline"
-                      >
-                        ✕ Quitar
-                      </button>
-                    </div>
-
-                    <!-- Datos -->
-                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                      <div>
-                        <label class="block text-xs text-gray-500 mb-1">Series</label>
-                        <input
-                          v-model.number="exercise.sets"
-                          type="number"
-                          min="1"
-                          class="input text-sm"
-                          placeholder="0"
-                        />
-                      </div>
-                      <div>
-                        <label class="block text-xs text-gray-500 mb-1">Repeticiones</label>
-                        <input
-                          v-model.number="exercise.reps"
-                          type="number"
-                          min="1"
-                          class="input text-sm"
-                          placeholder="0"
-                        />
-                      </div>
-                    </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Series</label>
+                    <input v-model.number="exercise.sets" type="number" min="1" class="input text-sm" placeholder="0" />
                   </div>
-
-                </TransitionGroup>
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Repeticiones</label>
+                    <input v-model.number="exercise.reps" type="number" min="1" class="input text-sm" placeholder="0" />
+                  </div>
+                </div>
               </div>
-            </Transition>
-          </div>
-        </div>
-      
-        <!-- Guardar -->
-        <div class="flex justify-end pt-4 mt-6">
-          <button
-            type="submit"
-            class="bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white px-6 py-2 rounded-lg font-semibold"
-          >
-            Guardar rutina
-          </button>
-        </div>
-      </form>
+            </TransitionGroup>
 
-      
+            <button
+              type="button"
+              @click="showExercisePicker = true"
+              class="w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-3 rounded-xl transition"
+            >
+              <IconPlus class="w-5 h-5" /> Agregar ejercicio
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
+
+    <ExercisePickerSheet
+      :show="showExercisePicker"
+      @close="showExercisePicker = false"
+      @select="addExercise"
+    />
   </div>
 </template>
 
@@ -356,21 +257,6 @@ function resetForm() {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 1px var(--color-primary);
   outline: none;
-}
-
-.slide-fade-enter-active {
-  transition: all 0.3s ease;
-}
-.slide-fade-leave-active {
-  transition: all 0.2s ease;
-}
-.slide-fade-enter-from {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-.slide-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
 }
 
 .drop-fade-enter-active {

@@ -9,12 +9,17 @@ use Illuminate\Http\Request;
 
 class ExerciseController extends Controller
 {
+    private const EQUIPMENT_OPTIONS = [
+        'ninguno', 'banda_resistencia', 'banda_suspension', 'barra',
+        'disco', 'mancuerna', 'maquina', 'pesa_rusa', 'otro',
+    ];
+
     public function index(Request $request)
     {
         $userId = $request->query('user_id', $request->user()->id);
         $adminIds = User::where('role', 'admin')->pluck('id');
 
-        $exercises = Exercise::with('category')
+        $exercises = Exercise::with(['category', 'secondaryMuscles'])
             ->whereIn('created_by', [$userId, ...$adminIds])
             ->orderBy('name')
             ->get()
@@ -25,7 +30,7 @@ class ExerciseController extends Controller
 
     public function show(Exercise $exercise)
     {
-        return response()->json($exercise);
+        return response()->json($this->withCategory($exercise->load(['category', 'secondaryMuscles'])));
     }
 
     public function store(Request $request)
@@ -34,12 +39,21 @@ class ExerciseController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'id_category' => ['required', 'integer', 'exists:exercises_categories,id'],
+            'equipment' => ['required', 'string', 'in:'.implode(',', self::EQUIPMENT_OPTIONS)],
             'image' => ['nullable', 'string'],
+            'secondary_muscle_ids' => ['sometimes', 'array'],
+            'secondary_muscle_ids.*' => ['integer', 'exists:exercises_categories,id'],
         ]);
+
+        $secondaryMuscleIds = $data['secondary_muscle_ids'] ?? [];
+        unset($data['secondary_muscle_ids']);
 
         $data['created_by'] = $request->user()->id;
 
-        return response()->json(Exercise::create($data), 201);
+        $exercise = Exercise::create($data);
+        $exercise->secondaryMuscles()->sync($secondaryMuscleIds);
+
+        return response()->json($this->withCategory($exercise->load(['category', 'secondaryMuscles'])), 201);
     }
 
     public function update(Request $request, Exercise $exercise)
@@ -48,8 +62,11 @@ class ExerciseController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'id_category' => ['sometimes', 'integer', 'exists:exercises_categories,id'],
+            'equipment' => ['sometimes', 'nullable', 'string', 'in:'.implode(',', self::EQUIPMENT_OPTIONS)],
             'image' => ['sometimes', 'nullable', 'string'],
             'image_url' => ['sometimes', 'nullable', 'string'],
+            'secondary_muscle_ids' => ['sometimes', 'array'],
+            'secondary_muscle_ids.*' => ['integer', 'exists:exercises_categories,id'],
         ]);
 
         if (array_key_exists('image_url', $data)) {
@@ -57,9 +74,14 @@ class ExerciseController extends Controller
             unset($data['image_url']);
         }
 
+        if (array_key_exists('secondary_muscle_ids', $data)) {
+            $exercise->secondaryMuscles()->sync($data['secondary_muscle_ids']);
+            unset($data['secondary_muscle_ids']);
+        }
+
         $exercise->update($data);
 
-        return response()->json($exercise->fresh());
+        return response()->json($this->withCategory($exercise->fresh(['category', 'secondaryMuscles'])));
     }
 
     public function destroy(Exercise $exercise)

@@ -41,7 +41,8 @@ class RoutineController extends Controller
 
         // Plan gratuito: máximo 3 rutinas propias. Se valida aquí además de en el
         // frontend para que no se pueda saltar el límite llamando a la API directamente.
-        if ($user->plan_id === 1 && Routine::where('user_id', $user->id)->count() >= 3) {
+        // Los coaches y admins tienen siempre permisos de plan Pro.
+        if (! $user->isCoachOrAdmin() && $user->plan_id === 1 && Routine::where('user_id', $user->id)->count() >= 3) {
             return response()->json([
                 'message' => 'Has alcanzado el límite de 3 rutinas del plan gratuito. Actualiza tu plan para crear más.',
                 'limit_reached' => true,
@@ -66,6 +67,17 @@ class RoutineController extends Controller
         $routine->delete();
 
         return response()->json(['success' => true]);
+    }
+
+    public function duplicate(Request $request, Routine $routine)
+    {
+        $copy = $routine->replicate();
+        $copy->title = $routine->title.' (copia)';
+        $copy->user_id = $request->user()->id;
+        $copy->published = false;
+        $copy->save();
+
+        return response()->json($copy, 201);
     }
 
     public function assign(Request $request, User $user)
@@ -99,7 +111,7 @@ class RoutineController extends Controller
             'title' => $sometimes ? ['sometimes', 'string', 'max:255'] : ['required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
             'id_category' => $sometimes ? ['sometimes', 'integer', 'exists:routines_categories,id'] : ['required', 'integer', 'exists:routines_categories,id'],
-            'days' => ['sometimes', 'array'],
+            'exercises' => ['sometimes', 'array'],
             'published' => ['sometimes', 'boolean'],
         ]);
     }

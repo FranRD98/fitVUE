@@ -37,7 +37,7 @@ onMounted(async () => {
     }
   }
 
-  if (userStore.userData?.role === 'coach') {
+  if (userStore.userData?.role === 'coach' || userStore.userData?.role === 'admin') {
     try {
       routines.value = await getRoutines()
       diets.value = await getDiets(userStore.userData.uid)
@@ -168,7 +168,7 @@ const handleSubmit = async () => {
           </select>
         </template>
 
-        <template v-else-if="userStore.userData.role === 'coach'">
+        <template v-if="userStore.userData.role === 'coach' || userStore.userData.role === 'admin'">
           <label for="assigned_routine" class="text-sm font-medium text-gray-700">Rutina asignada</label>
           <select id="assigned_routine" v-model="form.assigned_routine" class="input">
             <option :value="null">Ninguna</option>
