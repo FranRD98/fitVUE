@@ -31,32 +31,12 @@ class ReferenceDataSeeder extends Seeder
             return;
         }
 
+        // Solo se mantiene "Entrenamientos": el resto de tipos de rutina se retiraron.
         DB::table('routines_categories')->insert([
             [
                 'id' => 1,
                 'title' => 'Entrenamientos',
                 'icon_path' => 'icons/routines/entrenamiento.svg',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 2,
-                'title' => 'Mindfulness',
-                'icon_path' => 'icons/routines/mindfulness.svg',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 3,
-                'title' => 'Estiramientos',
-                'icon_path' => 'icons/routines/estiramientos.svg',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 4,
-                'title' => 'Yoga',
-                'icon_path' => 'icons/routines/yoga.svg',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

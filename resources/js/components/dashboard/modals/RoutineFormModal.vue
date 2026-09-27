@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { getRoutineCategories, createRoutine, updateRoutine, createRoutineCategory } from '@/api/services/routines'
+import { createRoutine, updateRoutine } from '@/api/services/routines'
 import ExercisePickerSheet from '@/components/dashboard/pickers/ExercisePickerSheet.vue'
+import { isValidReps } from '@/utils/reps'
 import { IconX, IconPlus } from '@tabler/icons-vue'
 
 // Props y emits
@@ -15,37 +16,14 @@ const emit = defineEmits(['close', 'saved'])
 
 // Estado
 const userStore = useUserStore()
-const categories = ref([])
-const newCategoryTitle = ref('')
-const showNewCategoryInput = ref(false)
 const showExercisePicker = ref(false)
-
-const handleCreateCategory = async () => {
-  if (!newCategoryTitle.value.trim()) return
-
-  try {
-    const newCategory = await createRoutineCategory(newCategoryTitle.value.trim())
-    categories.value.push(newCategory)
-    routine.value.id_category = newCategory.id
-    newCategoryTitle.value = ''
-    showNewCategoryInput.value = false
-  } catch (error) {
-    console.error('Error al crear la categoría:', error)
-    alert('No se pudo crear la categoría.')
-  }
-}
 
 const routine = ref({
   title: '',
   description: '',
-  id_category: '',
   exercises: [],
   user_id: '',
   published: false
-})
-
-onMounted(async () => {
-  categories.value = await getRoutineCategories()
 })
 
 // Rellenar el formulario si se edita una rutina
@@ -55,8 +33,7 @@ watch(() => props.initialData, (newVal) => {
       id: newVal.id,
       title: newVal.title || '',
       description: newVal.description || '',
-      id_category: newVal.id_category || '',
-      exercises: (newVal.exercises || []).map(ex => ({ ...ex })),
+      exercises: (newVal.exercises || []).map(ex => ({ ...ex, note: ex.note || '' })),
       published: newVal.published ?? false,
     }
   } else {
@@ -69,7 +46,8 @@ function addExercise(exercise) {
     id: exercise.id,
     name: exercise.name,
     sets: null,
-    reps: null
+    reps: null,
+    note: ''
   })
   showExercisePicker.value = false
 }
@@ -80,8 +58,14 @@ function removeExercise(index) {
 
 // Enviar el formulario
 async function submitForm() {
-  if (!routine.value.title || !routine.value.id_category) {
-    alert('El título y tipo de rutina son obligatorios.')
+  if (!routine.value.title) {
+    alert('El título de la rutina es obligatorio.')
+    return
+  }
+
+  const invalidReps = routine.value.exercises.find(ex => !isValidReps(ex.reps))
+  if (invalidReps) {
+    alert(`Repeticiones no válidas en "${invalidReps.name}". Usa un valor exacto (12) o un rango (6-12).`)
     return
   }
 
@@ -112,7 +96,6 @@ function resetForm() {
   routine.value = {
     title: '',
     description: '',
-    id_category: '',
     exercises: []
   }
 }
@@ -138,41 +121,6 @@ function resetForm() {
 
           <input v-model="routine.title" placeholder="Título de la Rutina" class="input text-lg font-semibold" required />
           <input v-model="routine.description" placeholder="Descripción (opcional)" class="input" />
-
-          <!-- Selección de categoría -->
-          <div class="space-y-2">
-            <label class="text-sm text-gray-700 font-medium mb-1 block">Tipo</label>
-
-            <select v-model="routine.id_category" class="input" required>
-              <option disabled value="">Selecciona un tipo</option>
-              <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.title }}</option>
-            </select>
-
-            <button
-              type="button"
-              @click="showNewCategoryInput = true"
-              v-if="!showNewCategoryInput"
-              class="text-sm text-blue-600 hover:underline mt-1"
-            >
-              + Crear nueva categoría
-            </button>
-
-            <div v-if="showNewCategoryInput" class="flex gap-2 mt-2">
-              <input
-                v-model="newCategoryTitle"
-                type="text"
-                placeholder="Nombre de la nueva categoría"
-                class="input flex-1"
-              />
-              <button
-                type="button"
-                @click="handleCreateCategory"
-                class="bg-[var(--color-primary)] text-white px-4 rounded hover:bg-[var(--color-secondary)]"
-              >
-                Crear
-              </button>
-            </div>
-          </div>
 
           <!-- Solo visible si el usuario es admin: publica la rutina como rutina pública
                de ejemplo, visible para cualquier visitante en la web (/rutinas) -->
@@ -219,8 +167,13 @@ function resetForm() {
                   </div>
                   <div>
                     <label class="block text-xs text-gray-500 mb-1">Repeticiones</label>
-                    <input v-model.number="exercise.reps" type="number" min="1" class="input text-sm" placeholder="0" />
+                    <input v-model="exercise.reps" type="text" inputmode="numeric" class="input text-sm" placeholder="12 o 6-12" />
                   </div>
+                </div>
+
+                <div class="mt-3">
+                  <label class="block text-xs text-gray-500 mb-1">Nota (opcional)</label>
+                  <input v-model="exercise.note" type="text" class="input text-sm" placeholder="Ej. con mancuernas, agarre estrecho..." />
                 </div>
               </div>
             </TransitionGroup>

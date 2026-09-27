@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getCoachAssignedRoutine, getRoutineById } from '@/api/services/routines'
 import { getLastExerciseProgress, saveExerciseProgress } from '@/api/services/exercises'
+import { parseRepsTarget } from '@/utils/reps'
 import { useSwipeBack } from '@/composables/useSwipeBack'
 import { IconCheck, IconPlus, IconTrash, IconX, IconClock } from '@tabler/icons-vue'
 
@@ -70,7 +71,7 @@ const loadExercises = async (exercises) => {
       const sets = Array.from({ length: plannedSets }).map((_, i) => ({
         reps: '',
         weight: '',
-        lastReps: lastSets[i]?.reps ?? (exercise.reps ?? null),
+        lastReps: lastSets[i]?.reps ?? parseRepsTarget(exercise.reps),
         lastWeight: lastSets[i]?.weight ?? null,
         done: false,
       }))
@@ -78,6 +79,8 @@ const loadExercises = async (exercises) => {
       return {
         exerciseId: exercise.id,
         name: exercise.name,
+        note: exercise.note || '',
+        targetReps: exercise.reps,
         sets,
         lastDate: lastProgress?.created_at ? new Date(lastProgress.created_at).toLocaleDateString('es-ES') : null,
       }
@@ -212,6 +215,8 @@ useSwipeBack(confirmExit)
       >
         <div class="px-4 py-3 border-b bg-gray-50">
           <h3 class="font-semibold text-[var(--color-primary)]">{{ exercise.name }}</h3>
+          <p v-if="exercise.targetReps" class="text-xs text-gray-500">Objetivo: {{ exercise.targetReps }} reps</p>
+          <p v-if="exercise.note" class="text-xs text-gray-400">{{ exercise.note }}</p>
           <p v-if="exercise.lastDate" class="text-xs text-gray-400">Último entrenamiento: {{ exercise.lastDate }}</p>
         </div>
 

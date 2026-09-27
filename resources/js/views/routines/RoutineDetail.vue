@@ -62,7 +62,7 @@ onMounted(async () => {
                   <span class="text-sm text-gray-500">({{ exercise.sets }}x{{ exercise.reps }})</span>
                 </h3>
                 <p class="text-sm text-gray-600 mt-1">
-                  {{ exercise.description || 'Sin descripción' }}
+                  {{ exercise.note || 'Sin nota' }}
                 </p>
               </div>
               <img

@@ -2,15 +2,18 @@
 import { ref, computed, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { getExercises, getExerciseCategories } from '@/api/services/exercises'
+import { requestExercise } from '@/api/services/exerciseRequests'
 import ExerciseFilterSheet from '@/components/dashboard/pickers/ExerciseFilterSheet.vue'
 import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
 import { EQUIPMENT_OPTIONS, groupMusclesByRegion } from '@/constants/exerciseOptions'
-import { IconSearch, IconInfoCircle, IconChevronDown, IconX } from '@tabler/icons-vue'
+import { normalizeText } from '@/utils/text'
+import { IconSearch, IconInfoCircle, IconChevronDown, IconX, IconSend } from '@tabler/icons-vue'
 
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'select'])
 
 const userStore = useUserStore()
+const isAdmin = computed(() => userStore.userData?.role === 'admin')
 const exercises = ref([])
 const categories = ref([])
 const searchQuery = ref('')
@@ -19,6 +22,9 @@ const muscleFilter = ref([])
 const activeFilterSheet = ref(null) // 'equipment' | 'muscle' | null
 const showCreateModal = ref(false)
 const infoExercise = ref(null)
+const requestDescription = ref('')
+const requestSent = ref(false)
+const sendingRequest = ref(false)
 
 const RECENT_KEY = 'fitvue_recent_exercise_ids'
 
@@ -29,12 +35,29 @@ async function loadExercises() {
 watch(() => props.show, async (open) => {
   if (open) {
     searchQuery.value = ''
+    requestSent.value = false
+    requestDescription.value = ''
     await loadExercises()
     if (!categories.value.length) {
       categories.value = await getExerciseCategories()
     }
   }
 })
+
+async function submitExerciseRequest() {
+  if (!searchQuery.value.trim()) return
+
+  sendingRequest.value = true
+  try {
+    await requestExercise(searchQuery.value.trim(), requestDescription.value.trim() || null)
+    requestSent.value = true
+  } catch (error) {
+    console.error('Error al solicitar el ejercicio:', error)
+    alert('No se pudo enviar la solicitud.')
+  } finally {
+    sendingRequest.value = false
+  }
+}
 
 const equipmentGroups = computed(() => [{ region: null, label: null, items: EQUIPMENT_OPTIONS }])
 const muscleGroups = computed(() => groupMusclesByRegion(categories.value))
@@ -50,7 +73,7 @@ const hasActiveFilters = computed(() => equipmentFilter.value.length || muscleFi
 
 const filteredExercises = computed(() => {
   return exercises.value.filter(ex => {
-    const matchesSearch = ex.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+    const matchesSearch = normalizeText(ex.name).includes(normalizeText(searchQuery.value))
     const matchesEquipment = !equipmentFilter.value.length || equipmentFilter.value.includes(ex.equipment)
     const matchesMuscle = !muscleFilter.value.length ||
       muscleFilter.value.includes(ex.id_category) ||
@@ -89,7 +112,8 @@ async function handleExerciseCreated() {
       <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
         <button type="button" @click="emit('close')" class="text-[var(--color-primary)] font-medium">Cancelar</button>
         <h2 class="font-semibold text-[var(--color-primary)]">Agregar Ejercicio</h2>
-        <button type="button" @click="showCreateModal = true" class="text-[var(--color-primary)] font-medium">Crear</button>
+        <button v-if="isAdmin" type="button" @click="showCreateModal = true" class="text-[var(--color-primary)] font-medium">Crear</button>
+        <span v-else class="w-6"></span>
       </header>
 
       <div class="px-4 pt-3 pb-2 space-y-3 shrink-0">
@@ -169,9 +193,34 @@ async function handleExerciseCreated() {
           </div>
         </div>
 
-        <p v-if="!filteredExercises.length" class="text-center text-gray-400 text-sm py-10">
-          Sin resultados
-        </p>
+        <div v-if="!filteredExercises.length" class="text-center text-gray-400 text-sm py-10">
+          <p class="mb-3">Sin resultados{{ searchQuery ? ` para "${searchQuery}"` : '' }}</p>
+
+          <!-- Un usuario normal no puede dar de alta ejercicios: puede solicitarlo
+               para que un admin lo revise y lo añada al catálogo. -->
+          <div v-if="!isAdmin && searchQuery.trim()" class="max-w-xs mx-auto text-left">
+            <template v-if="requestSent">
+              <p class="text-center text-green-600 font-medium">¡Solicitud enviada! Un admin la revisará.</p>
+            </template>
+            <template v-else>
+              <p class="text-gray-500 mb-2">¿No encuentras "{{ searchQuery }}"? Solicítalo:</p>
+              <input
+                v-model="requestDescription"
+                type="text"
+                placeholder="Descripción (opcional)"
+                class="w-full bg-gray-100 rounded-lg px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-[var(--color-primary)] mb-2"
+              />
+              <button
+                type="button"
+                :disabled="sendingRequest"
+                @click="submitExerciseRequest"
+                class="w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] text-white font-semibold py-2 rounded-lg disabled:opacity-60"
+              >
+                <IconSend class="w-4 h-4" /> {{ sendingRequest ? 'Enviando...' : 'Solicitar ejercicio' }}
+              </button>
+            </template>
+          </div>
+        </div>
       </div>
     </div>
 

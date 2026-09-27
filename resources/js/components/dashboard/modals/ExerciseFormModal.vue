@@ -3,12 +3,13 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import api from '@/api/client'
 import { createExercise, updateExercise, getExerciseCategories, getExerciseHistory } from '@/api/services/exercises'
+import { approveExerciseRequest } from '@/api/services/exerciseRequests'
 import ExerciseProgressChart from '@/components/dashboard/charts/ExerciseProgressChart.vue'
 import MuscleEquipmentPicker from '@/components/dashboard/pickers/MuscleEquipmentPicker.vue'
 import { EQUIPMENT_OPTIONS, equipmentLabel, groupMusclesByRegion } from '@/constants/exerciseOptions'
 import { IconCamera, IconChevronRight, IconX } from '@tabler/icons-vue'
 
-const props = defineProps({ show: Boolean, initialData: Object })
+const props = defineProps({ show: Boolean, initialData: Object, approvingRequest: Object })
 const emit = defineEmits(['close', 'saved'])
 
 const userStore = useUserStore()
@@ -129,7 +130,14 @@ const submitForm = async () => {
   }
 
   if (imageFile.value) await uploadImage()
-  if (exercise.value.id) {
+
+  if (props.approvingRequest) {
+    await approveExerciseRequest(props.approvingRequest.id, {
+      id_category: exercise.value.id_category,
+      equipment: exercise.value.equipment,
+      image: exercise.value.image,
+    })
+  } else if (exercise.value.id) {
     await updateExercise(exercise.value.id, exercise.value)
   } else {
     exercise.value.created_by = userStore.userData?.uid
@@ -228,7 +236,7 @@ function formatDate(dateString) {
           <div v-if="selectedTab === 'info'" class="space-y-4">
             <p v-if="!isEditable" class="text-sm text-red-500 mt-2">⚠️ No puedes modificar un ejercicio de la plataforma.</p>
             <h2 class="text-xl font-semibold text-[var(--color-primary)]">
-              {{ exercise.id ? 'Editar ejercicio' : 'Crear ejercicio' }}
+              {{ approvingRequest ? 'Aprobar solicitud' : (exercise.id ? 'Editar ejercicio' : 'Crear ejercicio') }}
             </h2>
 
             <form @submit.prevent="submitForm" class="space-y-4">
@@ -280,7 +288,7 @@ function formatDate(dateString) {
 
               <div class="text-right pt-2">
                 <button v-if="isEditable" type="submit" class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg hover:bg-[var(--color-secondary)]">
-                  {{ exercise.id ? 'Guardar cambios' : 'Crear ejercicio' }}
+                  {{ approvingRequest ? 'Aprobar y crear' : (exercise.id ? 'Guardar cambios' : 'Crear ejercicio') }}
                 </button>
               </div>
             </form>

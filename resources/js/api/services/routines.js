@@ -13,9 +13,13 @@ export async function createRoutine(routineData) {
   return data
 }
 
-// Obtener todas las rutinas, opcionalmente filtradas
-export async function getRoutines(category) {
-  const { data } = await api.get('/routines', { params: category ? { category } : {} })
+// Obtener todas las rutinas, opcionalmente filtradas (solo admin: incluye el usuario asignado)
+export async function getRoutines({ category, userId } = {}) {
+  const params = {}
+  if (category) params.category = category
+  if (userId) params.user_id = userId
+
+  const { data } = await api.get('/routines', { params })
   return data
 }
 

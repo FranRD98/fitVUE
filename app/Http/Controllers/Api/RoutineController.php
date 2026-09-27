@@ -4,17 +4,28 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Routine;
+use App\Models\RoutineCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class RoutineController extends Controller
 {
+    // Listado completo de rutinas de todos los usuarios: solo para el panel de admin,
+    // que necesita ver a quién tiene asignada cada rutina y poder filtrar por usuario.
     public function index(Request $request)
     {
-        $query = Routine::query()->orderBy('title');
+        if ($request->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $query = Routine::with('user:id,name,last_name,email')->orderBy('title');
 
         if ($request->filled('category')) {
             $query->where('id_category', $request->query('category'));
+        }
+
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->query('user_id'));
         }
 
         return response()->json($query->get());
@@ -51,6 +62,7 @@ class RoutineController extends Controller
 
         $data = $this->validated($request);
         $data['user_id'] = $user->id;
+        $data['id_category'] ??= $this->defaultCategoryId();
 
         return response()->json(Routine::create($data), 201);
     }
@@ -141,9 +153,16 @@ class RoutineController extends Controller
         return $request->validate([
             'title' => $sometimes ? ['sometimes', 'string', 'max:255'] : ['required', 'string', 'max:255'],
             'description' => ['sometimes', 'nullable', 'string'],
-            'id_category' => $sometimes ? ['sometimes', 'integer', 'exists:routines_categories,id'] : ['required', 'integer', 'exists:routines_categories,id'],
+            'id_category' => ['sometimes', 'nullable', 'integer', 'exists:routines_categories,id'],
             'exercises' => ['sometimes', 'array'],
             'published' => ['sometimes', 'boolean'],
         ]);
+    }
+
+    // De momento solo existe el tipo "Entrenamientos": si el frontend no manda
+    // id_category, la rutina se crea con esta categoría por defecto.
+    private function defaultCategoryId(): ?int
+    {
+        return RoutineCategory::firstOrCreate(['title' => 'Entrenamientos'])->id;
     }
 }

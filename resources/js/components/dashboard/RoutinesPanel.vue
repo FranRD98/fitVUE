@@ -5,8 +5,9 @@ import { useUserStore } from '@/stores/user'
 import { usePlan } from '@/composables/usePlan'
 import { useGreeting } from '@/composables/useGreeting'
 import {
-  getRoutinesByUser, getCoachAssignedRoutine, deleteRoutine, duplicateRoutine
+  getRoutines, getRoutinesByUser, getCoachAssignedRoutine, deleteRoutine, duplicateRoutine
 } from '@/api/services/routines.js'
+import { getUsers } from '@/api/services/users.js'
 import RoutineFormModal from '@/components/dashboard/modals/RoutineFormModal.vue'
 import RoutineViewer from '@/components/dashboard/RoutineViewer.vue'
 
@@ -27,6 +28,26 @@ const showModal = ref(false)
 const showUpgradePrompt = ref(false)
 const selectedRoutine = ref(null)
 const openMenuId = ref(null)
+const menuPosition = ref({ top: 0, left: 0 })
+
+// El menú se teletransporta a <body> y se posiciona con coordenadas absolutas
+// porque, si se queda dentro de la tarjeta (overflow-hidden) o de la tabla
+// (contenedor con scroll horizontal), el desplegable queda recortado.
+function toggleMenu(routine, event) {
+  if (openMenuId.value === routine.id) {
+    openMenuId.value = null
+    return
+  }
+
+  const rect = event.currentTarget.getBoundingClientRect()
+  const MENU_WIDTH = 144 // w-36
+
+  menuPosition.value = {
+    top: rect.bottom + window.scrollY + 4,
+    left: Math.max(8, rect.right + window.scrollX - MENU_WIDTH),
+  }
+  openMenuId.value = routine.id
+}
 
 // El client_reference_id permite al webhook de Stripe identificar a qué usuario aplicar el plan tras el pago.
 const upgradeUrl = computed(() => {
@@ -49,9 +70,15 @@ function openCreateModal() {
 const assignedCoachRoutine = ref(null)
 const assignedCoachRoutineId = ref(null)
 
-const viewMode = ref('grid')
+// El admin ve el listado de todas las rutinas (con el usuario asignado a cada
+// una) en vez de "mis rutinas": así puede filtrar por usuario cuando gestiona
+// varias personas (ej. varias rutinas "Día 1" de gente distinta).
+const isAdmin = computed(() => userStore.userData?.role === 'admin')
+const viewMode = ref(isAdmin.value ? 'table' : 'grid')
 const searchQuery = ref('')
 const hasSearch = computed(() => searchQuery.value.trim().length > 0)
+const userOptions = ref([])
+const userFilter = ref('')
 
 /* Paginación */
 const currentPage = ref(1)
@@ -105,7 +132,9 @@ const loadRoutines = async () => {
   start()
 
   try {
-    routines.value = await getRoutinesByUser(userStore.userData?.uid)
+    routines.value = isAdmin.value
+      ? await getRoutines({ userId: userFilter.value || undefined })
+      : await getRoutinesByUser(userStore.userData?.uid)
 
     assignedCoachRoutine.value = await getCoachAssignedRoutine(userStore.userData?.uid)
     assignedCoachRoutineId.value = assignedCoachRoutine.value?.id || null
@@ -117,11 +146,21 @@ const loadRoutines = async () => {
   }
 }
 
+watch(userFilter, loadRoutines)
+
+function userLabel(user) {
+  if (!user) return '—'
+  return [user.name, user.last_name].filter(Boolean).join(' ') || user.email
+}
+
 function closeMenuOnOutsideClick() {
   openMenuId.value = null
 }
 
-onMounted(() => {
+onMounted(async () => {
+  if (isAdmin.value) {
+    userOptions.value = await getUsers()
+  }
   loadRoutines()
   document.addEventListener('click', closeMenuOnOutsideClick)
 })
@@ -260,6 +299,16 @@ function startRoutine(routine) {
             class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
           />
         </div>
+        <div v-if="isAdmin" class="flex-1">
+          <label class="block text-sm font-medium text-[var(--color-primary)] mb-1">Usuario</label>
+          <select
+            v-model="userFilter"
+            class="w-full border border-gray-300 rounded p-2 text-sm text-gray-700 focus:outline-none focus:border-[var(--color-primary)] focus:ring-1 focus:ring-[var(--color-primary)] transition-all"
+          >
+            <option value="">Todos los usuarios</option>
+            <option v-for="u in userOptions" :key="u.id" :value="u.id">{{ userLabel(u) }}</option>
+          </select>
+        </div>
         <div class="hidden md:flex items-center gap-1">
           <button
             @click="viewMode = 'grid'"
@@ -294,31 +343,36 @@ function startRoutine(routine) {
               <div class="relative shrink-0">
                 <button
                   type="button"
-                  @click.stop="openMenuId = openMenuId === routine.id ? null : routine.id"
+                  @click.stop="toggleMenu(routine, $event)"
                   class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
                   aria-label="Más opciones"
                 >
                   <IconDotsVertical class="w-5 h-5" />
                 </button>
 
-                <div
-                  v-if="openMenuId === routine.id"
-                  class="absolute right-0 top-8 z-10 bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
-                  @click.stop
-                >
-                  <button @click="handleDuplicate(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
-                  <button @click="openEditModal(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
-                  <button @click="removeRoutine(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
-                </div>
+                <Teleport to="body">
+                  <div
+                    v-if="openMenuId === routine.id"
+                    class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
+                    :style="{ top: menuPosition.top + 'px', left: menuPosition.left + 'px' }"
+                    @click.stop
+                  >
+                    <button @click="handleDuplicate(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
+                    <button @click="openEditModal(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
+                    <button @click="removeRoutine(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
+                  </div>
+                </Teleport>
               </div>
             </div>
 
+            <p v-if="isAdmin" class="text-xs font-medium text-gray-400 mb-1">{{ userLabel(routine.user) }}</p>
             <p class="text-sm text-gray-500 mb-3 line-clamp-2 cursor-pointer" @click="viewRoutine(routine)">
               {{ exercisesSummary(routine) || 'Sin ejercicios todavía' }}
             </p>
             <p class="text-xs text-gray-400 mb-3">Ejercicios totales: {{ countExercises(routine) }}</p>
 
             <button
+              v-if="!isAdmin"
               @click="startRoutine(routine)"
               class="w-full flex items-center justify-center gap-2 bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2.5 rounded-lg transition"
             >
@@ -335,6 +389,7 @@ function startRoutine(routine) {
         <thead class="bg-gray-200 text-gray-600 font-medium">
           <tr>
             <th class="py-3 px-2">Nombre</th>
+            <th v-if="isAdmin" class="px-2">Usuario</th>
             <th class="px-2">Ejercicios</th>
             <th class="px-2 text-right">Acciones</th>
           </tr>
@@ -346,10 +401,12 @@ function startRoutine(routine) {
             class="border-t border-gray-200 hover:bg-gray-100 transition"
           >
             <td class="py-3 px-2 font-semibold text-[var(--color-primary)] cursor-pointer" @click="viewRoutine(routine)">{{ routine.title }}</td>
+            <td v-if="isAdmin" class="py-3 px-2 text-gray-600">{{ userLabel(routine.user) }}</td>
             <td class="py-3 px-2">{{ countExercises(routine) }}</td>
             <td class="py-3 px-2 text-right">
               <div class="flex items-center justify-end gap-2">
                 <button
+                  v-if="!isAdmin"
                   @click="startRoutine(routine)"
                   class="flex items-center gap-1 bg-[var(--color-primary)] text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-[var(--color-secondary)]"
                 >
@@ -358,21 +415,24 @@ function startRoutine(routine) {
                 <div class="relative">
                   <button
                     type="button"
-                    @click.stop="openMenuId = openMenuId === routine.id ? null : routine.id"
+                    @click.stop="toggleMenu(routine, $event)"
                     class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100"
                     aria-label="Más opciones"
                   >
                     <IconDotsVertical class="w-5 h-5" />
                   </button>
-                  <div
-                    v-if="openMenuId === routine.id"
-                    class="absolute right-0 top-8 z-10 bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
-                    @click.stop
-                  >
-                    <button @click="handleDuplicate(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
-                    <button @click="openEditModal(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
-                    <button @click="removeRoutine(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
-                  </div>
+                  <Teleport to="body">
+                    <div
+                      v-if="openMenuId === routine.id"
+                      class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
+                      :style="{ top: menuPosition.top + 'px', left: menuPosition.left + 'px' }"
+                      @click.stop
+                    >
+                      <button @click="handleDuplicate(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
+                      <button @click="openEditModal(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
+                      <button @click="removeRoutine(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
+                    </div>
+                  </Teleport>
                 </div>
               </div>
             </td>

@@ -35,6 +35,10 @@ class ExerciseController extends Controller
 
     public function store(Request $request)
     {
+        if ($request->user()->role !== 'admin') {
+            abort(403, 'Solo un administrador puede dar de alta ejercicios. Solicita el ejercicio y un admin lo revisará.');
+        }
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

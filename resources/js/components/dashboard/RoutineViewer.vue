@@ -35,6 +35,7 @@ defineEmits(['close'])
                 <div class="min-w-0">
                   <h3 class="text-[var(--color-primary)] font-semibold truncate">{{ exercise.name }}</h3>
                   <p class="text-sm text-gray-500 mt-0.5">{{ exercise.sets || 0 }} series x {{ exercise.reps || 0 }} reps</p>
+                  <p v-if="exercise.note" class="text-xs text-gray-400 mt-0.5 truncate">{{ exercise.note }}</p>
                 </div>
                 <img
                   v-if="exercise.image"

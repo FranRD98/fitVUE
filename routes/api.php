@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\DietController;
 use App\Http\Controllers\Api\ExerciseCategoryController;
 use App\Http\Controllers\Api\ExerciseController;
+use App\Http\Controllers\Api\ExerciseRequestController;
 use App\Http\Controllers\Api\ExerciseProgressController;
 use App\Http\Controllers\Api\GuideCategoryController;
 use App\Http\Controllers\Api\GuideController;
@@ -68,6 +69,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/exercises', [ExerciseController::class, 'store']);
     Route::patch('/exercises/{exercise}', [ExerciseController::class, 'update']);
     Route::delete('/exercises/{exercise}', [ExerciseController::class, 'destroy']);
+
+    Route::get('/exercise-requests', [ExerciseRequestController::class, 'index']);
+    Route::post('/exercise-requests', [ExerciseRequestController::class, 'store']);
+    Route::post('/exercise-requests/{exerciseRequest}/approve', [ExerciseRequestController::class, 'approve']);
+    Route::post('/exercise-requests/{exerciseRequest}/reject', [ExerciseRequestController::class, 'reject']);
 
     Route::get('/exercises-progress/last', [ExerciseProgressController::class, 'last']);
     Route::get('/exercises-progress/history', [ExerciseProgressController::class, 'history']);

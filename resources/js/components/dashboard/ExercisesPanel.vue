@@ -1,20 +1,27 @@
 <script setup>
   import { ref, computed, watch } from 'vue'
   import { getExercises, deleteExercise, getExerciseCategories } from '@/api/services/exercises'
+  import { getExerciseRequests, approveExerciseRequest, rejectExerciseRequest } from '@/api/services/exerciseRequests'
   import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
   import ExerciseFilterSheet from '@/components/dashboard/pickers/ExerciseFilterSheet.vue'
   import { EQUIPMENT_OPTIONS, equipmentLabel, groupMusclesByRegion } from '@/constants/exerciseOptions'
+  import { normalizeText } from '@/utils/text'
 
-  import { IconPlus, IconLayoutGrid, IconLayoutList, IconTrash, IconChevronDown } from '@tabler/icons-vue'
+  import { IconPlus, IconLayoutGrid, IconLayoutList, IconTrash, IconChevronDown, IconCheck, IconX } from '@tabler/icons-vue'
 
   import { useUserStore } from '@/stores/user'
   import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 
   const userStore = useUserStore()
+  const isAdmin = computed(() => userStore.userData?.role === 'admin')
   const exercises = ref([])
   const exerciseCategories = ref([])
   const showModal = ref(false)
   const selectedExercise = ref(null)
+  const showRequests = ref(false)
+  const exerciseRequests = ref([])
+  const pendingRequestsCount = computed(() => exerciseRequests.value.filter(r => r.status === 'pending').length)
+  const approvingRequest = ref(null)
   // Lista compacta por defecto; la vista de tarjetas con imagen queda como alternativa.
   const viewMode = ref('table')
   const searchQuery = ref('')
@@ -48,11 +55,29 @@
     try {
       exercises.value = await getExercises(userStore.userData?.uid)
       exerciseCategories.value = await getExerciseCategories()
+      if (isAdmin.value) exerciseRequests.value = await getExerciseRequests()
     } catch (err) {
       console.error('Error al cargar ejercicios:', err)
     } finally {
       finish()
     }
+  }
+
+  function openApproveModal(request) {
+    approvingRequest.value = request
+    selectedExercise.value = { name: request.name, description: request.description || '' }
+    showModal.value = true
+  }
+
+  async function handleRejectRequest(request) {
+    if (!confirm(`¿Rechazar la solicitud "${request.name}"?`)) return
+    await rejectExerciseRequest(request.id)
+    exerciseRequests.value = await getExerciseRequests()
+  }
+
+  async function handleExerciseSaved() {
+    approvingRequest.value = null
+    await loadExercises()
   }
 
   watch(
@@ -65,6 +90,7 @@
   )
 
   const openEditModal = (exercise) => {
+    approvingRequest.value = null
     selectedExercise.value = exercise
     showModal.value = true
   }
@@ -87,7 +113,7 @@
 
   const filteredExercises = computed(() => {
     return exercises.value.filter(ex => {
-      const matchesSearch = ex.name.toLowerCase().includes(searchQuery.value.toLowerCase())
+      const matchesSearch = normalizeText(ex.name).includes(normalizeText(searchQuery.value))
       const matchesEquipment = !equipmentFilter.value.length || equipmentFilter.value.includes(ex.equipment)
       const matchesMuscle = !muscleFilter.value.length ||
         muscleFilter.value.includes(ex.id_category) ||
@@ -103,23 +129,75 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
       <h1 class="text-3xl font-bold text-[var(--color-primary)]">Ejercicios</h1>
-      <button
-        @click="showModal = true"
-        class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
-      >
-        <IconPlus class="w-5 h-5"/>
-        Nuevo ejercicio
-      </button>
-
+      <div class="flex items-center gap-2">
+        <button
+          v-if="isAdmin"
+          @click="showRequests = true"
+          class="relative flex items-center gap-2 border-2 border-[var(--color-primary)] text-[var(--color-primary)] px-4 py-2 rounded-lg hover:bg-[var(--color-primary)]/5 transition"
+        >
+          Solicitudes
+          <span v-if="pendingRequestsCount" class="bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ pendingRequestsCount }}</span>
+        </button>
+        <button
+          v-if="isAdmin"
+          @click="approvingRequest = null; selectedExercise = null; showModal = true"
+          class="flex items-center gap-2 bg-[var(--color-primary)] text-white px-4 py-2 rounded-lg shadow hover:bg-[var(--color-secondary)] transition"
+        >
+          <IconPlus class="w-5 h-5"/>
+          Nuevo ejercicio
+        </button>
+      </div>
     </div>
 
     <!-- Modal -->
     <ExerciseFormModal
       :show="showModal"
       :initialData="selectedExercise"
-      @close="showModal = false; selectedExercise = null"
-      @saved="loadExercises()"
+      :approvingRequest="approvingRequest"
+      @close="showModal = false; selectedExercise = null; approvingRequest = null"
+      @saved="handleExerciseSaved"
     />
+
+    <!-- Solicitudes de ejercicios (solo admin) -->
+    <div
+      v-if="showRequests"
+      class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-center items-center px-4"
+      @click.self="showRequests = false"
+    >
+      <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[80vh] flex flex-col overflow-hidden">
+        <header class="flex items-center justify-between px-4 py-3 border-b shrink-0">
+          <h2 class="font-semibold text-[var(--color-primary)]">Solicitudes de ejercicios</h2>
+          <button @click="showRequests = false" class="text-gray-500 hover:text-red-500"><IconX class="w-5 h-5" /></button>
+        </header>
+        <div class="overflow-y-auto p-4 space-y-3">
+          <p v-if="!exerciseRequests.length" class="text-center text-gray-400 text-sm py-8">No hay solicitudes.</p>
+          <div v-for="req in exerciseRequests" :key="req.id" class="border rounded-xl p-3">
+            <div class="flex justify-between items-start gap-2">
+              <div class="min-w-0">
+                <p class="font-semibold text-gray-800 truncate">{{ req.name }}</p>
+                <p v-if="req.description" class="text-sm text-gray-500">{{ req.description }}</p>
+                <p class="text-xs text-gray-400 mt-1">
+                  Solicitado por {{ req.user?.name }} {{ req.user?.last_name }}
+                  · <span :class="{
+                    'text-yellow-600': req.status === 'pending',
+                    'text-green-600': req.status === 'approved',
+                    'text-red-600': req.status === 'rejected',
+                  }">{{ { pending: 'Pendiente', approved: 'Aprobada', rejected: 'Rechazada' }[req.status] }}</span>
+                </p>
+              </div>
+              <div v-if="req.status === 'pending'" class="flex gap-1 shrink-0">
+                <button @click="openApproveModal(req)" title="Aprobar" class="p-2 rounded-full text-green-600 hover:bg-green-50">
+                  <IconCheck class="w-5 h-5" />
+                </button>
+                <button @click="handleRejectRequest(req)" title="Rechazar" class="p-2 rounded-full text-red-600 hover:bg-red-50">
+                  <IconX class="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Delay antes del skeleton -->
     <div v-if="loading && !showSkeleton" />
