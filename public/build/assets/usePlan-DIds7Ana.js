@@ -1,0 +1,1 @@
+import{h as e,n as t}from"./createVueComponent-Bvt_Dl-G.js";function n(){let n=t(),r=e(()=>[`coach`,`admin`].includes(n.userData?.role)),i=e(()=>r.value||n.userData?.plan_id!==1);return{isPro:i,isFree:e(()=>!i.value),isCoachOrAdmin:r}}export{n as t};
