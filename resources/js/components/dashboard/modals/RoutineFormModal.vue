@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/user'
 import { createRoutine, updateRoutine } from '@/api/services/routines'
 import ExercisePickerSheet from '@/components/dashboard/pickers/ExercisePickerSheet.vue'
 import { isValidReps } from '@/utils/reps'
-import { IconX, IconPlus } from '@tabler/icons-vue'
+import { IconX, IconPlus, IconChevronUp, IconChevronDown } from '@tabler/icons-vue'
 
 // Props y emits
 const props = defineProps({
@@ -41,19 +41,29 @@ watch(() => props.initialData, (newVal) => {
   }
 }, { immediate: true })
 
-function addExercise(exercise) {
-  routine.value.exercises.push({
-    id: exercise.id,
-    name: exercise.name,
-    sets: null,
-    reps: null,
-    note: ''
-  })
+function addExercises(newExercises) {
+  for (const exercise of newExercises) {
+    routine.value.exercises.push({
+      id: exercise.id,
+      name: exercise.name,
+      sets: null,
+      reps: null,
+      note: ''
+    })
+  }
   showExercisePicker.value = false
 }
 
 function removeExercise(index) {
   routine.value.exercises.splice(index, 1)
+}
+
+function moveExercise(index, direction) {
+  const target = index + direction
+  if (target < 0 || target >= routine.value.exercises.length) return
+
+  const exercises = routine.value.exercises
+  ;[exercises[index], exercises[target]] = [exercises[target], exercises[index]]
 }
 
 // Enviar el formulario
@@ -151,13 +161,33 @@ function resetForm() {
                 :key="index"
                 class="bg-white border border-gray-200 rounded-xl shadow-sm px-4 py-3"
               >
-                <div class="flex justify-between items-center mb-2">
-                  <h3 class="text-[var(--color-primary)] font-semibold text-base">
+                <div class="flex justify-between items-center mb-2 gap-2">
+                  <h3 class="text-[var(--color-primary)] font-semibold text-base min-w-0 truncate">
                     {{ exercise.name }}
                   </h3>
-                  <button type="button" @click="removeExercise(index)" class="text-red-500 text-sm hover:underline flex items-center gap-1">
-                    <IconX class="w-4 h-4" /> Quitar
-                  </button>
+                  <div class="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      @click="moveExercise(index, -1)"
+                      :disabled="index === 0"
+                      class="text-gray-400 hover:text-[var(--color-primary)] disabled:opacity-30 disabled:hover:text-gray-400 p-1"
+                      aria-label="Subir"
+                    >
+                      <IconChevronUp class="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      @click="moveExercise(index, 1)"
+                      :disabled="index === routine.exercises.length - 1"
+                      class="text-gray-400 hover:text-[var(--color-primary)] disabled:opacity-30 disabled:hover:text-gray-400 p-1"
+                      aria-label="Bajar"
+                    >
+                      <IconChevronDown class="w-4 h-4" />
+                    </button>
+                    <button type="button" @click="removeExercise(index)" class="text-red-500 text-sm hover:underline flex items-center gap-1 ml-1">
+                      <IconX class="w-4 h-4" /> Quitar
+                    </button>
+                  </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
@@ -193,7 +223,7 @@ function resetForm() {
     <ExercisePickerSheet
       :show="showExercisePicker"
       @close="showExercisePicker = false"
-      @select="addExercise"
+      @select="addExercises"
     />
   </div>
 </template>

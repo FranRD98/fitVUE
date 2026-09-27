@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import { createUserByCoach, getAllCoaches, updateUser } from '@/api/services/users.js'
-import { getRoutinesByUser, sendRoutineToUser } from '@/api/services/routines.js'
+import { getRoutinesByUser, transferRoutineToUser } from '@/api/services/routines.js'
 import { getDiets } from '@/api/services/diets.js'
 import { useUserStore } from '@/stores/user'
 
@@ -27,10 +27,11 @@ const form = ref({
 const routines = ref([])
 const diets = ref([])
 
-// Envío de rutina: independiente del formulario principal. A diferencia de
-// "asignar" (que solo enlaza a la rutina original en modo lectura), esto crea
-// una copia propia de la rutina en la cuenta del usuario, para que la tenga
-// de verdad como si la hubiera creado él mismo.
+// Transferencia de rutina: independiente del formulario principal. A
+// diferencia de "asignar" (que solo enlaza a la rutina original en modo
+// lectura), esto mueve la propiedad de la rutina a la cuenta del usuario:
+// deja de estar en la cuenta de quien la transfiere (nada de copias
+// duplicadas), y el usuario la tiene como si la hubiera creado él mismo.
 const routineToSend = ref(null)
 const sendingRoutine = ref(false)
 const sendRoutineMessage = ref('')
@@ -42,11 +43,13 @@ async function handleSendRoutine() {
   sendRoutineMessage.value = ''
 
   try {
-    await sendRoutineToUser(props.initialData.uid, routineToSend.value)
-    sendRoutineMessage.value = 'Rutina enviada correctamente.'
+    const transferredId = routineToSend.value
+    await transferRoutineToUser(props.initialData.uid, transferredId)
+    sendRoutineMessage.value = 'Rutina asignada correctamente.'
     routineToSend.value = null
+    routines.value = routines.value.filter(r => r.id !== transferredId)
   } catch (err) {
-    sendRoutineMessage.value = err.response?.data?.message || 'Error al enviar la rutina.'
+    sendRoutineMessage.value = err.response?.data?.message || 'Error al asignar la rutina.'
   } finally {
     sendingRoutine.value = false
   }
@@ -213,15 +216,16 @@ const handleSubmit = async () => {
         </div>
       </form>
 
-      <!-- Enviar rutina: aparte del formulario, es una acción inmediata que crea
-           una copia propia de la rutina en la cuenta del usuario (no un enlace). -->
+      <!-- Asignar rutina: aparte del formulario, es una acción inmediata que
+           transfiere la propiedad de una rutina tuya a este usuario (deja de
+           estar en tu cuenta, evitando que quede duplicada en las dos). -->
       <div
         v-if="isEditing && (userStore.userData.role === 'coach' || userStore.userData.role === 'admin')"
         class="mt-6 pt-4 border-t border-gray-200"
       >
-        <label for="routine_to_send" class="text-sm font-medium text-gray-700">Enviar rutina</label>
+        <label for="routine_to_send" class="text-sm font-medium text-gray-700">Asignar rutina</label>
         <p class="text-xs text-gray-400 mb-2">
-          El usuario recibirá su propia copia de la rutina, independiente de la tuya.
+          La rutina pasa a ser del usuario: dejará de aparecer en tu cuenta.
         </p>
         <div class="flex gap-2">
           <select id="routine_to_send" v-model="routineToSend" class="input">
@@ -236,7 +240,7 @@ const handleSubmit = async () => {
             :disabled="!routineToSend || sendingRoutine"
             class="shrink-0 bg-[var(--color-primary)] text-white px-4 py-2 rounded hover:bg-[var(--color-secondary)] disabled:opacity-50"
           >
-            {{ sendingRoutine ? 'Enviando...' : 'Enviar' }}
+            {{ sendingRoutine ? 'Asignando...' : 'Asignar' }}
           </button>
         </div>
         <p v-if="sendRoutineMessage" class="text-sm mt-2" :class="sendRoutineMessage.includes('Error') ? 'text-red-500' : 'text-green-600'">

@@ -67,10 +67,11 @@ export async function getCoachAssignedRoutine(uid) {
   return nullIfEmpty(data)
 }
 
-// Enviar una copia propia de una rutina a un usuario (a diferencia de "asignar",
-// el usuario recibe la rutina como suya, no un enlace de solo lectura)
-export async function sendRoutineToUser(uid, routineId) {
-  const { data } = await api.post(`/users/${uid}/send-routine`, { routine_id: routineId })
+// Transferir la propiedad de una rutina propia a un usuario (a diferencia de
+// "asignar", que solo enlaza en modo lectura, aquí la rutina pasa a ser suya
+// y deja de aparecer en la cuenta de quien la transfiere)
+export async function transferRoutineToUser(uid, routineId) {
+  const { data } = await api.post(`/users/${uid}/transfer-routine`, { routine_id: routineId })
   return data
 }
 

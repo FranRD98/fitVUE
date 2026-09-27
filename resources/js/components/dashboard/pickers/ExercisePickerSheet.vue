@@ -7,7 +7,7 @@ import ExerciseFilterSheet from '@/components/dashboard/pickers/ExerciseFilterSh
 import ExerciseFormModal from '@/components/dashboard/modals/ExerciseFormModal.vue'
 import { EQUIPMENT_OPTIONS, groupMusclesByRegion } from '@/constants/exerciseOptions'
 import { normalizeText } from '@/utils/text'
-import { IconSearch, IconInfoCircle, IconChevronDown, IconX, IconSend } from '@tabler/icons-vue'
+import { IconSearch, IconInfoCircle, IconChevronDown, IconX, IconSend, IconCircleCheckFilled } from '@tabler/icons-vue'
 
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'select'])
@@ -25,6 +25,8 @@ const infoExercise = ref(null)
 const requestDescription = ref('')
 const requestSent = ref(false)
 const sendingRequest = ref(false)
+const selectedIds = ref(new Set())
+const selectedCount = computed(() => selectedIds.value.size)
 
 const RECENT_KEY = 'fitvue_recent_exercise_ids'
 
@@ -37,6 +39,7 @@ watch(() => props.show, async (open) => {
     searchQuery.value = ''
     requestSent.value = false
     requestDescription.value = ''
+    selectedIds.value = new Set()
     await loadExercises()
     if (!categories.value.length) {
       categories.value = await getExerciseCategories()
@@ -89,9 +92,25 @@ const recentExercises = computed(() => {
     .filter(Boolean)
 })
 
-function chooseExercise(exercise) {
-  rememberRecent(exercise.id)
-  emit('select', exercise)
+function toggleSelect(exercise) {
+  const next = new Set(selectedIds.value)
+  if (next.has(exercise.id)) {
+    next.delete(exercise.id)
+  } else {
+    next.add(exercise.id)
+  }
+  selectedIds.value = next
+}
+
+function isSelected(exercise) {
+  return selectedIds.value.has(exercise.id)
+}
+
+function confirmSelection() {
+  const chosen = exercises.value.filter(ex => selectedIds.value.has(ex.id))
+  chosen.forEach(ex => rememberRecent(ex.id))
+  emit('select', chosen)
+  selectedIds.value = new Set()
 }
 
 function openInfo(exercise) {
@@ -156,7 +175,15 @@ async function handleExerciseCreated() {
         <template v-if="recentExercises.length">
           <h3 class="text-xs font-bold uppercase tracking-wide text-gray-400 mt-2 mb-1">Ejercicios Recientes</h3>
           <div class="divide-y">
-            <div v-for="exercise in recentExercises" :key="'recent-'+exercise.id" class="flex items-center gap-3 py-2.5 cursor-pointer" @click="chooseExercise(exercise)">
+            <div
+              v-for="exercise in recentExercises"
+              :key="'recent-'+exercise.id"
+              class="flex items-center gap-3 py-2.5 cursor-pointer"
+              :class="isSelected(exercise) ? 'bg-[var(--color-primary)]/5' : ''"
+              @click="toggleSelect(exercise)"
+            >
+              <IconCircleCheckFilled v-if="isSelected(exercise)" class="w-6 h-6 text-[var(--color-primary)] shrink-0" />
+              <span v-else class="w-6 h-6 rounded-full border-2 border-gray-300 shrink-0"></span>
               <img
                 :src="exercise.image || `https://placehold.co/80x80?text=${encodeURIComponent(exercise.name[0])}`"
                 class="w-10 h-10 rounded-full object-cover shrink-0"
@@ -177,7 +204,15 @@ async function handleExerciseCreated() {
           {{ hasActiveFilters || searchQuery ? 'Resultados' : 'Todos los Ejercicios' }}
         </h3>
         <div class="divide-y">
-          <div v-for="exercise in filteredExercises" :key="exercise.id" class="flex items-center gap-3 py-2.5 cursor-pointer" @click="chooseExercise(exercise)">
+          <div
+            v-for="exercise in filteredExercises"
+            :key="exercise.id"
+            class="flex items-center gap-3 py-2.5 cursor-pointer"
+            :class="isSelected(exercise) ? 'bg-[var(--color-primary)]/5' : ''"
+            @click="toggleSelect(exercise)"
+          >
+            <IconCircleCheckFilled v-if="isSelected(exercise)" class="w-6 h-6 text-[var(--color-primary)] shrink-0" />
+            <span v-else class="w-6 h-6 rounded-full border-2 border-gray-300 shrink-0"></span>
             <img
               :src="exercise.image || `https://placehold.co/80x80?text=${encodeURIComponent(exercise.name[0])}`"
               class="w-10 h-10 rounded-full object-cover shrink-0"
@@ -221,6 +256,21 @@ async function handleExerciseCreated() {
             </template>
           </div>
         </div>
+      </div>
+
+      <!-- Barra de confirmación: aparece al marcar uno o más ejercicios, para
+           añadirlos todos de golpe en vez de uno a uno. -->
+      <div
+        v-if="selectedCount"
+        class="shrink-0 border-t bg-white px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+      >
+        <button
+          type="button"
+          @click="confirmSelection"
+          class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-3 rounded-xl transition"
+        >
+          Añadir {{ selectedCount }} ejercicio{{ selectedCount > 1 ? 's' : '' }}
+        </button>
       </div>
     </div>
 

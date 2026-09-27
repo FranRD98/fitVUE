@@ -92,10 +92,11 @@ class RoutineController extends Controller
         return response()->json($copy, 201);
     }
 
-    // Envía una copia propia de la rutina a un usuario: a diferencia de assign()
-    // (que solo enlaza a la rutina original de forma de solo lectura), aquí el
-    // usuario recibe su propia rutina independiente, editable y borrable por él.
-    public function sendToUser(Request $request, User $user)
+    // Transfiere la propiedad de una rutina propia a un usuario: a diferencia
+    // de assign() (que solo enlaza a la rutina original en modo lectura), aquí
+    // la rutina pasa a pertenecer al usuario (deja de aparecer en la cuenta de
+    // quien la transfiere, evitando que quede duplicada en ambas cuentas).
+    public function transferToUser(Request $request, User $user)
     {
         $sender = $request->user();
 
@@ -112,15 +113,12 @@ class RoutineController extends Controller
         $routine = Routine::findOrFail($data['routine_id']);
 
         if ($routine->user_id !== $sender->id) {
-            abort(403, 'Solo puedes enviar rutinas que hayas creado tú.');
+            abort(403, 'Solo puedes transferir rutinas que hayas creado tú.');
         }
 
-        $copy = $routine->replicate();
-        $copy->user_id = $user->id;
-        $copy->published = false;
-        $copy->save();
+        $routine->update(['user_id' => $user->id, 'published' => false]);
 
-        return response()->json($copy, 201);
+        return response()->json($routine->fresh());
     }
 
     public function assign(Request $request, User $user)
