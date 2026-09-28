@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Exercise;
 use App\Models\ExerciseProgress;
 use Illuminate\Http\Request;
 
@@ -135,23 +136,40 @@ class ExerciseProgressController extends Controller
             'day' => ['nullable', 'string'],
             'duration_seconds' => ['nullable', 'integer', 'min:0'],
             'exercises' => ['required', 'array', 'min:1'],
-            'exercises.*.exerciseId' => ['required', 'integer', 'exists:exercises,id'],
+            'exercises.*.exerciseId' => ['required', 'integer'],
             'exercises.*.name' => ['nullable', 'string'],
             'exercises.*.sets' => ['required', 'array', 'min:1'],
         ]);
 
+        // Las rutinas guardan los ejercicios como JSON suelto, sin relación real
+        // (ver Routine::$fillable). Si el ejercicio original se borró del catálogo
+        // después de crear la rutina, la referencia queda huérfana: se descarta
+        // aquí en vez de tumbar el guardado completo de la sesión.
+        $existingIds = Exercise::whereIn('id', collect($data['exercises'])->pluck('exerciseId'))
+            ->pluck('id')
+            ->all();
+
         $now = now();
 
-        $entries = collect($data['exercises'])->map(fn ($exercise) => [
-            'user_id' => $data['user_id'],
-            'id_routine' => $data['id_routine'] ?? null,
-            'exercise_id' => $exercise['exerciseId'],
-            'exercise_name' => $exercise['name'] ?? null,
-            'day' => $data['day'] ?? null,
-            'sets' => json_encode($exercise['sets']),
-            'duration_seconds' => $data['duration_seconds'] ?? null,
-            'created_at' => $now,
-        ])->all();
+        $entries = collect($data['exercises'])
+            ->filter(fn ($exercise) => in_array($exercise['exerciseId'], $existingIds, true))
+            ->map(fn ($exercise) => [
+                'user_id' => $data['user_id'],
+                'id_routine' => $data['id_routine'] ?? null,
+                'exercise_id' => $exercise['exerciseId'],
+                'exercise_name' => $exercise['name'] ?? null,
+                'day' => $data['day'] ?? null,
+                'sets' => json_encode($exercise['sets']),
+                'duration_seconds' => $data['duration_seconds'] ?? null,
+                'created_at' => $now,
+            ])
+            ->all();
+
+        if (empty($entries)) {
+            return response()->json([
+                'message' => 'Ninguno de los ejercicios de esta sesión existe ya en el catálogo. Revisa la rutina: puede tener un ejercicio borrado.',
+            ], 422);
+        }
 
         ExerciseProgress::insert($entries);
 
