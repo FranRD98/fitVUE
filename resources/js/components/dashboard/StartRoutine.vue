@@ -139,7 +139,17 @@ async function finishWorkout() {
     router.push({ path: '/dashboard', query: { refresh: 'true' } })
   } catch (error) {
     console.error(error)
-    alert('Error al guardar el progreso.')
+    const status = error.response?.status
+    const serverMessage = error.response?.data?.message
+    const validationErrors = error.response?.data?.errors
+      ? Object.values(error.response.data.errors).flat().join(' ')
+      : null
+    alert(
+      'Error al guardar el progreso.' +
+      (status ? ` (código ${status})` : ' (sin respuesta del servidor)') +
+      (serverMessage ? `\n${serverMessage}` : '') +
+      (validationErrors ? `\n${validationErrors}` : '')
+    )
   } finally {
     saving.value = false
   }

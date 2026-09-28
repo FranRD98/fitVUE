@@ -4,7 +4,7 @@ import { useUserStore } from '@/stores/user'
 import { createRoutine, updateRoutine } from '@/api/services/routines'
 import ExercisePickerSheet from '@/components/dashboard/pickers/ExercisePickerSheet.vue'
 import { isValidReps } from '@/utils/reps'
-import { IconX, IconPlus, IconChevronUp, IconChevronDown } from '@tabler/icons-vue'
+import { IconX, IconPlus, IconArrowUp, IconArrowDown, IconChevronDown, IconGripVertical } from '@tabler/icons-vue'
 
 // Props y emits
 const props = defineProps({
@@ -17,6 +17,9 @@ const emit = defineEmits(['close', 'saved'])
 // Estado
 const userStore = useUserStore()
 const showExercisePicker = ref(false)
+const collapsedExercises = ref(new Set())
+const draggingIndex = ref(null)
+const dragOverIndex = ref(null)
 
 const routine = ref({
   title: '',
@@ -66,6 +69,52 @@ function moveExercise(index, direction) {
   ;[exercises[index], exercises[target]] = [exercises[target], exercises[index]]
 }
 
+// Plegar/desplegar una tarjeta: se referencia por el propio objeto del
+// ejercicio (no por índice), así el estado no se descoloca al reordenar.
+function toggleCollapse(exercise) {
+  const next = new Set(collapsedExercises.value)
+  if (next.has(exercise)) {
+    next.delete(exercise)
+  } else {
+    next.add(exercise)
+  }
+  collapsedExercises.value = next
+}
+
+function isCollapsed(exercise) {
+  return collapsedExercises.value.has(exercise)
+}
+
+// Reordenar arrastrando la tarjeta (drag & drop nativo)
+function onDragStart(index, event) {
+  draggingIndex.value = index
+  event.dataTransfer.effectAllowed = 'move'
+}
+
+function onDragOver(index) {
+  if (draggingIndex.value === null) return
+  dragOverIndex.value = index
+}
+
+function onDrop(index) {
+  if (draggingIndex.value === null || draggingIndex.value === index) {
+    draggingIndex.value = null
+    dragOverIndex.value = null
+    return
+  }
+
+  const exercises = routine.value.exercises
+  const [moved] = exercises.splice(draggingIndex.value, 1)
+  exercises.splice(index, 0, moved)
+  draggingIndex.value = null
+  dragOverIndex.value = null
+}
+
+function onDragEnd() {
+  draggingIndex.value = null
+  dragOverIndex.value = null
+}
+
 // Enviar el formulario
 async function submitForm() {
   if (!routine.value.title) {
@@ -108,6 +157,7 @@ function resetForm() {
     description: '',
     exercises: []
   }
+  collapsedExercises.value = new Set()
 }
 </script>
 
@@ -159,12 +209,35 @@ function resetForm() {
               <div
                 v-for="(exercise, index) in routine.exercises"
                 :key="index"
-                class="bg-white border border-gray-200 rounded-xl shadow-sm px-4 py-3"
+                draggable="true"
+                @dragstart="onDragStart(index, $event)"
+                @dragover.prevent="onDragOver(index)"
+                @drop.prevent="onDrop(index)"
+                @dragend="onDragEnd"
+                class="bg-white border-2 rounded-xl shadow-sm px-4 py-3 transition-colors"
+                :class="[
+                  draggingIndex === index ? 'border-dashed border-[var(--color-primary)] opacity-50' : 'border-gray-200',
+                  dragOverIndex === index && draggingIndex !== index ? 'border-t-4 border-t-[var(--color-primary)]' : ''
+                ]"
               >
-                <div class="flex justify-between items-center mb-2 gap-2">
-                  <h3 class="text-[var(--color-primary)] font-semibold text-base min-w-0 truncate">
-                    {{ exercise.name }}
-                  </h3>
+                <div class="flex items-center gap-2 mb-2">
+                  <IconGripVertical class="w-4 h-4 text-gray-300 shrink-0 cursor-grab active:cursor-grabbing" />
+                  <button
+                    type="button"
+                    @click="toggleCollapse(exercise)"
+                    class="flex items-center gap-1 min-w-0 flex-1 text-left"
+                  >
+                    <IconChevronDown
+                      class="w-4 h-4 text-gray-400 shrink-0 transition-transform"
+                      :class="isCollapsed(exercise) ? '-rotate-90' : ''"
+                    />
+                    <h3 class="text-[var(--color-primary)] font-semibold text-base min-w-0 truncate">
+                      {{ exercise.name }}
+                    </h3>
+                    <span v-if="isCollapsed(exercise)" class="text-xs text-gray-400 shrink-0">
+                      {{ exercise.sets || 0 }}x{{ exercise.reps || 0 }}
+                    </span>
+                  </button>
                   <div class="flex items-center gap-1 shrink-0">
                     <button
                       type="button"
@@ -173,7 +246,7 @@ function resetForm() {
                       class="text-gray-400 hover:text-[var(--color-primary)] disabled:opacity-30 disabled:hover:text-gray-400 p-1"
                       aria-label="Subir"
                     >
-                      <IconChevronUp class="w-4 h-4" />
+                      <IconArrowUp class="w-4 h-4" />
                     </button>
                     <button
                       type="button"
@@ -182,7 +255,7 @@ function resetForm() {
                       class="text-gray-400 hover:text-[var(--color-primary)] disabled:opacity-30 disabled:hover:text-gray-400 p-1"
                       aria-label="Bajar"
                     >
-                      <IconChevronDown class="w-4 h-4" />
+                      <IconArrowDown class="w-4 h-4" />
                     </button>
                     <button type="button" @click="removeExercise(index)" class="text-red-500 text-sm hover:underline flex items-center gap-1 ml-1">
                       <IconX class="w-4 h-4" /> Quitar
@@ -190,20 +263,22 @@ function resetForm() {
                   </div>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
-                  <div>
-                    <label class="block text-xs text-gray-500 mb-1">Series</label>
-                    <input v-model.number="exercise.sets" type="number" min="1" class="input text-sm" placeholder="0" />
+                <div v-if="!isCollapsed(exercise)">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">Series</label>
+                      <input v-model.number="exercise.sets" type="number" min="1" class="input text-sm" placeholder="0" />
+                    </div>
+                    <div>
+                      <label class="block text-xs text-gray-500 mb-1">Repeticiones</label>
+                      <input v-model="exercise.reps" type="text" inputmode="numeric" class="input text-sm" placeholder="12 o 6-12" />
+                    </div>
                   </div>
-                  <div>
-                    <label class="block text-xs text-gray-500 mb-1">Repeticiones</label>
-                    <input v-model="exercise.reps" type="text" inputmode="numeric" class="input text-sm" placeholder="12 o 6-12" />
-                  </div>
-                </div>
 
-                <div class="mt-3">
-                  <label class="block text-xs text-gray-500 mb-1">Nota (opcional)</label>
-                  <input v-model="exercise.note" type="text" class="input text-sm" placeholder="Ej. con mancuernas, agarre estrecho..." />
+                  <div class="mt-3">
+                    <label class="block text-xs text-gray-500 mb-1">Nota (opcional)</label>
+                    <input v-model="exercise.note" type="text" class="input text-sm" placeholder="Ej. con mancuernas, agarre estrecho..." />
+                  </div>
                 </div>
               </div>
             </TransitionGroup>
