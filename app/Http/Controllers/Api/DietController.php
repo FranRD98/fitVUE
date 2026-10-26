@@ -7,24 +7,34 @@ use App\Models\Diet;
 use App\Models\Ingredient;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class DietController extends Controller
 {
     public function index(Request $request)
     {
+        $hasCatalog = Schema::hasColumn('diets', 'is_catalog');
+
         if ($request->boolean('catalog')) {
             if ($request->user()->role !== 'admin') {
                 abort(403);
+            }
+
+            if (! $hasCatalog) {
+                return response()->json([]);
             }
 
             return response()->json(Diet::where('is_catalog', true)->orderBy('title')->get());
         }
 
         $userId = $request->query('user_id', $request->user()->id);
+        $query = Diet::where('user_id', $userId)->orderBy('title');
 
-        return response()->json(
-            Diet::where('user_id', $userId)->where('is_catalog', false)->orderBy('title')->get()
-        );
+        if ($hasCatalog) {
+            $query->where('is_catalog', false);
+        }
+
+        return response()->json($query->get());
     }
 
     public function coachAssigned(User $user)
@@ -40,8 +50,9 @@ class DietController extends Controller
     public function store(Request $request)
     {
         $data = $this->validated($request);
+        $hasCatalog = Schema::hasColumn('diets', 'is_catalog');
 
-        if ($request->boolean('is_catalog')) {
+        if ($hasCatalog && $request->boolean('is_catalog')) {
             if ($request->user()->role !== 'admin') {
                 abort(403);
             }
@@ -50,8 +61,11 @@ class DietController extends Controller
             $data['published'] = $request->boolean('published');
             $data['user_id'] = $request->user()->id;
         } else {
-            $data['is_catalog'] = false;
-            $data['published'] = false;
+            unset($data['is_catalog'], $data['published']);
+            if ($hasCatalog) {
+                $data['is_catalog'] = false;
+                $data['published'] = false;
+            }
         }
 
         return response()->json(Diet::create($data), 201);
@@ -59,13 +73,15 @@ class DietController extends Controller
 
     public function update(Request $request, Diet $diet)
     {
-        if ($diet->is_catalog && $request->user()->role !== 'admin') {
+        $hasCatalog = Schema::hasColumn('diets', 'is_catalog');
+
+        if ($hasCatalog && $diet->is_catalog && $request->user()->role !== 'admin') {
             abort(403);
         }
 
         $data = $this->validated($request, sometimes: true);
 
-        if (! $diet->is_catalog) {
+        if (! $hasCatalog || ! $diet->is_catalog) {
             unset($data['published'], $data['is_catalog']);
         }
 

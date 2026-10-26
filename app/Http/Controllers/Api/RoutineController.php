@@ -7,6 +7,7 @@ use App\Models\Routine;
 use App\Models\RoutineCategory;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 
 class RoutineController extends Controller
 {
@@ -19,7 +20,12 @@ class RoutineController extends Controller
         }
 
         $query = Routine::with('user:id,name,last_name,email')->orderBy('title');
-        $query->where('is_catalog', $request->boolean('catalog'));
+
+        if ($this->hasCatalogColumn()) {
+            $query->where('is_catalog', $request->boolean('catalog'));
+        } elseif ($request->boolean('catalog')) {
+            return response()->json([]);
+        }
 
         if ($request->filled('category')) {
             $query->where('id_category', $request->query('category'));
@@ -34,16 +40,24 @@ class RoutineController extends Controller
 
     public function published()
     {
-        return response()->json(
-            Routine::where('is_catalog', true)->where('published', true)->orderBy('title')->get()
-        );
+        $query = Routine::query()->where('published', true)->orderBy('title');
+
+        if ($this->hasCatalogColumn()) {
+            $query->where('is_catalog', true);
+        }
+
+        return response()->json($query->get());
     }
 
     public function byUser(User $user)
     {
-        return response()->json(
-            Routine::where('user_id', $user->id)->where('is_catalog', false)->get()
-        );
+        $query = Routine::where('user_id', $user->id);
+
+        if ($this->hasCatalogColumn()) {
+            $query->where('is_catalog', false);
+        }
+
+        return response()->json($query->get());
     }
 
     public function show(Routine $routine)
@@ -68,7 +82,7 @@ class RoutineController extends Controller
         $data = $this->validated($request);
         $data['user_id'] = $user->id;
 
-        if ($request->boolean('is_catalog')) {
+        if ($this->hasCatalogColumn() && $request->boolean('is_catalog')) {
             if ($user->role !== 'admin') {
                 abort(403);
             }
@@ -77,7 +91,10 @@ class RoutineController extends Controller
             $data['published'] = $request->boolean('published');
             $data['id_category'] ??= $this->defaultCategoryId();
         } else {
-            $data['is_catalog'] = false;
+            unset($data['is_catalog']);
+            if ($this->hasCatalogColumn()) {
+                $data['is_catalog'] = false;
+            }
             $data['published'] = false;
             $data['id_category'] ??= $this->defaultCategoryId();
         }
@@ -87,14 +104,15 @@ class RoutineController extends Controller
 
     public function update(Request $request, Routine $routine)
     {
-        if ($routine->is_catalog && $request->user()->role !== 'admin') {
+        if ($this->hasCatalogColumn() && $routine->is_catalog && $request->user()->role !== 'admin') {
             abort(403);
         }
 
         $data = $this->validated($request, sometimes: true);
 
         // Las rutinas de clientes no se publican en la web desde aquí.
-        if (! $routine->is_catalog) {
+        // Sin la columna, tampoco se puede guardar is_catalog.
+        if (! $this->hasCatalogColumn() || ! $routine->is_catalog) {
             unset($data['published'], $data['is_catalog']);
         }
 
@@ -116,7 +134,9 @@ class RoutineController extends Controller
         $copy->title = $routine->title.' (copia)';
         $copy->user_id = $request->user()->id;
         $copy->published = false;
-        $copy->is_catalog = false;
+        if ($this->hasCatalogColumn()) {
+            $copy->is_catalog = false;
+        }
         $copy->save();
 
         return response()->json($copy, 201);
@@ -146,7 +166,11 @@ class RoutineController extends Controller
             abort(403, 'Solo puedes transferir rutinas que hayas creado tú.');
         }
 
-        $routine->update(['user_id' => $user->id, 'published' => false, 'is_catalog' => false]);
+        $changes = ['user_id' => $user->id, 'published' => false];
+        if ($this->hasCatalogColumn()) {
+            $changes['is_catalog'] = false;
+        }
+        $routine->update($changes);
 
         return response()->json($routine->fresh());
     }
@@ -190,6 +214,11 @@ class RoutineController extends Controller
 
     // De momento solo existe el tipo "Entrenamientos": si el frontend no manda
     // id_category, la rutina se crea con esta categoría por defecto.
+    private function hasCatalogColumn(): bool
+    {
+        return Schema::hasColumn('routines', 'is_catalog');
+    }
+
     private function defaultCategoryId(): ?int
     {
         return RoutineCategory::firstOrCreate(['title' => 'Entrenamientos'])->id;
