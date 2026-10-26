@@ -28,11 +28,14 @@ const showModal = ref(false)
 const showUpgradePrompt = ref(false)
 const selectedRoutine = ref(null)
 const openMenuId = ref(null)
+const menuOpenedAt = ref(0)
 const menuPosition = ref({ top: 0, left: 0 })
 
 // El menú se teletransporta a <body> y se posiciona con coordenadas absolutas
 // porque, si se queda dentro de la tarjeta (overflow-hidden) o de la tabla
 // (contenedor con scroll horizontal), el desplegable queda recortado.
+const menuRoutine = computed(() => routines.value.find((routine) => routine.id === openMenuId.value) || null)
+
 function toggleMenu(routine, event) {
   if (openMenuId.value === routine.id) {
     openMenuId.value = null
@@ -40,13 +43,25 @@ function toggleMenu(routine, event) {
   }
 
   const rect = event.currentTarget.getBoundingClientRect()
-  const MENU_WIDTH = 144 // w-36
+  const menuWidth = 144
+  const menuHeight = 168
+  const margin = 8
+  let top = rect.bottom + 4
+  if (top + menuHeight > window.innerHeight - 8) {
+    top = Math.max(margin, rect.top - menuHeight - 4)
+  }
 
   menuPosition.value = {
-    top: rect.bottom + window.scrollY + 4,
-    left: Math.max(8, rect.right + window.scrollX - MENU_WIDTH),
+    top,
+    left: Math.min(Math.max(margin, rect.right - menuWidth), window.innerWidth - menuWidth - margin),
   }
+  menuOpenedAt.value = Date.now()
   openMenuId.value = routine.id
+}
+
+function closeMenu() {
+  if (Date.now() - menuOpenedAt.value < 400) return
+  openMenuId.value = null
 }
 
 // El client_reference_id permite al webhook de Stripe identificar a qué usuario aplicar el plan tras el pago.
@@ -74,7 +89,7 @@ const assignedCoachRoutineId = ref(null)
 // una) en vez de "mis rutinas": así puede filtrar por usuario cuando gestiona
 // varias personas (ej. varias rutinas "Día 1" de gente distinta).
 const isAdmin = computed(() => userStore.userData?.role === 'admin')
-const viewMode = ref(isAdmin.value ? 'table' : 'grid')
+const viewMode = ref('grid')
 const searchQuery = ref('')
 const hasSearch = computed(() => searchQuery.value.trim().length > 0)
 const userOptions = ref([])
@@ -153,8 +168,10 @@ function userLabel(user) {
   return [user.name, user.last_name].filter(Boolean).join(' ') || user.email
 }
 
-function closeMenuOnOutsideClick() {
-  openMenuId.value = null
+function closeMenuOnOutsideClick(event) {
+  const target = event.target
+  if (target instanceof Element && target.closest('[data-routine-menu], [data-routine-menu-button]')) return
+  closeMenu()
 }
 
 onMounted(async () => {
@@ -328,7 +345,7 @@ function startRoutine(routine) {
       </div>
 
       <!-- Vista Grid (única vista en móvil) -->
-      <div v-if="viewMode === 'grid' && filteredRoutines.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div v-if="filteredRoutines.length" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" :class="viewMode === 'table' ? 'md:hidden' : ''">
         <div
           v-for="routine in paginatedRoutines"
           :key="routine.id"
@@ -336,37 +353,23 @@ function startRoutine(routine) {
         >
           <div class="p-4 flex flex-col flex-grow">
             <div class="flex justify-between items-start gap-2 mb-1">
-              <h3 class="text-lg font-semibold text-[var(--color-primary)] cursor-pointer" @click="viewRoutine(routine)">
+              <h3 class="text-lg font-semibold text-[var(--color-primary)]">
                 {{ routine.title }}
               </h3>
 
-              <div class="relative shrink-0">
-                <button
-                  type="button"
-                  @click.stop="toggleMenu(routine, $event)"
-                  class="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100"
-                  aria-label="Más opciones"
-                >
-                  <IconDotsVertical class="w-5 h-5" />
-                </button>
-
-                <Teleport to="body">
-                  <div
-                    v-if="openMenuId === routine.id"
-                    class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
-                    :style="{ top: menuPosition.top + 'px', left: menuPosition.left + 'px' }"
-                    @click.stop
-                  >
-                    <button @click="handleDuplicate(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
-                    <button @click="openEditModal(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
-                    <button @click="removeRoutine(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
-                  </div>
-                </Teleport>
-              </div>
+              <button
+                type="button"
+                data-routine-menu-button
+                @click.stop="toggleMenu(routine, $event)"
+                class="text-gray-400 hover:text-gray-600 p-2 -mr-1 rounded-full hover:bg-gray-200 shrink-0"
+                aria-label="Más opciones"
+              >
+                <IconDotsVertical class="w-5 h-5" />
+              </button>
             </div>
 
             <p v-if="isAdmin" class="text-xs font-medium text-gray-400 mb-1">{{ userLabel(routine.user) }}</p>
-            <p class="text-sm text-gray-500 mb-3 line-clamp-2 cursor-pointer" @click="viewRoutine(routine)">
+            <p class="text-sm text-gray-500 mb-3 line-clamp-2">
               {{ exercisesSummary(routine) || 'Sin ejercicios todavía' }}
             </p>
             <p class="text-xs text-gray-400 mb-3">Ejercicios totales: {{ countExercises(routine) }}</p>
@@ -383,7 +386,7 @@ function startRoutine(routine) {
       </div>
 
       <!-- Vista Tabla (solo escritorio) -->
-       <div v-else-if="viewMode === 'table' && filteredRoutines.length" class="hidden md:block overflow-x-auto">
+       <div v-if="viewMode === 'table' && filteredRoutines.length" class="hidden md:block overflow-x-auto">
       <table class="min-w-[600px] w-full text-left text-sm">
 
         <thead class="bg-gray-200 text-gray-600 font-medium">
@@ -400,7 +403,7 @@ function startRoutine(routine) {
             :key="routine.id"
             class="border-t border-gray-200 hover:bg-gray-100 transition"
           >
-            <td class="py-3 px-2 font-semibold text-[var(--color-primary)] cursor-pointer" @click="viewRoutine(routine)">{{ routine.title }}</td>
+            <td class="py-3 px-2 font-semibold text-[var(--color-primary)]">{{ routine.title }}</td>
             <td v-if="isAdmin" class="py-3 px-2 text-gray-600">{{ userLabel(routine.user) }}</td>
             <td class="py-3 px-2">{{ countExercises(routine) }}</td>
             <td class="py-3 px-2 text-right">
@@ -412,28 +415,15 @@ function startRoutine(routine) {
                 >
                   <IconPlayerPlay class="w-3.5 h-3.5" /> Empezar
                 </button>
-                <div class="relative">
-                  <button
-                    type="button"
-                    @click.stop="toggleMenu(routine, $event)"
-                    class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100"
-                    aria-label="Más opciones"
-                  >
-                    <IconDotsVertical class="w-5 h-5" />
-                  </button>
-                  <Teleport to="body">
-                    <div
-                      v-if="openMenuId === routine.id"
-                      class="fixed z-50 bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
-                      :style="{ top: menuPosition.top + 'px', left: menuPosition.left + 'px' }"
-                      @click.stop
-                    >
-                      <button @click="handleDuplicate(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
-                      <button @click="openEditModal(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
-                      <button @click="removeRoutine(routine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
-                    </div>
-                  </Teleport>
-                </div>
+                <button
+                  type="button"
+                  data-routine-menu-button
+                  @click.stop="toggleMenu(routine, $event)"
+                  class="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100"
+                  aria-label="Más opciones"
+                >
+                  <IconDotsVertical class="w-5 h-5" />
+                </button>
               </div>
             </td>
           </tr>
@@ -456,6 +446,33 @@ function startRoutine(routine) {
         </p>
       </div>
     </div>
+
+    <Teleport to="body">
+      <div v-if="menuRoutine" class="md:hidden fixed inset-0 z-[80] bg-black/40" @click="closeMenu">
+        <div
+          data-routine-menu
+          class="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-xl pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+          @click.stop
+        >
+          <p class="px-5 pt-4 pb-2 text-sm font-semibold text-gray-500 truncate">{{ menuRoutine.title }}</p>
+          <button type="button" @click="viewRoutine(menuRoutine)" class="w-full text-left px-5 py-3 text-base hover:bg-gray-50">Ver</button>
+          <button type="button" @click="openEditModal(menuRoutine)" class="w-full text-left px-5 py-3 text-base hover:bg-gray-50">Editar</button>
+          <button type="button" @click="handleDuplicate(menuRoutine)" class="w-full text-left px-5 py-3 text-base hover:bg-gray-50">Duplicar</button>
+          <button type="button" @click="removeRoutine(menuRoutine)" class="w-full text-left px-5 py-3 text-base text-red-600 hover:bg-gray-50">Borrar</button>
+        </div>
+      </div>
+      <div
+        v-if="menuRoutine"
+        data-routine-menu
+        class="hidden md:block fixed z-[80] bg-white border border-gray-200 rounded-lg shadow-lg w-36 py-1 text-sm"
+        :style="{ top: menuPosition.top + 'px', left: menuPosition.left + 'px' }"
+      >
+        <button type="button" @click="viewRoutine(menuRoutine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Ver</button>
+        <button type="button" @click="handleDuplicate(menuRoutine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Duplicar</button>
+        <button type="button" @click="openEditModal(menuRoutine)" class="w-full text-left px-3 py-2 hover:bg-gray-50">Editar</button>
+        <button type="button" @click="removeRoutine(menuRoutine)" class="w-full text-left px-3 py-2 hover:bg-gray-50 text-red-600">Borrar</button>
+      </div>
+    </Teleport>
 
     <!-- Paginación -->
     <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-6">
