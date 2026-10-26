@@ -81,20 +81,16 @@ class ExerciseProgressController extends Controller
     {
         $data = $request->validate(['user_id' => ['required', 'integer']]);
 
-        $rows = ExerciseProgress::where('user_id', $data['user_id'])
-            ->with('routine:id,title')
-            ->orderBy('created_at')
-            ->get(['id_routine', 'created_at']);
-
         $byDate = [];
-        foreach ($rows as $row) {
-            $date = $row->created_at->format('Y-m-d');
-            $byDate[$date] ??= ['date' => $date, 'routines' => []];
+        foreach ($this->buildSessions($data['user_id']) as $session) {
+            $date = $session['date'];
+            $byDate[$date] ??= ['date' => $date, 'routines' => [], 'sessions' => []];
 
-            $title = $row->routine->title ?? 'Entrenamiento';
-            if (! in_array($title, $byDate[$date]['routines'], true)) {
-                $byDate[$date]['routines'][] = $title;
+            if (! in_array($session['routine_title'], $byDate[$date]['routines'], true)) {
+                $byDate[$date]['routines'][] = $session['routine_title'];
             }
+
+            $byDate[$date]['sessions'][] = $session;
         }
 
         return response()->json(array_values($byDate));
@@ -104,28 +100,11 @@ class ExerciseProgressController extends Controller
     {
         $data = $request->validate(['user_id' => ['required', 'integer']]);
 
-        $rows = ExerciseProgress::where('user_id', $data['user_id'])
-            ->with('routine:id,title')
-            ->orderByDesc('created_at')
-            ->get(['id_routine', 'sets', 'duration_seconds', 'created_at']);
+        $sessions = $this->buildSessions($data['user_id'])
+            ->sortByDesc('created_at')
+            ->values();
 
-        $sessions = [];
-        foreach ($rows as $row) {
-            $key = $row->created_at->toDateTimeString().'|'.$row->id_routine;
-
-            $sessions[$key] ??= [
-                'created_at' => $row->created_at,
-                'routine_title' => $row->routine->title ?? 'Entrenamiento',
-                'exercise_count' => 0,
-                'set_count' => 0,
-                'duration_seconds' => $row->duration_seconds,
-            ];
-
-            $sessions[$key]['exercise_count']++;
-            $sessions[$key]['set_count'] += is_array($row->sets) ? count($row->sets) : 0;
-        }
-
-        return response()->json(collect($sessions)->values()->sortByDesc('created_at')->values());
+        return response()->json($sessions);
     }
 
     public function store(Request $request)
@@ -174,5 +153,48 @@ class ExerciseProgressController extends Controller
         ExerciseProgress::insert($entries);
 
         return response()->json(['success' => true], 201);
+    }
+
+    // Agrupa las filas de un mismo guardado (misma rutina y mismo instante)
+    // en una sesión, con los ejercicios y las series tal cual se registraron.
+    private function buildSessions(int $userId)
+    {
+        $rows = ExerciseProgress::where('user_id', $userId)
+            ->with('routine:id,title')
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get(['id', 'id_routine', 'exercise_name', 'sets', 'duration_seconds', 'created_at']);
+
+        $sessions = [];
+        foreach ($rows as $row) {
+            $key = $row->created_at->format('Y-m-d H:i:s').'|'.$row->id_routine;
+
+            $sessions[$key] ??= [
+                'created_at' => $row->created_at->toIso8601String(),
+                'date' => $row->created_at->format('Y-m-d'),
+                'routine_title' => $row->routine->title ?? 'Entrenamiento',
+                'exercise_count' => 0,
+                'set_count' => 0,
+                'duration_seconds' => $row->duration_seconds,
+                'exercises' => [],
+            ];
+
+            $sets = collect(is_array($row->sets) ? $row->sets : [])
+                ->map(fn ($set) => [
+                    'reps' => $set['reps'] ?? null,
+                    'weight' => $set['weight'] ?? null,
+                ])
+                ->values()
+                ->all();
+
+            $sessions[$key]['exercises'][] = [
+                'name' => $row->exercise_name ?: 'Ejercicio',
+                'sets' => $sets,
+            ];
+            $sessions[$key]['exercise_count']++;
+            $sessions[$key]['set_count'] += count($sets);
+        }
+
+        return collect($sessions)->values();
     }
 }

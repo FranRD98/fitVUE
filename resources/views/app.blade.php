@@ -12,7 +12,11 @@
 
     <!-- iOS: "Añadir a pantalla de inicio" -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- default: barra de estado opaca. black-translucent la deja translúcida
+         y iOS difumina (efecto glass) lo que hay bajo el notch. iOS guarda
+         este valor al añadir la PWA a inicio: hay que quitarla y volver a
+         añadirla para que el cambio se aplique. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="fitVUE">
     <link rel="apple-touch-icon" href="/img/icons/apple-touch-icon.png">
 

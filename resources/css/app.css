@@ -39,12 +39,23 @@
   --spacing-unit: 1rem;
 }
 
+html {
+  height: 100%;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--color-bg);
   color: var(--color-text);
   line-height: 1.5;
   overflow-x: hidden;
+  min-height: 100%;
+  /* Evita el rebote elástico de iOS al hacer scroll más allá del borde: con
+     la barra de estado "black-translucent" (ver app.blade.php), ese rebote
+     dejaba ver el desenfoque/vibrancy nativo que Safari aplica detrás de la
+     barra de estado. El scroll real vive dentro de <main> (overflow-y-auto
+     en DashboardLayout.vue); el body no necesita rebotar. */
+  overscroll-behavior-y: none;
 }
 
 /* Fondo de página del dashboard: en escritorio gris (detrás de tarjetas

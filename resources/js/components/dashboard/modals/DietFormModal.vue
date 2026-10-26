@@ -5,7 +5,11 @@ import { createDiet, updateDiet } from '@/api/services/diets'
 import { getIngredients } from '@/api/services/ingredients'
 import { useUserStore } from '@/stores/user'
 
-const props = defineProps({ show: Boolean, initialData: Object })
+const props = defineProps({
+  show: Boolean,
+  initialData: Object,
+  catalog: { type: Boolean, default: false }
+})
 const emit = defineEmits(['close', 'saved'])
 
 const plates = ref([])
@@ -56,6 +60,7 @@ watch(() => props.initialData, async (newData) => {
       description: newData.description,
       user_id: newData.user_id || uid,
       id: newData.id,
+      published: newData.published ?? false,
       meals: []
     };
 
@@ -216,10 +221,13 @@ async function submitForm() {
 
   cleanedDiet.meals = selectedMeals.value.filter(m => m.enabled && m.items.length > 0)
 
-  if (!cleanedDiet.user_id || typeof cleanedDiet.user_id !== 'string') {
+  if (cleanedDiet.user_id == null || cleanedDiet.user_id === '') {
     alert('Error: no se ha podido determinar el usuario. Intenta recargar la página.')
     return
   }
+
+  cleanedDiet.is_catalog = props.catalog
+  cleanedDiet.published = props.catalog ? !!cleanedDiet.published : false
 
   if (cleanedDiet.id) {
     await updateDiet(cleanedDiet.id, cleanedDiet)

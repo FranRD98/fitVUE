@@ -42,4 +42,19 @@ class RoutineCategoryController extends Controller
 
         return response()->json(RoutineCategory::create($data), 201);
     }
+
+    public function destroy(int $category)
+    {
+        $category = RoutineCategory::findOrFail($category);
+
+        if ($category->routines()->exists()) {
+            return response()->json([
+                'message' => 'No se puede borrar: hay rutinas en esta categoría.',
+            ], 422);
+        }
+
+        $category->delete();
+
+        return response()->json(['success' => true]);
+    }
 }

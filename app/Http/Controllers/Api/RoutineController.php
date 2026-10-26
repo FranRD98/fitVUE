@@ -19,6 +19,7 @@ class RoutineController extends Controller
         }
 
         $query = Routine::with('user:id,name,last_name,email')->orderBy('title');
+        $query->where('is_catalog', $request->boolean('catalog'));
 
         if ($request->filled('category')) {
             $query->where('id_category', $request->query('category'));
@@ -33,12 +34,16 @@ class RoutineController extends Controller
 
     public function published()
     {
-        return response()->json(Routine::where('published', true)->orderBy('title')->get());
+        return response()->json(
+            Routine::where('is_catalog', true)->where('published', true)->orderBy('title')->get()
+        );
     }
 
     public function byUser(User $user)
     {
-        return response()->json(Routine::where('user_id', $user->id)->get());
+        return response()->json(
+            Routine::where('user_id', $user->id)->where('is_catalog', false)->get()
+        );
     }
 
     public function show(Routine $routine)
@@ -62,14 +67,38 @@ class RoutineController extends Controller
 
         $data = $this->validated($request);
         $data['user_id'] = $user->id;
-        $data['id_category'] ??= $this->defaultCategoryId();
+
+        if ($request->boolean('is_catalog')) {
+            if ($user->role !== 'admin') {
+                abort(403);
+            }
+
+            $data['is_catalog'] = true;
+            $data['published'] = $request->boolean('published');
+            $data['id_category'] ??= $this->defaultCategoryId();
+        } else {
+            $data['is_catalog'] = false;
+            $data['published'] = false;
+            $data['id_category'] ??= $this->defaultCategoryId();
+        }
 
         return response()->json(Routine::create($data), 201);
     }
 
     public function update(Request $request, Routine $routine)
     {
-        $routine->update($this->validated($request, sometimes: true));
+        if ($routine->is_catalog && $request->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $data = $this->validated($request, sometimes: true);
+
+        // Las rutinas de clientes no se publican en la web desde aquí.
+        if (! $routine->is_catalog) {
+            unset($data['published'], $data['is_catalog']);
+        }
+
+        $routine->update($data);
 
         return response()->json($routine->fresh());
     }
@@ -87,6 +116,7 @@ class RoutineController extends Controller
         $copy->title = $routine->title.' (copia)';
         $copy->user_id = $request->user()->id;
         $copy->published = false;
+        $copy->is_catalog = false;
         $copy->save();
 
         return response()->json($copy, 201);
@@ -116,7 +146,7 @@ class RoutineController extends Controller
             abort(403, 'Solo puedes transferir rutinas que hayas creado tú.');
         }
 
-        $routine->update(['user_id' => $user->id, 'published' => false]);
+        $routine->update(['user_id' => $user->id, 'published' => false, 'is_catalog' => false]);
 
         return response()->json($routine->fresh());
     }
@@ -154,6 +184,7 @@ class RoutineController extends Controller
             'id_category' => ['sometimes', 'nullable', 'integer', 'exists:routines_categories,id'],
             'exercises' => ['sometimes', 'array'],
             'published' => ['sometimes', 'boolean'],
+            'is_catalog' => ['sometimes', 'boolean'],
         ]);
     }
 

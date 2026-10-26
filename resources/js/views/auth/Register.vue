@@ -48,7 +48,7 @@ const registerUser = async () => {
 </script>
 
 <template>
-  <div class="flex flex-col md:flex-row h-[70vh] justify-center overflow-hidden">
+  <div class="flex flex-col md:flex-row min-h-dvh md:h-[70vh] justify-center overflow-hidden pt-[env(safe-area-inset-top)]">
     <!-- Columna izquierda (formulario) -->
     <div class="w-full md:w-1/2 flex items-center justify-center bg-white px-6 sm:px-10 md:px-20 pt-10 pb-6 md:py-0">
       <div class="w-full max-w-md space-y-8">

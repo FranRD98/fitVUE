@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { createRoutine, updateRoutine } from '@/api/services/routines'
+import { createRoutine, updateRoutine, getRoutineCategories } from '@/api/services/routines'
 import ExercisePickerSheet from '@/components/dashboard/pickers/ExercisePickerSheet.vue'
 import { isValidReps } from '@/utils/reps'
 import { IconX, IconPlus, IconArrowUp, IconArrowDown, IconChevronDown, IconGripVertical } from '@tabler/icons-vue'
@@ -9,7 +9,8 @@ import { IconX, IconPlus, IconArrowUp, IconArrowDown, IconChevronDown, IconGripV
 // Props y emits
 const props = defineProps({
   show: Boolean,
-  initialData: Object
+  initialData: Object,
+  catalog: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['close', 'saved'])
@@ -20,6 +21,7 @@ const showExercisePicker = ref(false)
 const collapsedExercises = ref(new Set())
 const draggingIndex = ref(null)
 const dragOverIndex = ref(null)
+const categories = ref([])
 
 const routine = ref({
   title: '',
@@ -36,7 +38,8 @@ watch(() => props.initialData, (newVal) => {
       id: newVal.id,
       title: newVal.title || '',
       description: newVal.description || '',
-      exercises: (newVal.exercises || []).map(ex => ({ ...ex, note: ex.note || '' })),
+      exercises: (newVal.exercises || []).map(ex => ({ ...ex, note: ex.note || '', rest: ex.rest ?? 90 })),
+      id_category: newVal.id_category ?? null,
       published: newVal.published ?? false,
     }
   } else {
@@ -51,6 +54,7 @@ function addExercises(newExercises) {
       name: exercise.name,
       sets: null,
       reps: null,
+      rest: 90,
       note: ''
     })
   }
@@ -116,10 +120,27 @@ function onDragEnd() {
 }
 
 // Enviar el formulario
+watch(() => props.show, (open) => {
+  if (open && props.catalog && !categories.value.length) {
+    getRoutineCategories().then((data) => { categories.value = data })
+  }
+}, { immediate: true })
+
 async function submitForm() {
   if (!routine.value.title) {
     alert('El título de la rutina es obligatorio.')
     return
+  }
+
+  if (props.catalog) {
+    routine.value.is_catalog = true
+    if (routine.value.published && !routine.value.id_category) {
+      alert('Elige una categoría para publicarla en la web.')
+      return
+    }
+  } else {
+    routine.value.is_catalog = false
+    routine.value.published = false
   }
 
   const invalidReps = routine.value.exercises.find(ex => !isValidReps(ex.reps))
@@ -182,24 +203,33 @@ function resetForm() {
           <input v-model="routine.title" placeholder="Título de la Rutina" class="input text-lg font-semibold" required />
           <input v-model="routine.description" placeholder="Descripción (opcional)" class="input" />
 
-          <!-- Solo visible si el usuario es admin: publica la rutina como rutina pública
-               de ejemplo, visible para cualquier visitante en la web (/rutinas) -->
-          <div v-if="userStore.userData?.role === 'admin'" class="flex items-start gap-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
-            <label class="flex items-center gap-2 cursor-pointer select-none shrink-0">
-              <input type="checkbox" v-model="routine.published" class="sr-only" />
-              <div
-                class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
-                :class="{ 'bg-green-500': routine.published }"
-              >
-                <div
-                  class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
-                  :class="{ 'translate-x-4': routine.published }"
-                ></div>
-              </div>
-            </label>
+          <div v-if="catalog" class="space-y-3 bg-gray-50 border border-gray-200 rounded-xl p-3">
             <div>
-              <p class="text-sm font-medium text-gray-700">Publicar como rutina pública</p>
-              <p class="text-xs text-gray-500">Aparecerá en la web para cualquier visitante, en el listado público de rutinas (/rutinas). No afecta a tus rutinas personales.</p>
+              <label class="block text-xs text-gray-500 mb-1">Categoría en la web</label>
+              <select v-model="routine.id_category" class="input text-sm">
+                <option :value="null">Sin categoría</option>
+                <option v-for="category in categories" :key="category.id" :value="category.id">
+                  {{ category.title }}
+                </option>
+              </select>
+            </div>
+            <div class="flex items-start gap-3">
+              <label class="flex items-center gap-2 cursor-pointer select-none shrink-0">
+                <input type="checkbox" v-model="routine.published" class="sr-only" />
+                <div
+                  class="w-10 h-6 flex items-center bg-gray-300 rounded-full p-1 duration-300 ease-in-out"
+                  :class="{ 'bg-green-500': routine.published }"
+                >
+                  <div
+                    class="bg-white w-4 h-4 rounded-full shadow-md transform duration-300 ease-in-out"
+                    :class="{ 'translate-x-4': routine.published }"
+                  ></div>
+                </div>
+              </label>
+              <div>
+                <p class="text-sm font-medium text-gray-700">Publicar en la landing</p>
+                <p class="text-xs text-gray-500">Saldrá en /rutinas, dentro de la categoría elegida.</p>
+              </div>
             </div>
           </div>
 
@@ -235,7 +265,7 @@ function resetForm() {
                       {{ exercise.name }}
                     </h3>
                     <span v-if="isCollapsed(exercise)" class="text-xs text-gray-400 shrink-0">
-                      {{ exercise.sets || 0 }}x{{ exercise.reps || 0 }}
+                      {{ exercise.sets || 0 }}x{{ exercise.reps || 0 }}<template v-if="exercise.rest"> · {{ exercise.rest }}s</template>
                     </span>
                   </button>
                   <div class="flex items-center gap-1 shrink-0">
@@ -272,6 +302,11 @@ function resetForm() {
                     <div>
                       <label class="block text-xs text-gray-500 mb-1">Repeticiones</label>
                       <input v-model="exercise.reps" type="text" inputmode="numeric" class="input text-sm" placeholder="12 o 6-12" />
+                    </div>
+                    <div class="col-span-2">
+                      <label class="block text-xs text-gray-500 mb-1">Descanso (segundos)</label>
+                      <input v-model.number="exercise.rest" type="number" min="0" step="5" class="input text-sm" placeholder="90" />
+                      <p class="text-[11px] text-gray-400 mt-1">Al marcar una serie se abre este temporizador. 0 para no mostrarlo.</p>
                     </div>
                   </div>
 

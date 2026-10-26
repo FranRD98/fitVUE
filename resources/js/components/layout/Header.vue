@@ -41,10 +41,12 @@ const userName = computed(() => userData.value?.name || 'Usuario')
     <div class="max-w-7xl mx-auto px-6">
       
       <!-- Contenedor principal con 3 grupos -->
-      <div class="flex justify-between items-center h-20">
+      <div class="flex justify-between items-center h-20 gap-4">
         
-        <!-- Grupo 1: Logo en escritorio -->
-        <div class="hidden lg:flex items-center flex-1">
+        <!-- Grupo 1: Logo en escritorio. Sin flex-1: si los tres grupos se
+             reparten el ancho a partes iguales, en anchos intermedios los
+             botones se parten en dos líneas y se montan sobre el hero. -->
+        <div class="hidden lg:flex items-center shrink-0">
           
           <router-link to="/" class="text-4xl font-bold">
             <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
@@ -57,7 +59,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
           </router-link>
         
         <!-- Grupo 2: Menú central -->
-        <div class="hidden lg:flex justify-center items-center space-x-6 flex-1">
+        <div class="hidden lg:flex justify-center items-center gap-6 shrink-0">
 
          <!-- Dropdown Rutinas -->
           <div class="relative dropdown">
@@ -136,7 +138,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
         </div>
         
         <!-- Grupo 3: Botones de acción -->
-        <div class="hidden lg:flex items-center justify-end flex-1">
+        <div class="hidden lg:flex items-center justify-end shrink-0">
           <div v-if="user">
 
             <!-- Dropdown User Logged -->
@@ -150,7 +152,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
                   class="rounded-full w-12 h-12 object-cover"
                 />
 
-                <span class="text-sm text-[var(--color-text)] font-medium">
+                <span class="text-sm text-[var(--color-text)] font-medium whitespace-nowrap max-w-[9rem] truncate">
                   ¡Hola, {{ userName }}!
                 </span>
                 <svg class="w-4 h-4 text-[var(--color-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,9 +174,9 @@ const userName = computed(() => userData.value?.name || 'Usuario')
             </div>
           </div>
           
-          <div v-else>
-            <router-link to="/login" class="border border-[var(--color-primary)] px-6 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] hover:text-white transition-colors mr-1">Iniciar sesión</router-link>
-            <router-link to="/sign-in" class="bg-[var(--color-primary)] text-white px-6 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] transition-colors">Consigue tu cambio</router-link>
+          <div v-else class="flex items-center gap-2">
+            <router-link to="/login" class="border border-[var(--color-primary)] px-5 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] hover:text-white transition-colors whitespace-nowrap">Iniciar sesión</router-link>
+            <router-link to="/sign-in" class="bg-[var(--color-primary)] text-white px-5 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] transition-colors whitespace-nowrap">Consigue tu cambio</router-link>
           </div>
 
         </div>

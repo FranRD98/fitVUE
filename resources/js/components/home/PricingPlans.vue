@@ -13,67 +13,50 @@ function handlePlanSelect(planId) {
 const plans = [
   {
     title: 'Plan Gratuito',
-    subtitle: 'Ideal para empezar tu cambio',
+    subtitle: 'Para empezar a entrenar por tu cuenta',
     price: '0€/mes',
     highlighted: false,
     buttonText: 'Empieza gratis',
     planId: 1,
     features: [
-      // Funciones personales
-      { label: 'Crea tus propias rutinas de entrenamiento', active: true },
-      { label: 'Planifica tus comidas y dietas personales', active: true },
-      { label: 'Herramientas de seguimiento y métricas', active: true },
-      { label: 'Visualiza tu progreso en tiempo real', active: true },
-
-      // Comunidad y acompañamiento
-      { label: 'Acceso a la comunidad FitVue', active: false },
-      { label: 'Acompañamiento profesional', active: false },
-      { label: 'Rutinas y dietas asignadas por expertos', active: false },
-      { label: 'Atención personalizada', active: false },
-
-      // Modo entrenador
-      { label: 'Gestión de clientes (modo entrenador)', active: false }
+      { label: 'Hasta 3 rutinas propias', active: true },
+      { label: 'Historial, calendario y récords', active: true },
+      { label: 'Medidas corporales', active: true },
+      { label: 'Dietas, platos e ingredientes', active: false },
+      { label: 'Rutinas ilimitadas', active: false },
+      { label: 'Dieta asignada por tu coach', active: false },
+      { label: 'Panel de clientes', active: false }
     ]
   },
   {
     title: 'Plan Premium',
-    subtitle: 'Acompañamiento por expertos',
+    subtitle: 'Para entrenar sin límite, con tu coach',
     price: '39,99€/mes',
     highlighted: true,
-    buttonText: 'Quiero acompañamiento',
+    buttonText: 'Quiero Premium',
     planId: 2,
     features: [
-      { label: 'Crea tus propias rutinas de entrenamiento', active: true },
-      { label: 'Planifica tus comidas y dietas personales', active: true },
-      { label: 'Herramientas de seguimiento y métricas', active: true },
-      { label: 'Visualiza tu progreso en tiempo real', active: true },
-
-      { label: 'Acceso a la comunidad FitVue', active: true },
-      { label: 'Acompañamiento profesional', active: true },
-      { label: 'Rutinas y dietas asignadas por expertos', active: true },
-      { label: 'Atención personalizada', active: true },
-
-      { label: 'Gestión de clientes (modo entrenador)', active: false }
+      { label: 'Rutinas ilimitadas', active: true },
+      { label: 'Dietas, platos e ingredientes', active: true },
+      { label: 'Historial, calendario y récords', active: true },
+      { label: 'Medidas corporales', active: true },
+      { label: 'Dieta asignada por tu coach', active: true },
+      { label: 'Panel de clientes', active: false }
     ]
   },
   {
     title: 'Plan Profesional',
-    subtitle: 'Diseñado para entrenadores',
+    subtitle: 'Para entrenadores y sus clientes',
     price: '119,99€/mes',
     highlighted: false,
     buttonText: 'Soy entrenador',
     planId: 3,
     features: [
-      { label: 'Crea rutinas de entrenamiento para tus clientes', active: true },
-      { label: 'Planifica comidas y dietas para tus clientes', active: true },
-      { label: 'Herramientas de seguimiento y métricas', active: true },
-      { label: 'Visualiza el progreso de tus clientes', active: true },
-
-      { label: 'Acceso a la comunidad FitVue', active: true },
-      { label: 'Panel de control profesional', active: true },
-      { label: 'Seguimiento avanzado por cliente', active: true },
-      { label: 'Acceso a herramientas exclusivas de coaches', active: true },
-      { label: 'Asesoría técnica y soporte prioritario', active: true }
+      { label: 'Rutinas ilimitadas', active: true },
+      { label: 'Dietas para ti y tus clientes', active: true },
+      { label: 'Historial, calendario y récords', active: true },
+      { label: 'Panel de clientes', active: true },
+      { label: 'Asigna la dieta de cada cliente', active: true }
     ]
   }
 ]
@@ -84,7 +67,7 @@ const plans = [
     <div class="max-w-7xl mx-auto text-center">
       <h2 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-6">Nuestros Planes</h2>
       <p class="text-lg md:text-xl text-gray-600 mb-14 max-w-3xl mx-auto">
-        Elige el plan que mejor se adapte a tu etapa y empieza tu transformación con FitVue.
+        Empieza gratis con 3 rutinas. Premium quita el límite y abre dietas, platos e ingredientes. Profesional es el plan de quien entrena a otras personas.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">

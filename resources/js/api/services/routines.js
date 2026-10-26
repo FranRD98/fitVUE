@@ -14,8 +14,8 @@ export async function createRoutine(routineData) {
 }
 
 // Obtener todas las rutinas, opcionalmente filtradas (solo admin: incluye el usuario asignado)
-export async function getRoutines({ category, userId } = {}) {
-  const params = {}
+export async function getRoutines({ category, userId, catalog = false } = {}) {
+  const params = { catalog: catalog ? 1 : 0 }
   if (category) params.category = category
   if (userId) params.user_id = userId
 
@@ -77,13 +77,19 @@ export async function transferRoutineToUser(uid, routineId) {
 
 // Actualizar una rutina existente
 export async function updateRoutine(id, routineData) {
-  const { data } = await api.patch(`/routines/${id}`, {
+  const payload = {
     title: routineData.title,
     description: routineData.description,
-    id_category: routineData.id_category,
     exercises: routineData.exercises,
-    published: routineData.published,
-  })
+  }
+
+  if (routineData.is_catalog) {
+    payload.is_catalog = true
+    payload.published = !!routineData.published
+    payload.id_category = routineData.id_category
+  }
+
+  const { data } = await api.patch(`/routines/${id}`, payload)
 
   return data
 }
@@ -98,6 +104,10 @@ export async function duplicateRoutine(id) {
 export async function createRoutineCategory(title) {
   const { data } = await api.post('/routines/categories', { title })
   return data
+}
+
+export async function deleteRoutineCategory(id) {
+  await api.delete(`/routines/categories/${id}`)
 }
 
 // Eliminar rutina

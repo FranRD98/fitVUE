@@ -219,10 +219,10 @@ watch(
           v-else-if="userStore.userData?.plan_id === 1"
           disabled
           class="flex items-center gap-2 bg-yellow-100 text-yellow-700 border border-yellow-300 px-4 py-2 rounded-lg cursor-not-allowed"
-          title="Actualiza a Pro para recibir una dieta personalizada"
+          title="Actualiza a Premium para recibir la dieta de tu coach"
         >
           <IconLockOff class="w-5 h-5" />
-          Requiere plan Pro
+          Requiere Premium
         </button>
 
         <!-- Crear dieta -->

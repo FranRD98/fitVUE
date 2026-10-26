@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Routine extends Model
 {
     protected $fillable = [
-        'title', 'description', 'id_category', 'exercises', 'published', 'user_id',
+        'title', 'description', 'id_category', 'exercises', 'published', 'is_catalog', 'user_id',
     ];
 
     protected function casts(): array
@@ -16,6 +16,7 @@ class Routine extends Model
         return [
             'exercises' => 'array',
             'published' => 'boolean',
+            'is_catalog' => 'boolean',
         ];
     }
 

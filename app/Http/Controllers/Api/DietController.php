@@ -12,9 +12,19 @@ class DietController extends Controller
 {
     public function index(Request $request)
     {
+        if ($request->boolean('catalog')) {
+            if ($request->user()->role !== 'admin') {
+                abort(403);
+            }
+
+            return response()->json(Diet::where('is_catalog', true)->orderBy('title')->get());
+        }
+
         $userId = $request->query('user_id', $request->user()->id);
 
-        return response()->json(Diet::where('user_id', $userId)->orderBy('title')->get());
+        return response()->json(
+            Diet::where('user_id', $userId)->where('is_catalog', false)->orderBy('title')->get()
+        );
     }
 
     public function coachAssigned(User $user)
@@ -31,12 +41,35 @@ class DietController extends Controller
     {
         $data = $this->validated($request);
 
+        if ($request->boolean('is_catalog')) {
+            if ($request->user()->role !== 'admin') {
+                abort(403);
+            }
+
+            $data['is_catalog'] = true;
+            $data['published'] = $request->boolean('published');
+            $data['user_id'] = $request->user()->id;
+        } else {
+            $data['is_catalog'] = false;
+            $data['published'] = false;
+        }
+
         return response()->json(Diet::create($data), 201);
     }
 
     public function update(Request $request, Diet $diet)
     {
-        $diet->update($this->validated($request, sometimes: true));
+        if ($diet->is_catalog && $request->user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $data = $this->validated($request, sometimes: true);
+
+        if (! $diet->is_catalog) {
+            unset($data['published'], $data['is_catalog']);
+        }
+
+        $diet->update($data);
 
         return response()->json($diet->fresh());
     }
@@ -55,6 +88,8 @@ class DietController extends Controller
             'description' => ['sometimes', 'nullable', 'string'],
             'user_id' => $sometimes ? ['sometimes', 'nullable', 'integer', 'exists:users,id'] : ['required', 'nullable', 'integer', 'exists:users,id'],
             'meals' => ['sometimes', 'array'],
+            'is_catalog' => ['sometimes', 'boolean'],
+            'published' => ['sometimes', 'boolean'],
         ]);
     }
 

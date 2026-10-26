@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "app",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "php artisan serve --host=127.0.0.1 --port=${PORT:-8001}"],
+      "port": 8001,
+      "autoPort": true
+    }
+  ]
+}

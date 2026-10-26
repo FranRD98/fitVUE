@@ -20,7 +20,7 @@ const testimonios = [
   },
   {
     nombre: "Brian Betancourth",
-    rol: "Usuario Avanzado",
+    rol: "Usuario",
     comentario: "Antes usaba Excel. Ahora con FitVue no solo hago seguimiento, sino que disfruto organizando mis rutinas.",
     foto: "https://randomuser.me/api/portraits/men/36.jpg"
   },

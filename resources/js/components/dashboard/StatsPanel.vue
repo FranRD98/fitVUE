@@ -30,7 +30,7 @@ onMounted(async () => {
 
 <template>
   <section>
-    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)] mb-1">Estadísticas</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)] mb-1">Récords</h1>
     <p class="text-sm text-gray-500 mb-6">Peso máximo levantado en cada ejercicio.</p>
 
     <div v-if="loading && !showSkeleton" />

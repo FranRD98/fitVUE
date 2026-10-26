@@ -3,10 +3,13 @@ import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { getWorkoutSessions } from '@/api/services/exercises'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
-import { IconBarbell, IconClock, IconClipboardList } from '@tabler/icons-vue'
+import { formatDuration, formatVolume, setsVolume } from '@/utils/workout'
+import WorkoutSets from '@/components/dashboard/WorkoutSets.vue'
+import { IconBarbell, IconClock, IconClipboardList, IconChevronDown } from '@tabler/icons-vue'
 
 const userStore = useUserStore()
 const sessions = ref([])
+const openKey = ref(null)
 const { loading, showSkeleton, start, finish } = useDelayedSkeleton(300)
 
 function formatDate(date) {
@@ -15,12 +18,17 @@ function formatDate(date) {
   })
 }
 
-function formatDuration(seconds) {
-  if (!seconds && seconds !== 0) return '—'
-  const m = Math.floor(seconds / 60)
-  const h = Math.floor(m / 60)
-  if (h > 0) return `${h}h ${m % 60}min`
-  return `${m}min`
+function sessionKey(session) {
+  return `${session.created_at}|${session.routine_title}`
+}
+
+function sessionVolume(session) {
+  return (session.exercises || []).reduce((total, exercise) => total + setsVolume(exercise.sets), 0)
+}
+
+function toggleSession(session) {
+  const key = sessionKey(session)
+  openKey.value = openKey.value === key ? null : key
 }
 
 onMounted(async () => {
@@ -35,7 +43,7 @@ onMounted(async () => {
 
 <template>
   <section class="px-2 py-4 sm:px-6 space-y-6">
-    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)]">Historial de entrenamientos</h1>
+    <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)]">Entrenamientos</h1>
 
     <div v-if="loading && !showSkeleton" />
     <div v-else-if="loading && showSkeleton" class="space-y-3 animate-pulse">
@@ -46,22 +54,38 @@ onMounted(async () => {
       <div
         v-for="(session, i) in sessions"
         :key="i"
-        class="bg-gray-100 md:bg-white shadow rounded-xl p-4 flex items-center gap-4"
+        class="bg-gray-100 md:bg-white shadow rounded-xl overflow-hidden"
       >
-        <div class="w-11 h-11 rounded-full bg-[rgba(var(--color-primary-rgb),0.1)] flex items-center justify-center shrink-0">
-          <IconBarbell class="w-6 h-6 text-[var(--color-primary)]" />
-        </div>
-        <div class="flex-1 min-w-0">
-          <p class="font-semibold text-gray-800 truncate">{{ session.routine_title }}</p>
-          <p class="text-xs text-gray-500 capitalize">{{ formatDate(session.created_at) }}</p>
-        </div>
-        <div class="flex items-center gap-4 text-sm text-gray-500 shrink-0">
-          <span class="flex items-center gap-1" title="Duración">
-            <IconClock class="w-4 h-4" /> {{ formatDuration(session.duration_seconds) }}
-          </span>
-          <span class="flex items-center gap-1" title="Ejercicios">
-            <IconClipboardList class="w-4 h-4" /> {{ session.exercise_count }}
-          </span>
+        <button
+          type="button"
+          @click="toggleSession(session)"
+          class="w-full p-4 flex items-center gap-4 text-left"
+        >
+          <div class="w-11 h-11 rounded-full bg-[rgba(var(--color-primary-rgb),0.1)] flex items-center justify-center shrink-0">
+            <IconBarbell class="w-6 h-6 text-[var(--color-primary)]" />
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-gray-800 truncate">{{ session.routine_title }}</p>
+            <p class="text-xs text-gray-500 capitalize">{{ formatDate(session.created_at) }}</p>
+          </div>
+          <div class="flex items-center gap-3 text-sm text-gray-500 shrink-0">
+            <span class="flex items-center gap-1" title="Duración">
+              <IconClock class="w-4 h-4" /> {{ formatDuration(session.duration_seconds) }}
+            </span>
+            <span class="flex items-center gap-1" title="Ejercicios">
+              <IconClipboardList class="w-4 h-4" /> {{ session.exercise_count }}
+            </span>
+            <IconChevronDown
+              class="w-4 h-4 text-gray-400 transition-transform"
+              :class="openKey === sessionKey(session) ? 'rotate-180' : ''"
+            />
+          </div>
+        </button>
+        <div v-if="openKey === sessionKey(session)" class="px-4 pb-4 space-y-3">
+          <p class="text-xs text-gray-400">
+            {{ session.set_count }} series · {{ formatVolume(sessionVolume(session)) }}
+          </p>
+          <WorkoutSets :exercises="session.exercises" />
         </div>
       </div>
     </div>

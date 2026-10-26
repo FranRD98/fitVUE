@@ -1,13 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue'
 import {
-  IconChevronRight, IconTrophy, IconBarbell, IconRuler2, IconCalendar,
+  IconChevronRight, IconTrophy, IconBarbell, IconRuler2, IconCalendar, IconHistory,
   IconPencil, IconSettings, IconToolsKitchen2, IconSoup, IconCarrot
 } from '@tabler/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import { useDashboardNav } from '@/composables/useDashboardNav'
-import { useDashboardMenu } from '@/composables/useDashboardMenu'
+import { useDashboardMenu, NUTRITION_KEYS } from '@/composables/useDashboardMenu'
+import { usePlan } from '@/composables/usePlan'
 import EditProfileModal from '@/components/dashboard/modals/EditProfileModal.vue'
 import SettingsModal from '@/components/dashboard/modals/SettingsModal.vue'
 
@@ -15,22 +16,28 @@ const userStore = useUserStore()
 const { userData } = storeToRefs(userStore)
 const { goTo } = useDashboardNav()
 const { secondaryMenu } = useDashboardMenu()
+const { isFree } = usePlan()
 
 // Dietas/Platos/Ingredientes viven como botones de "Información" (junto a
-// Estadísticas/Ejercicios/Medidas/Calendario); el resto (Guías, Usuarios,
-// según el rol) se queda en la lista de abajo.
-const infoButtons = computed(() => [
-  { key: 'stats', label: 'Estadísticas', icon: IconTrophy },
-  { key: 'exercises', label: 'Ejercicios', icon: IconBarbell },
-  { key: 'measurements', label: 'Medidas', icon: IconRuler2 },
-  { key: 'calendar', label: 'Calendario', icon: IconCalendar },
-  { key: 'diets', label: 'Dietas', icon: IconToolsKitchen2 },
-  { key: 'plates', label: 'Platos', icon: IconSoup },
-  { key: 'ingredients', label: 'Ingredientes', icon: IconCarrot },
-])
-const infoKeys = infoButtons.value.map(i => i.key)
+// Entrenamientos/Récords/Ejercicios/Medidas/Calendario); el resto (Guías, Usuarios,
+// según el rol) se queda en la lista de abajo. En el plan gratuito no aparecen.
+const infoButtons = computed(() => {
+  const items = [
+    { key: 'workouts', label: 'Entrenamientos', icon: IconHistory },
+    { key: 'stats', label: 'Récords', icon: IconTrophy },
+    { key: 'exercises', label: 'Ejercicios', icon: IconBarbell },
+    { key: 'measurements', label: 'Medidas', icon: IconRuler2 },
+    { key: 'calendar', label: 'Calendario', icon: IconCalendar },
+    { key: 'diets', label: 'Dietas', icon: IconToolsKitchen2 },
+    { key: 'plates', label: 'Platos', icon: IconSoup },
+    { key: 'ingredients', label: 'Ingredientes', icon: IconCarrot },
+  ]
 
-const otherSections = computed(() => secondaryMenu.value.filter(i => !infoKeys.includes(i.key)))
+  return isFree.value ? items.filter((item) => !NUTRITION_KEYS.includes(item.key)) : items
+})
+const infoKeys = computed(() => infoButtons.value.map(i => i.key))
+
+const otherSections = computed(() => secondaryMenu.value.filter(i => !infoKeys.value.includes(i.key)))
 
 const editModal = ref(null)
 const settingsModal = ref(null)

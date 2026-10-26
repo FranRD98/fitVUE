@@ -3,12 +3,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { getTrainingCalendar } from '@/api/services/exercises'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
+import { formatDuration } from '@/utils/workout'
+import WorkoutSets from '@/components/dashboard/WorkoutSets.vue'
 import { IconChevronLeft, IconChevronRight, IconFlame } from '@tabler/icons-vue'
 
 const userStore = useUserStore()
 const { loading, showSkeleton, start, finish } = useDelayedSkeleton(200)
 
-const trainedByDate = ref({}) // { 'YYYY-MM-DD': ['Pierna 1', ...] }
+const trainedByDate = ref({}) // { 'YYYY-MM-DD': { routines, sessions } }
 const cursor = ref(new Date()) // mes que se está viendo
 const selectedDate = ref(null)
 
@@ -54,8 +56,13 @@ function isFuture(date) {
   return date > today
 }
 
-function trainedOn(date) {
+function entryOn(date) {
   return trainedByDate.value[toKey(date)] || null
+}
+
+function trainedOn(date) {
+  const entry = entryOn(date)
+  return entry?.routines?.length ? entry : null
 }
 
 function selectDay(date) {
@@ -94,13 +101,13 @@ const selectedDateLabel = computed(() => {
   if (!selectedDate.value) return null
   return selectedDate.value.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })
 })
-const selectedDateRoutines = computed(() => selectedDate.value ? trainedOn(selectedDate.value) : null)
+const selectedSessions = computed(() => selectedDate.value ? (entryOn(selectedDate.value)?.sessions || []) : [])
 
 onMounted(async () => {
   start()
   try {
     const data = await getTrainingCalendar(userStore.userData?.uid)
-    trainedByDate.value = Object.fromEntries(data.map(d => [d.date, d.routines]))
+    trainedByDate.value = Object.fromEntries(data.map(d => [d.date, d]))
   } finally {
     finish()
   }
@@ -171,11 +178,17 @@ onMounted(async () => {
         </div>
       </div>
 
-      <div v-if="selectedDate" class="bg-gray-100 md:bg-white shadow rounded-xl p-4">
-        <p class="text-sm font-semibold text-[var(--color-primary)] capitalize mb-1">{{ selectedDateLabel }}</p>
-        <p v-if="selectedDateRoutines" class="text-sm text-gray-600">
-          Entrenaste: {{ selectedDateRoutines.join(', ') }}
-        </p>
+      <div v-if="selectedDate" class="bg-gray-100 md:bg-white shadow rounded-xl p-4 space-y-4">
+        <p class="text-sm font-semibold text-[var(--color-primary)] capitalize">{{ selectedDateLabel }}</p>
+        <template v-if="selectedSessions.length">
+          <div v-for="(session, i) in selectedSessions" :key="i" class="space-y-2">
+            <div class="flex items-center justify-between gap-3">
+              <p class="text-sm font-semibold text-gray-800">{{ session.routine_title }}</p>
+              <p class="text-xs text-gray-400 shrink-0">{{ formatDuration(session.duration_seconds) }}</p>
+            </div>
+            <WorkoutSets :exercises="session.exercises" />
+          </div>
+        </template>
         <p v-else class="text-sm text-gray-400">Día de descanso.</p>
       </div>
     </div>

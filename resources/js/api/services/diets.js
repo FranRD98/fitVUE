@@ -18,6 +18,11 @@ export async function getDiets(userId) {
   }
 }
 
+export async function getCatalogDiets() {
+  const { data } = await api.get('/diets', { params: { catalog: 1 } })
+  return data
+}
+
 // Obtener dieta asignada por el coach
 export async function getCoachAssignedDiet(uid) {
   const { data } = await api.get(`/users/${uid}/coach-assigned-diet`)

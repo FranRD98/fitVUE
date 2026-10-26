@@ -1,15 +1,23 @@
 <script setup>
-import { computed, defineAsyncComponent, onMounted } from 'vue'
+import { computed, defineAsyncComponent, onMounted, watch } from 'vue'
 import { IconChevronLeft } from '@tabler/icons-vue'
 import DashboardSidebar from './DashboardSidebar.vue'
 import DashboardHeader from './DashboardHeader.vue'
 import BottomNavBar from './BottomNavBar.vue'
-import { useDashboardMenu, isSecondaryPanel } from '@/composables/useDashboardMenu'
+import { useDashboardMenu, isSecondaryPanel, NUTRITION_KEYS } from '@/composables/useDashboardMenu'
 import { useDashboardNav } from '@/composables/useDashboardNav'
+import { usePlan } from '@/composables/usePlan'
 import { useSwipeBack } from '@/composables/useSwipeBack'
 
 const { visibleMenu } = useDashboardMenu()
 const { activeKey, goTo } = useDashboardNav()
+const { isFree } = usePlan()
+
+watch([activeKey, isFree], () => {
+  if (isFree.value && NUTRITION_KEYS.includes(activeKey.value)) {
+    activeKey.value = 'routines'
+  }
+})
 
 const showBackLink = computed(() => isSecondaryPanel(activeKey.value))
 
@@ -31,9 +39,11 @@ const componentsMap = {
   plates: defineAsyncComponent(() => import('@/components/dashboard/PlatesPanel.vue')),
   ingredients: defineAsyncComponent(() => import('@/components/dashboard/IngredientsPanel.vue')),
   guides: defineAsyncComponent(() => import('@/components/dashboard/GuidesPanel.vue')),
+  web: defineAsyncComponent(() => import('@/components/dashboard/WebPanel.vue')),
   users: defineAsyncComponent(() => import('@/components/dashboard/UsersPanel.vue')),
   config: defineAsyncComponent(() => import('@/components/dashboard/ConfigPanel.vue')),
   stats: defineAsyncComponent(() => import('@/components/dashboard/StatsPanel.vue')),
+  workouts: defineAsyncComponent(() => import('@/components/dashboard/HomePanel.vue')),
   measurements: defineAsyncComponent(() => import('@/components/dashboard/MeasurementsPanel.vue')),
   calendar: defineAsyncComponent(() => import('@/components/dashboard/CalendarPanel.vue'))
 }
@@ -61,7 +71,14 @@ onMounted(() => {
     <!-- Contenido principal -->
     <div class="flex flex-col flex-1 h-dvh overflow-hidden">
       <DashboardHeader />
-      <main class="flex-1 overflow-y-auto px-4 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-24 md:px-6 md:py-6 md:pb-6 md:pt-6">
+      <!-- Fuera del scroll: el contenido no se cuela bajo el notch y iOS no
+           difumina lo que pasa por detrás de la barra de estado. -->
+      <div
+        class="md:hidden shrink-0 bg-white dark:bg-[#0f172a]"
+        style="height: env(safe-area-inset-top)"
+        aria-hidden="true"
+      />
+      <main class="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-24 md:px-6 md:py-6 md:pb-6 md:pt-6">
         <!-- Volver a Perfil: solo en móvil, dentro de una sección secundaria.
              Vive dentro del contenido con scroll (no es una barra fija) para
              no añadir otra capa de cabecera encima del notch. -->

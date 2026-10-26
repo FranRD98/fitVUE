@@ -60,7 +60,7 @@ export default {
         },
         {
           question: '¿Es gratis el servicio?',
-          answer: 'Sí. Ofrecemos un plan gratuito con funcionalidades básicas. También puedes mejorar a Pro.',
+          answer: 'Sí. El plan gratuito incluye hasta 3 rutinas y el seguimiento (historial, calendario y récords). Premium quita el límite de rutinas y abre dietas, platos e ingredientes, incluida la dieta de tu coach. Profesional añade el panel de clientes para entrenadores.',
           open: false
         },
         {

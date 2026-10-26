@@ -33,7 +33,7 @@
     <div class="mt-24 text-center">
       <h3 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-4">¿Y si te decimos que hay más?</h3>
       <p class="text-lg md:text-xl text-gray-600 mb-8">
-        Con nuestros planes <strong>Avanzado</strong> y <strong>Profesional</strong>, desbloqueas todo el poder de FitVue.
+        Con <strong>Premium</strong> quitas el límite de rutinas y abres dietas, platos e ingredientes. Con <strong>Profesional</strong> llevas a tus clientes.
       </p>
     </div>
 
@@ -45,12 +45,12 @@
         class="w-full md:w-1/2 object-cover h-64 md:h-auto"
       />
       <div class="p-8 flex flex-col justify-center md:w-1/2 text-left">
-        <h4 class="text-3xl md:text-4xl font-bold mb-8">Tu entrenador personal, sin límites</h4>
+        <h4 class="text-3xl md:text-4xl font-bold mb-8">De entrenar solo a entrenar a otros</h4>
         <p class="text-lg text-pretty mb-4">
-          Con el plan <strong>Avanzado</strong>, podrás tener rutinas y dietas asignadas directamente por un entrenador o coach. Ajustadas a tus objetivos, con seguimiento en tiempo real.
+          Con <strong>Premium</strong> creas las rutinas que necesites y se abren dietas, platos e ingredientes, incluida la dieta de tu coach. El historial, el calendario y los récords los tienes desde el plan gratuito.
         </p>
         <p class="text-lg">
-          ¿Eres profesional del fitness? El plan <strong>Profesional</strong> te permite crear una red de clientes, asignar rutinas y dietas, y llevar un seguimiento de su evolución como si tuvieras tu propio software de entrenamiento personalizado.
+          ¿Entrenas a otras personas? <strong>Profesional</strong> abre el panel de clientes: creas sus dietas y se las asignas desde su ficha.
         </p>
       </div>
     </div>
