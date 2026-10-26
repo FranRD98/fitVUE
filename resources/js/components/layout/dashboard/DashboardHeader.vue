@@ -17,7 +17,7 @@ const { randomMessage } = useGreeting()
       <img
         :src="userStore.userData.profile_image || '/img/default-profile.svg'"
         alt="profile"
-        class="w-12 h-12 rounded-full"
+        class="profile-photo w-12 h-12 rounded-full object-cover"
       />
       <div class="flex-1">
         <h1 class="text-xl font-bold text-[var(--color-primary)]">

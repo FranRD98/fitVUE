@@ -117,7 +117,7 @@ const handleSave = async () => {
             >
               <span v-if="!profileImage" class="text-gray-600 dark:text-gray-300">Haz clic para subir una imagen</span>
               <div v-else class="relative w-32 h-32">
-                <img :src="profileImage" alt="Imagen de perfil" class="w-full h-full object-cover rounded-full border border-gray-200 dark:border-white/10" />
+                <img :src="profileImage" alt="Imagen de perfil" class="profile-photo w-full h-full object-cover rounded-full border border-gray-200 dark:border-white/10" />
                 <button
                   @click.prevent="profileImage = null"
                   class="absolute top-1 right-1 w-6 h-6 bg-white bg-opacity-75 rounded-full flex items-center justify-center shadow hover:bg-opacity-100"

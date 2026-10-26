@@ -61,7 +61,7 @@ const settingsModal = ref(null)
       <img
         :src="userData?.profile_image || '/img/default-profile.svg'"
         alt="Imagen de perfil"
-        class="w-14 h-14 rounded-full object-cover ring-2 ring-gray-100 dark:ring-white/10"
+        class="profile-photo w-14 h-14 rounded-full object-cover ring-2 ring-gray-100 dark:ring-white/10"
       />
       <div class="min-w-0">
         <p class="font-semibold text-gray-800 dark:text-white truncate">{{ userData?.name }} {{ userData?.last_name }}</p>

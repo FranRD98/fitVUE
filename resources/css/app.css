@@ -17,6 +17,13 @@
   }
 }
 
+/* Las fotos del iPhone traen un mapa HDR. Safari las pinta más brillantes
+   que el resto de la interfaz; una captura las aplana y el brillo desaparece.
+   standard obliga a mostrar la versión normal. */
+.profile-photo {
+  dynamic-range-limit: standard;
+}
+
 :root {
   /* Tipografía */
   --font-display: "Poppins", "Arial", sans-serif;

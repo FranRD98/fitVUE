@@ -25,21 +25,9 @@ defineProps({
         {{ item.title }}
       </h3>
 
-      <p class="text-sm text-gray-500 mb-3 line-clamp-2 sm:line-clamp-3">
+      <p class="text-sm text-gray-500 line-clamp-2 sm:line-clamp-3">
         {{ item.description }}
       </p>
-
-      <!-- Info inferior -->
-      <div class="text-xs text-gray-400 mt-auto space-y-1">
-        <p v-if="item.author"><strong>Autor:</strong> {{ item.author }}</p>
-        <p v-if="item.id_category">
-          <strong>Categoría:</strong>
-          {{ categories.find(cat => cat.id === item.id_category)?.title || '—sin categoría—' }}
-        </p>
-        <p v-if="item.created_at">
-          <strong>Fecha: </strong>{{ new Date(item.created_at).toLocaleDateString() || '—' }}
-        </p>
-      </div>
     </div>
   </router-link>
 </template>

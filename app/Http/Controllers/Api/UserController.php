@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\SdrImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -141,6 +142,7 @@ class UserController extends Controller
         }
 
         $path = $request->file('image')->store('icons/profile-images', 'public');
+        SdrImage::flattenStored($path);
         $user->update(['profile_image' => $path]);
 
         return response()->json(['url' => Storage::disk('public')->url($path)]);

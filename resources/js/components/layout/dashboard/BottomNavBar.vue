@@ -41,7 +41,7 @@ const tabs = [
         v-if="tab.key === 'config' && userStore.userData?.profile_image"
         :src="userStore.userData.profile_image"
         alt=""
-        class="w-6 h-6 rounded-full object-cover ring-2"
+        class="profile-photo w-6 h-6 rounded-full object-cover ring-2"
         :class="isProfileActive ? 'ring-[var(--color-primary)] dark:ring-white' : 'ring-transparent'"
       />
       <component v-else :is="tab.icon" class="w-6 h-6" :stroke-width="2" />

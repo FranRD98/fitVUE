@@ -22,6 +22,7 @@ const routines = ref([])
 const categories = ref([])
 const diets = ref([])
 const loading = ref(true)
+const loadError = ref('')
 const categoryTitle = ref('')
 const savingCategory = ref(false)
 
@@ -37,18 +38,24 @@ const categoryName = computed(() => {
 
 async function load() {
   loading.value = true
-  try {
-    const [catalogRoutines, routineCategories, catalogDiets] = await Promise.all([
-      getRoutines({ catalog: true }),
-      getRoutineCategories(),
-      getCatalogDiets(),
-    ])
-    routines.value = catalogRoutines
-    categories.value = routineCategories
-    diets.value = catalogDiets
-  } finally {
-    loading.value = false
+  loadError.value = ''
+  const [routinesResult, categoriesResult, dietsResult] = await Promise.allSettled([
+    getRoutines({ catalog: true }),
+    getRoutineCategories(),
+    getCatalogDiets(),
+  ])
+
+  categories.value = categoriesResult.status === 'fulfilled' ? categoriesResult.value : []
+  routines.value = routinesResult.status === 'fulfilled' ? routinesResult.value : []
+  diets.value = dietsResult.status === 'fulfilled' ? dietsResult.value : []
+
+  if (routinesResult.status === 'rejected' || dietsResult.status === 'rejected') {
+    loadError.value = 'No se han podido cargar las rutinas o dietas de la web. En el servidor falta la migración que añade is_catalog.'
+  } else if (categoriesResult.status === 'rejected') {
+    loadError.value = 'No se han podido cargar las categorías.'
   }
+
+  loading.value = false
 }
 
 onMounted(load)
@@ -88,6 +95,8 @@ async function addCategory() {
     await createRoutineCategory(title)
     categoryTitle.value = ''
     await load()
+  } catch (error) {
+    alert(error.response?.data?.message || 'No se ha podido crear la categoría.')
   } finally {
     savingCategory.value = false
   }
@@ -119,6 +128,7 @@ async function removeDiet(diet) {
   <section>
     <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)] mb-1">WEB</h1>
     <p class="text-sm text-gray-500 mb-5">Contenido de la landing, aparte de las rutinas y dietas de los clientes.</p>
+    <p v-if="loadError" class="text-sm text-red-600 mb-4">{{ loadError }}</p>
 
     <div class="flex gap-2 overflow-x-auto mb-6">
       <button

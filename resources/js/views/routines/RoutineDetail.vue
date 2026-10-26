@@ -1,13 +1,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { getRoutineById, getRoutineCategories } from '@/api/services/routines.js'
+import { getRoutineById } from '@/api/services/routines.js'
 
 const route = useRoute()
 const router = useRouter()
 
 const routine = ref(null)
-const categoryName = ref('')
 const loading = ref(true)
 
 onMounted(async () => {
@@ -21,11 +20,6 @@ onMounted(async () => {
     }
 
     routine.value = data
-
-    const categories = await getRoutineCategories()
-    const cat = categories.find(cat => cat.id === data.id_category)
-    categoryName.value = cat?.name || 'General'
-
   } catch (error) {
     console.error('Error cargando rutina:', error)
     router.push('/404')
@@ -44,7 +38,6 @@ onMounted(async () => {
       <header class="space-y-2 border-b pb-4">
         <h1 class="text-3xl font-bold text-[var(--color-primary)]">{{ routine.title }}</h1>
         <p class="text-gray-600">{{ routine.description }}</p>
-        <p class="text-sm text-gray-400">Categoría: {{ categoryName }}</p>
       </header>
 
       <!-- Ejercicios -->

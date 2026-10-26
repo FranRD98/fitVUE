@@ -75,7 +75,7 @@ onMounted(() => {
            difumina lo que pasa por detrás de la barra de estado. -->
       <div
         class="md:hidden shrink-0 bg-white dark:bg-[#0f172a]"
-        style="height: env(safe-area-inset-top)"
+        style="height: calc(env(safe-area-inset-top, 0px) + 1.25rem)"
         aria-hidden="true"
       />
       <main class="flex-1 overflow-y-auto overscroll-contain px-4 pt-3 pb-24 md:px-6 md:py-6 md:pb-6 md:pt-6">

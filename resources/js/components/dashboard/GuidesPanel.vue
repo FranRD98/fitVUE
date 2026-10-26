@@ -174,12 +174,6 @@ const togglePublished = async (guide) => {
           <h3 class="text-xl font-bold text-gray-800 mb-1 truncate">{{ guide.title }}</h3>
           <p class="text-sm text-gray-600 mb-2 line-clamp-2">{{ guide.description }}</p>
 
-          <div class="text-xs text-gray-500 mt-auto">
-            <p><strong>Categoría:</strong> {{ categories.find(cat => cat.id === guide.id_category)?.title || '—sin categoría—' }}</p>
-            <p><strong>Autor:</strong> {{ guide.author }}</p>
-            <p><strong>Fecha:</strong> {{ new Date(guide.created_at).toLocaleDateString() || '—' }}</p>
-          </div>
-
           <div class="mt-4 flex justify-between items-center">
             <div v-if="userStore.userData?.role === 'admin'" class="flex items-center gap-3">
               <label
@@ -229,9 +223,6 @@ const togglePublished = async (guide) => {
       <thead class="bg-gray-200 text-gray-600 font-medium">
         <tr>
           <th class="py-3 px-2">Título</th>
-          <th class="px-2">Categoría</th>
-          <th class="px-2">Autor</th>
-          <th class="px-2">Fecha</th>
           <th class="px-2 text-right">Acciones</th>
         </tr>
       </thead>
@@ -243,9 +234,6 @@ const togglePublished = async (guide) => {
           @click="openEditModal(guide)"
         >
           <td class="py-3 px-2 font-semibold text-[var(--color-primary)]">{{ guide.title }}</td>
-          <td class="py-3 px-2"> {{ categories.find(cat => cat.id === guide.id_category)?.title || '—sin categoría—' }}</td>
-          <td class="py-3 px-2">{{ guide.author }}</td>
-          <td class="py-3 px-2"> {{ new Date(guide.created_at).toLocaleDateString() || '—' }}</td>
           <td class="py-3 px-2 text-right">
             <button
               @click.prevent.stop="handleDelete(guide)"

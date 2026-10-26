@@ -7,7 +7,6 @@ const route = useRoute()
 const router = useRouter()
 
 const guideId = route.params.id
-const category = route.params.category
 const guide = ref(null)
 const loading = ref(true)
 
@@ -45,13 +44,6 @@ onMounted(async () => {
       <!-- Contenido -->
       <div class="p-6">
         <h1 class="text-4xl font-bold text-[var(--color-primary)] mb-4">{{ guide.title }}</h1>
-
-        <!-- Metadatos -->
-        <div class="text-sm text-gray-500 mb-4 flex flex-wrap gap-4">
-          <span><strong>Autor:</strong> {{ guide.author }}</span>
-          <span><strong>Categoría:</strong> {{ category || 'Sin categoría' }}</span>
-          <span><strong>Publicado:</strong> {{ new Date(guide.created_at).toLocaleDateString('es-ES') || 'N/A' }}</span>
-        </div>
 
         <!-- Contenido detallado -->
         <div class="space-y-8">
