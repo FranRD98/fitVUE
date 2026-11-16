@@ -81,7 +81,19 @@ router.beforeEach(async (to, from, next) => {
   const isPublic = to.meta.public === true
 
   if (!isLoggedIn && !isPublic) return next('/login')
-  if (isLoggedIn && ['/login', '/sign-in'].includes(to.path)) return next('/dashboard')
+
+  // Si vuelve a login/registro ya autenticado (p. ej. tras cancelar el pago de
+  // Stripe), que no se salte el onboarding: ahí es donde se piden nombre y
+  // apellidos, y sin ellos el panel muestra "Usuario".
+  if (isLoggedIn && ['/login', '/sign-in'].includes(to.path)) {
+    return next(user.value.completed_form ? '/dashboard' : '/empezar')
+  }
+
+  // Cualquier otra zona protegida (p. ej. /dashboard tecleado a mano) exige
+  // haber pasado antes por el onboarding de nombre y apellidos.
+  if (isLoggedIn && !user.value.completed_form && !isPublic && to.path !== '/empezar') {
+    return next('/empezar')
+  }
 
   return next()
 })
