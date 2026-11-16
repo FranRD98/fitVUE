@@ -43,21 +43,11 @@ async function installAndroid() {
           <span class="btn-fill__label inline-flex items-center gap-2">
             <IconBrandAndroid class="w-5 h-5" /> Instalar en Android / PC
           </span>
-          <span class="btn-fill__sweep" aria-hidden="true">
-            <span class="btn-fill__label inline-flex items-center gap-2">
-              <IconBrandAndroid class="w-5 h-5" /> Instalar en Android / PC
-            </span>
-          </span>
         </button>
 
         <button type="button" @click="showIosHelp = true" class="btn-fill btn-fill--outline px-6 py-3 rounded-full font-semibold">
           <span class="btn-fill__label inline-flex items-center gap-2">
             <IconBrandApple class="w-5 h-5" /> Instalar en iPhone / iPad
-          </span>
-          <span class="btn-fill__sweep" aria-hidden="true">
-            <span class="btn-fill__label inline-flex items-center gap-2">
-              <IconBrandApple class="w-5 h-5" /> Instalar en iPhone / iPad
-            </span>
           </span>
         </button>
       </div>

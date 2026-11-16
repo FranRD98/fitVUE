@@ -88,7 +88,6 @@ const emit = defineEmits(['select'])
       class="btn-fill btn-fill--solid w-full font-semibold py-3 rounded-full"
     >
       <span class="btn-fill__label">{{ buttonText }}</span>
-      <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">{{ buttonText }}</span></span>
     </button>
   </div>
 </template>

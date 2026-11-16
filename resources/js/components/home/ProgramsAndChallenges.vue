@@ -10,7 +10,6 @@
         class="btn-fill btn-fill--solid-light px-6 py-3 rounded-full font-semibold shadow"
       >
         <span class="btn-fill__label">Ver rutinas activas</span>
-        <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">Ver rutinas activas</span></span>
       </router-link>
     </div>
   </section>

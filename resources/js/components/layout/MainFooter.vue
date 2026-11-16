@@ -48,7 +48,7 @@
       <!-- Info legal y contacto -->
       <div class="space-y-2">
         <h4 class="text-base font-semibold text-white">Contacto</h4>
-        <p>Email: <span class="font-medium">support@fitvue.com</span></p>
+        <p>Email: <span class="font-medium">info@fitvue.es</span></p>
         <p>Teléfono: <span class="font-medium">+34 567 890 012</span></p>
       </div>
     </div>

@@ -17,10 +17,20 @@ const guideCategories = ref([])
 const routineCategories = ref([])
 
 // Transparente solo en el inicio (sobre el vídeo de portada) y mientras no se
-// haya bajado: en el resto de páginas, o al hacer scroll, pasa a blanco.
+// haya bajado: en el resto de páginas, al hacer scroll, o con un desplegable
+// abierto (el panel "Rutinas"/"Guías" es blanco opaco; con el header
+// transparente encima quedaba descuadrado), pasa a blanco.
 const scrolled = ref(false)
+const dropdownOpen = ref(false)
 const isHome = computed(() => route.path === '/')
-const transparent = computed(() => isHome.value && !scrolled.value)
+const transparent = computed(() => isHome.value && !scrolled.value && !dropdownOpen.value)
+
+function openDropdown() {
+  dropdownOpen.value = true
+}
+function closeDropdown() {
+  dropdownOpen.value = false
+}
 
 function onScroll() {
   scrolled.value = window.scrollY > 40
@@ -85,7 +95,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
         <div class="hidden lg:flex justify-center items-center gap-6 shrink-0">
 
          <!-- Dropdown Rutinas -->
-          <div class="relative dropdown">
+          <div class="relative dropdown" @mouseenter="openDropdown" @mouseleave="closeDropdown">
             <router-link to="/rutinas">
               <a
                 class="px-1 py-2 font-medium hover:text-[var(--color-primary)] transition-colors duration-300"
@@ -125,7 +135,7 @@ const userName = computed(() => userData.value?.name || 'Usuario')
           </div>
           
           <!-- Dropdown Guías -->
-          <div class="relative dropdown">
+          <div class="relative dropdown" @mouseenter="openDropdown" @mouseleave="closeDropdown">
             <router-link to="/guias">
               <a
                 class="px-1 py-2 font-normal hover:text-[var(--color-primary)] transition-colors duration-300"
@@ -216,11 +226,9 @@ const userName = computed(() => userData.value?.name || 'Usuario')
               :class="transparent ? 'btn-fill--outline-light' : 'btn-fill--outline'"
             >
               <span class="btn-fill__label">Iniciar sesión</span>
-              <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">Iniciar sesión</span></span>
             </router-link>
             <router-link to="/sign-in" class="btn-fill btn-fill--solid px-5 py-2 rounded-full font-normal whitespace-nowrap">
               <span class="btn-fill__label">Consigue tu cambio</span>
-              <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">Consigue tu cambio</span></span>
             </router-link>
           </div>
 
@@ -337,7 +345,6 @@ const userName = computed(() => userData.value?.name || 'Usuario')
       class="btn-fill btn-fill--solid px-6 py-3 rounded-full font-semibold"
     >
       <span class="btn-fill__label">Consigue tu cambio</span>
-      <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">Consigue tu cambio</span></span>
     </router-link>
   </template>
 </div>

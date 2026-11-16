@@ -30,8 +30,8 @@
         <h2 class="text-xl font-semibold text-cyan-700 mt-6">5. Contacto</h2>
         <p class="text-gray-600">
           Si tienes preguntas sobre estos términos, contáctanos en
-          <a href="mailto:soporte@fitvue.com" class="text-cyan-800 font-semibold">
-            soporte@fitvue.com
+          <a href="mailto:info@fitvue.es" class="text-cyan-800 font-semibold">
+            info@fitvue.es
           </a>.
         </p>
       </div>

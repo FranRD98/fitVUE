@@ -34,9 +34,6 @@
         class="btn-fill btn-fill--outline-light mt-8 px-8 py-3 rounded-full text-lg font-semibold"
       >
         <span class="btn-fill__label">Empezar gratis</span>
-        <span class="btn-fill__sweep" aria-hidden="true">
-          <span class="btn-fill__label">Empezar gratis</span>
-        </span>
       </router-link>
     </div>
 

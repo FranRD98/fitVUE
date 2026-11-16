@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
 
-const CONTACT_EMAIL = 'fran@franriera.es'
+const CONTACT_EMAIL = 'info@fitvue.es'
 
 const userStore = useUserStore()
 const show = ref(false)
