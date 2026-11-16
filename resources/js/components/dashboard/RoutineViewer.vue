@@ -1,5 +1,6 @@
 <script setup>
 import { IconX } from '@tabler/icons-vue'
+import { formatRir } from '@/utils/rir'
 
 defineProps({
   show: Boolean,
@@ -37,6 +38,7 @@ defineEmits(['close'])
                   <p class="text-sm text-gray-500 mt-0.5">
                     {{ exercise.sets || 0 }} series x {{ exercise.reps || 0 }} reps
                     <template v-if="exercise.rest"> · {{ exercise.rest }}s descanso</template>
+                    <template v-if="formatRir(exercise.rir)"> · {{ formatRir(exercise.rir) }}</template>
                   </p>
                   <p v-if="exercise.note" class="text-xs text-gray-400 mt-0.5 truncate">{{ exercise.note }}</p>
                 </div>

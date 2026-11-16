@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { getCoachAssignedRoutine, getRoutineById } from '@/api/services/routines'
 import { getLastExerciseProgress, saveExerciseProgress } from '@/api/services/exercises'
 import { parseRepsTarget } from '@/utils/reps'
+import { formatRir } from '@/utils/rir'
 import { formatClock, formatSet, formatVolume, setsVolume } from '@/utils/workout'
 import { useSwipeBack } from '@/composables/useSwipeBack'
 import { IconCheck, IconPlus, IconTrash, IconX, IconClock } from '@tabler/icons-vue'
@@ -156,6 +157,7 @@ const loadExercises = async (exercises) => {
         name: exercise.name,
         note: exercise.note || '',
         targetReps: exercise.reps,
+        targetRir: formatRir(exercise.rir),
         restSeconds: exercise.rest ?? 90,
         sets,
         lastDate: lastProgress?.created_at ? new Date(lastProgress.created_at).toLocaleDateString('es-ES') : null,
@@ -378,7 +380,10 @@ useSwipeBack(() => {
       >
         <div class="px-4 py-3 border-b bg-gray-50">
           <h3 class="font-semibold text-[var(--color-primary)]">{{ exercise.name }}</h3>
-          <p v-if="exercise.targetReps" class="text-xs text-gray-500">Objetivo: {{ exercise.targetReps }} reps</p>
+          <p v-if="exercise.targetReps" class="text-xs text-gray-500">
+            Objetivo: {{ exercise.targetReps }} reps<template v-if="exercise.targetRir"> · {{ exercise.targetRir }}</template>
+          </p>
+          <p v-else-if="exercise.targetRir" class="text-xs text-gray-500">{{ exercise.targetRir }}</p>
           <p v-if="Number(exercise.restSeconds) > 0" class="text-xs text-gray-400">Descanso: {{ exercise.restSeconds }}s</p>
           <p v-if="exercise.note" class="text-xs text-gray-400">{{ exercise.note }}</p>
           <p v-if="exercise.lastDate" class="text-xs text-gray-400">Último entrenamiento: {{ exercise.lastDate }}</p>

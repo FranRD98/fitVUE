@@ -4,6 +4,7 @@ import { useUserStore } from '@/stores/user'
 import { createRoutine, updateRoutine, getRoutineCategories } from '@/api/services/routines'
 import ExercisePickerSheet from '@/components/dashboard/pickers/ExercisePickerSheet.vue'
 import { isValidReps } from '@/utils/reps'
+import { RIR_OPTIONS } from '@/utils/rir'
 import { IconX, IconPlus, IconArrowUp, IconArrowDown, IconChevronDown, IconGripVertical } from '@tabler/icons-vue'
 
 // Props y emits
@@ -38,7 +39,7 @@ watch(() => props.initialData, (newVal) => {
       id: newVal.id,
       title: newVal.title || '',
       description: newVal.description || '',
-      exercises: (newVal.exercises || []).map(ex => ({ ...ex, note: ex.note || '', rest: ex.rest ?? 90 })),
+      exercises: (newVal.exercises || []).map(ex => ({ ...ex, note: ex.note || '', rest: ex.rest ?? 90, rir: ex.rir || '' })),
       id_category: newVal.id_category ?? null,
       published: newVal.published ?? false,
     }
@@ -55,6 +56,7 @@ function addExercises(newExercises) {
       sets: null,
       reps: null,
       rest: 90,
+      rir: '',
       note: ''
     })
   }
@@ -265,7 +267,7 @@ function resetForm() {
                       {{ exercise.name }}
                     </h3>
                     <span v-if="isCollapsed(exercise)" class="text-xs text-gray-400 shrink-0">
-                      {{ exercise.sets || 0 }}x{{ exercise.reps || 0 }}<template v-if="exercise.rest"> · {{ exercise.rest }}s</template>
+                      {{ exercise.sets || 0 }}x{{ exercise.reps || 0 }}<template v-if="exercise.rest"> · {{ exercise.rest }}s</template><template v-if="exercise.rir"> · RIR {{ exercise.rir }}</template>
                     </span>
                   </button>
                   <div class="flex items-center gap-1 shrink-0">
@@ -307,6 +309,16 @@ function resetForm() {
                       <label class="block text-xs text-gray-500 mb-1">Descanso (segundos)</label>
                       <input v-model.number="exercise.rest" type="number" min="0" step="5" class="input text-sm" placeholder="90" />
                       <p class="text-[11px] text-gray-400 mt-1">Al marcar una serie se abre este temporizador. 0 para no mostrarlo.</p>
+                    </div>
+                    <div class="col-span-2">
+                      <label class="block text-xs text-gray-500 mb-1">RIR objetivo (opcional)</label>
+                      <select v-model="exercise.rir" class="input text-sm">
+                        <option value="">Sin RIR</option>
+                        <option v-for="option in RIR_OPTIONS" :key="option.value" :value="option.value">
+                          {{ option.label }}
+                        </option>
+                      </select>
+                      <p class="text-[11px] text-gray-400 mt-1">Repeticiones en reserva: cuánto le queda al llegar al fallo.</p>
                     </div>
                   </div>
 
