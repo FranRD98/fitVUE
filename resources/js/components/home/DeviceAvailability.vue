@@ -33,7 +33,7 @@ async function installAndroid() {
         Disponible en todos tus dispositivos
       </h2>
       <p v-reveal class="text-lg text-gray-600 mb-10 max-w-2xl mx-auto">
-        FitVue funciona desde el navegador y también se instala como app, sin
+        fitVUE funciona desde el navegador y también se instala como app, sin
         pasar por ninguna tienda: en tu móvil, tablet u ordenador, siempre con
         tus datos sincronizados.
       </p>

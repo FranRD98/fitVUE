@@ -1,4 +1,4 @@
-# Desplegar FitVue en Plesk
+# Desplegar fitVUE en Plesk
 
 Un único proyecto Laravel con Vue integrado (vía Vite) sirviendo todo desde la raíz del repositorio. Nada de subcarpetas ni dominios separados.
 
@@ -29,7 +29,7 @@ En Plesk, sobre el dominio/subdominio:
 Plesk no sube el `.env` (está en `.gitignore` a propósito). Créalo a mano en la raíz del proyecto:
 
 ```env
-APP_NAME=FitVue
+APP_NAME=fitVUE
 APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
@@ -56,7 +56,7 @@ STRIPE_PRICE_PRO=price_xxxxxxxxxxxx
 ADMIN_EMAIL=admin@fitvue.es
 ADMIN_PASSWORD=<tu contraseña real>
 ADMIN_NAME=Admin
-ADMIN_LAST_NAME=FitVue
+ADMIN_LAST_NAME=fitVUE
 ```
 
 Dejar `APP_KEY` vacío: se rellena solo en el siguiente paso.

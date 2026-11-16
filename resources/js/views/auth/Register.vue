@@ -71,7 +71,7 @@ const registerUser = async () => {
         <!-- Título -->
         <div class="pt-4 md:pt-0">
           <h2 class="text-3xl sm:text-4xl font-bold text-[var(--color-primary)]">Crear cuenta</h2>
-          <p class="text-sm text-gray-500 mt-1">Únete a FitVue y empieza tu transformación.</p>
+          <p class="text-sm text-gray-500 mt-1">Únete a fitVUE y empieza tu transformación.</p>
         </div>
 
         <!-- Formulario -->

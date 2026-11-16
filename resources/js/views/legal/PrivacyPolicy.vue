@@ -3,7 +3,7 @@
       <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 class="text-3xl font-bold text-cyan-800 mb-4">Política de Privacidad</h1>
         <p class="text-gray-700 mb-4">
-          En Fitvue, nos tomamos tu privacidad muy en serio. Esta política explica cómo recopilamos,
+          En fitVUE, nos tomamos tu privacidad muy en serio. Esta política explica cómo recopilamos,
           usamos y protegemos tu información personal.
         </p>
   

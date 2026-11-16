@@ -1,6 +1,6 @@
 <template>
   <section class="max-w-7xl mx-auto px-6 py-20 gap-2 bg-white text-center flex flex-col items-center">
-    <h2 v-reveal class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-4">Lo que puedes hacer con FitVue</h2>
+    <h2 v-reveal class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-4">Lo que puedes hacer con fitVUE</h2>
     <p v-reveal class="text-lg md:text-xl text-gray-600 mb-12 mx-auto">
       Controla tu progreso, planifica tu rutina, cuida tu alimentación y mucho más desde una sola plataforma.
     </p>

@@ -22,7 +22,7 @@
           </a>
         </div>
         <p class="text-xs leading-snug max-w-sm">
-          *FitVue no ofrece asesoramiento médico ni diagnóstico. Su uso es informativo.
+          *fitVUE no ofrece asesoramiento médico ni diagnóstico. Su uso es informativo.
         </p>
       </div>
 
@@ -56,7 +56,7 @@
     <!-- Legal links -->
     <div class="bg-[#111827] text-gray-400 py-6">
       <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-xs gap-3">
-        <p>© {{ currentYear }} FitVue · Fran Riera</p>
+        <p>© {{ currentYear }} fitVUE · Fran Riera</p>
         <div class="flex gap-4">
           <router-link to="/politica-privacidad" class="hover:underline">Política de privacidad</router-link>
           <router-link to="/terminos-y-condiciones" class="hover:underline">Términos y condiciones</router-link>

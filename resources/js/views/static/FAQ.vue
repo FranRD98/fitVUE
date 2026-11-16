@@ -53,8 +53,8 @@ export default {
     return {
       faqs: [
         {
-          question: '¿Qué es FitVue?',
-          answer: 'FitVue es una plataforma todo-en-uno para entrenamientos, dieta y hábitos saludables.',
+          question: '¿Qué es fitVUE?',
+          answer: 'fitVUE es una plataforma todo-en-uno para entrenamientos, dieta y hábitos saludables.',
           open: false
         },
         {

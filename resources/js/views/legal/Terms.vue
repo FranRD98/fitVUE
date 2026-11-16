@@ -3,12 +3,12 @@
       <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md">
         <h1 class="text-3xl font-bold text-cyan-800 mb-4">Términos y Condiciones</h1>
         <p class="text-gray-700 mb-4">
-          Bienvenido a Fitvue. Al utilizar nuestros servicios, aceptas los siguientes términos y condiciones.
+          Bienvenido a fitVUE. Al utilizar nuestros servicios, aceptas los siguientes términos y condiciones.
         </p>
   
         <h2 class="text-xl font-semibold text-cyan-700 mt-6">1. Uso del Servicio</h2>
         <p class="text-gray-600">
-          Fitvue proporciona una plataforma para el seguimiento del estado físico y bienestar. Te comprometes a 
+          fitVUE proporciona una plataforma para el seguimiento del estado físico y bienestar. Te comprometes a 
           utilizarla de manera legal y responsable.
         </p>
   

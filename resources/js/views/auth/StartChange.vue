@@ -224,7 +224,7 @@ const calculateCalories = () => {
 
           <!-- STEP 1 - NOMBRE -->
           <div v-if="step === 0" key="step0">
-            <h2 class="text-4xl md:text-5xl font-bold text-center text-[var(--color-primary)] mb-4">Bienvenido a FitVUE</h2>
+            <h2 class="text-4xl md:text-5xl font-bold text-center text-[var(--color-primary)] mb-4">Bienvenido a fitVUE</h2>
             <p class="text-center text-gray-600 text-lg md:text-xl mb-6">Empecemos por conocerte un poco mejor para personalizar tu experiencia.</p>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Nombre</label>
             <input v-model="userData.name" type="text" placeholder="Tu nombre" class="w-full border px-4 py-2 rounded-lg mb-4" />

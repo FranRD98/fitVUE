@@ -3,13 +3,13 @@ const testimonios = [
   {
     nombre: "María López",
     rol: "Nutricionista",
-    comentario: "FitVue ha transformado cómo planifico las dietas de mis pacientes. Me permite hacer un seguimiento real y efectivo.",
+    comentario: "fitVUE ha transformado cómo planifico las dietas de mis pacientes. Me permite hacer un seguimiento real y efectivo.",
     foto: "https://randomuser.me/api/portraits/women/68.jpg"
   },
   {
     nombre: "Carlos Pérez",
     rol: "Entrenador Personal",
-    comentario: "Desde que uso FitVue con mis clientes, todo es más profesional. Me ahorro horas de trabajo y mis clientes lo notan.",
+    comentario: "Desde que uso fitVUE con mis clientes, todo es más profesional. Me ahorro horas de trabajo y mis clientes lo notan.",
     foto: "https://randomuser.me/api/portraits/men/52.jpg"
   },
   {
@@ -21,13 +21,13 @@ const testimonios = [
   {
     nombre: "Brian Betancourth",
     rol: "Usuario",
-    comentario: "Antes usaba Excel. Ahora con FitVue no solo hago seguimiento, sino que disfruto organizando mis rutinas.",
+    comentario: "Antes usaba Excel. Ahora con fitVUE no solo hago seguimiento, sino que disfruto organizando mis rutinas.",
     foto: "https://randomuser.me/api/portraits/men/36.jpg"
   },
   {
     nombre: "Lucía Navarro",
     rol: "Coach de Bienestar",
-    comentario: "Un sistema completo. Desde rutinas, dietas hasta métricas. ¡FitVue es todo lo que necesitaba para mis clientes!",
+    comentario: "Un sistema completo. Desde rutinas, dietas hasta métricas. ¡fitVUE es todo lo que necesitaba para mis clientes!",
     foto: "https://randomuser.me/api/portraits/women/29.jpg"
   },
   {
@@ -42,9 +42,9 @@ const testimonios = [
 <template>
   <section class="py-24 px-6 bg-white">
     <div v-reveal class="text-center mb-14 max-w-4xl mx-auto">
-      <h2 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)]">Lo que dicen sobre FitVue</h2>
+      <h2 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)]">Lo que dicen sobre fitVUE</h2>
       <p class="text-gray-600 text-lg md:text-xl mt-3">
-        Confianza, resultados y apoyo real. Estas son algunas de las voces que ya han experimentado el cambio con FitVue.
+        Confianza, resultados y apoyo real. Estas son algunas de las voces que ya han experimentado el cambio con fitVUE.
       </p>
     </div>
 

@@ -101,9 +101,9 @@ router.beforeEach(async (to, from, next) => {
 // Título de pestaña por ruta: sin esto, toda la SPA se queda con el título
 // genérico del <head> (bueno para la primera carga, pero no distingue
 // pestañas al navegar ni ayuda a quien usa el historial del navegador).
-const DEFAULT_TITLE = 'FitVue - La app para mejorar tu estilo de vida'
+const DEFAULT_TITLE = 'fitVUE - La app para mejorar tu estilo de vida'
 router.afterEach((to) => {
-  document.title = to.meta.title ? `${to.meta.title} · FitVue` : DEFAULT_TITLE
+  document.title = to.meta.title ? `${to.meta.title} · fitVUE` : DEFAULT_TITLE
 })
 
 export default router
