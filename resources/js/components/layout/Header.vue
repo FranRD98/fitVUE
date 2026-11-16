@@ -1,11 +1,13 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { getPublishedGuideCategoriesInUse } from '@/api/services/guides'
 import { getPublishedRoutineCategoriesInUse } from '@/api/services/routines'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 const { logout } = userStore
+const route = useRoute()
 
 const mobileMenuOpen = ref(false)
 const toggleMobileMenu = () => (mobileMenuOpen.value = !mobileMenuOpen.value)
@@ -14,13 +16,30 @@ const closeMenu = () => (mobileMenuOpen.value = false)
 const guideCategories = ref([])
 const routineCategories = ref([])
 
+// Transparente solo en el inicio (sobre el vídeo de portada) y mientras no se
+// haya bajado: en el resto de páginas, o al hacer scroll, pasa a blanco.
+const scrolled = ref(false)
+const isHome = computed(() => route.path === '/')
+const transparent = computed(() => isHome.value && !scrolled.value)
+
+function onScroll() {
+  scrolled.value = window.scrollY > 40
+}
+
 onMounted(async () => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+
   // Obtener categorías de guías que estén publicadas
   guideCategories.value = (await getPublishedGuideCategoriesInUse())
     .filter(cat => !!cat.icon_path)
   // Obtener categorías de rutinas
   routineCategories.value = await getPublishedRoutineCategoriesInUse()
 
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
 })
 
 // Computed seguros
@@ -36,35 +55,42 @@ const userName = computed(() => userData.value?.name || 'Usuario')
 </script>
 
 <template>
-  <!-- Navbar -->
-  <nav class="bg-white shadow-md sticky top-0 z-50 pt-[var(--safe-top)] lg:pt-0">
+  <!-- Navbar: transparente sobre el vídeo de portada en el inicio, blanca en
+       el resto de páginas y en cuanto se hace scroll. -->
+  <nav
+    class="top-0 inset-x-0 z-50 pt-[var(--safe-top)] lg:pt-0 transition-colors duration-300"
+    :class="[isHome ? 'fixed' : 'sticky', transparent ? 'bg-transparent' : 'bg-white shadow-md']"
+  >
     <div class="max-w-7xl mx-auto px-6">
-      
+
       <!-- Contenedor principal con 3 grupos -->
       <div class="flex justify-between items-center h-20 gap-4">
-        
+
         <!-- Grupo 1: Logo en escritorio. Sin flex-1: si los tres grupos se
              reparten el ancho a partes iguales, en anchos intermedios los
              botones se parten en dos líneas y se montan sobre el hero. -->
         <div class="hidden lg:flex items-center shrink-0">
-          
-          <router-link to="/" class="text-4xl font-bold">
+
+          <router-link to="/" class="text-4xl font-bold transition-colors duration-300" :class="transparent ? 'text-white' : ''">
             <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
           </router-link>
         </div>
 
         <!-- Logo solo visible en móvil -->
-         <router-link to="/" class="lg:hidden text-3xl font-bold">
+         <router-link to="/" class="lg:hidden text-3xl font-bold transition-colors duration-300" :class="transparent ? 'text-white' : ''">
             <span>fit</span><span class="text-[var(--color-primary)]">VUE</span>
           </router-link>
-        
+
         <!-- Grupo 2: Menú central -->
         <div class="hidden lg:flex justify-center items-center gap-6 shrink-0">
 
          <!-- Dropdown Rutinas -->
           <div class="relative dropdown">
             <router-link to="/rutinas">
-              <a class="px-1 py-2 text-[var(--color-text)] font-medium hover:text-[var(--color-primary)]">
+              <a
+                class="px-1 py-2 font-medium hover:text-[var(--color-primary)] transition-colors duration-300"
+                :class="transparent ? 'text-white' : 'text-[var(--color-text)]'"
+              >
                 Rutinas
                 <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -101,7 +127,10 @@ const userName = computed(() => userData.value?.name || 'Usuario')
           <!-- Dropdown Guías -->
           <div class="relative dropdown">
             <router-link to="/guias">
-              <a class="px-1 py-2 text-[var(--color-text)] font-normal hover:text-[var(--color-primary)]">
+              <a
+                class="px-1 py-2 font-normal hover:text-[var(--color-primary)] transition-colors duration-300"
+                :class="transparent ? 'text-white' : 'text-[var(--color-text)]'"
+              >
                 Guías
                 <svg class="w-4 h-4 inline ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -152,10 +181,16 @@ const userName = computed(() => userData.value?.name || 'Usuario')
                   class="rounded-full w-12 h-12 object-cover"
                 />
 
-                <span class="text-sm text-[var(--color-text)] font-medium whitespace-nowrap max-w-[9rem] truncate">
+                <span
+                  class="text-sm font-medium whitespace-nowrap max-w-[9rem] truncate transition-colors duration-300"
+                  :class="transparent ? 'text-white' : 'text-[var(--color-text)]'"
+                >
                   ¡Hola, {{ userName }}!
                 </span>
-                <svg class="w-4 h-4 text-[var(--color-text)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  class="w-4 h-4 transition-colors duration-300"
+                  :class="transparent ? 'text-white' : 'text-[var(--color-text)]'"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -175,14 +210,28 @@ const userName = computed(() => userData.value?.name || 'Usuario')
           </div>
           
           <div v-else class="flex items-center gap-2">
-            <router-link to="/login" class="border border-[var(--color-primary)] px-5 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] hover:text-white transition-colors whitespace-nowrap">Iniciar sesión</router-link>
-            <router-link to="/sign-in" class="bg-[var(--color-primary)] text-white px-5 py-2 rounded-full font-normal hover:bg-[var(--color-secondary)] transition-colors whitespace-nowrap">Consigue tu cambio</router-link>
+            <router-link
+              to="/login"
+              class="btn-fill px-5 py-2 rounded-full font-normal whitespace-nowrap transition-colors duration-300"
+              :class="transparent ? 'btn-fill--outline-light' : 'btn-fill--outline'"
+            >
+              <span class="btn-fill__label">Iniciar sesión</span>
+              <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">Iniciar sesión</span></span>
+            </router-link>
+            <router-link to="/sign-in" class="btn-fill btn-fill--solid px-5 py-2 rounded-full font-normal whitespace-nowrap">
+              <span class="btn-fill__label">Consigue tu cambio</span>
+              <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">Consigue tu cambio</span></span>
+            </router-link>
           </div>
 
         </div>
 
         <!-- Botón menú móvil -->
-        <button @click="toggleMobileMenu" class="lg:hidden text-[var(--color-text)] focus:outline-none">
+        <button
+          @click="toggleMobileMenu"
+          class="lg:hidden focus:outline-none transition-colors duration-300"
+          :class="transparent ? 'text-white' : 'text-[var(--color-text)]'"
+        >
           <svg v-if="!mobileMenuOpen" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none"
             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -285,9 +334,10 @@ const userName = computed(() => userData.value?.name || 'Usuario')
     <router-link
       @click="closeMenu"
       to="/empezar"
-      class="bg-[var(--color-primary)] text-white px-6 py-3 rounded-full font-semibold hover:bg-[var(--color-secondary)] transition"
+      class="btn-fill btn-fill--solid px-6 py-3 rounded-full font-semibold"
     >
-      Consigue tu cambio
+      <span class="btn-fill__label">Consigue tu cambio</span>
+      <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">Consigue tu cambio</span></span>
     </router-link>
   </template>
 </div>

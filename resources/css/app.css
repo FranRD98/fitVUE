@@ -117,3 +117,132 @@ html.dark .bg-gray-100 {
     font-size: 16px !important;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/* Web pública (landing): animaciones de scroll, botones y decoración  */
+/* ------------------------------------------------------------------ */
+
+/* Aparece al entrar en el viewport (ver directiva v-reveal en app.js).
+   prefers-reduced-motion: quien lo pida ve el contenido directamente,
+   sin esperar a una transición. */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* Botón con relleno de izquierda a derecha al pasar el ratón, en vez de un
+   simple cambio de color. Marcado: <button class="btn-fill">
+   <span class="btn-fill__label">Texto</span>
+   <span class="btn-fill__sweep"><span class="btn-fill__label">Texto</span></span>
+   </button>
+   El texto duplicado dentro de btn-fill__sweep queda revelado solo en la
+   franja que ya cubrió el barrido, así el relleno y el cambio de color del
+   texto avanzan juntos de izquierda a derecha. */
+.btn-fill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-fill__label {
+  position: relative;
+  white-space: nowrap;
+}
+.btn-fill__sweep {
+  position: absolute;
+  inset: 0;
+  width: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+  pointer-events: none;
+}
+.btn-fill__sweep .btn-fill__label {
+  width: max-content;
+}
+.btn-fill:hover .btn-fill__sweep,
+.btn-fill:focus-visible .btn-fill__sweep {
+  width: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-fill__sweep {
+    transition: none;
+  }
+}
+
+/* Variante sólida: primario -> secundario. */
+.btn-fill--solid {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+.btn-fill--solid .btn-fill__sweep {
+  background-color: var(--color-secondary);
+}
+
+/* Variante outline: borde primario -> relleno primario, texto oscuro -> blanco. */
+.btn-fill--outline {
+  border: 1px solid var(--color-primary);
+  color: var(--color-primary);
+  background-color: transparent;
+}
+.btn-fill--outline .btn-fill__sweep {
+  background-color: var(--color-primary);
+  color: #fff;
+}
+
+/* Variante outline clara: para usarla sobre fondos oscuros (p. ej. el header
+   transparente sobre el vídeo de portada). */
+.btn-fill--outline-light {
+  border: 1px solid #fff;
+  color: #fff;
+  background-color: transparent;
+}
+.btn-fill--outline-light .btn-fill__sweep {
+  background-color: #fff;
+  color: var(--color-primary);
+}
+
+/* Variante sólida clara: botón blanco sobre fondos de color (p. ej. las
+   secciones con fondo --color-primary), relleno hacia un gris suave. */
+.btn-fill--solid-light {
+  background-color: #fff;
+  color: var(--color-primary);
+}
+.btn-fill--solid-light .btn-fill__sweep {
+  background-color: #f3f4f6;
+}
+
+/* Blobs decorativos animados (hero, sección de dispositivos). Puramente
+   decorativos: aria-hidden en el markup. */
+@keyframes blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(3%, -4%) scale(1.05); }
+  66% { transform: translate(-3%, 3%) scale(0.97); }
+}
+.blob-float {
+  animation: blob-float 14s ease-in-out infinite;
+}
+.blob-float-delay {
+  animation-delay: -7s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .blob-float {
+    animation: none;
+  }
+}

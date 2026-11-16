@@ -85,9 +85,10 @@ const emit = defineEmits(['select'])
     <!-- CTA -->
     <button
       @click="$emit('select', planId)"
-      class="block w-full text-center bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-3 rounded-full transition-colors"
+      class="btn-fill btn-fill--solid w-full font-semibold py-3 rounded-full"
     >
-      {{ buttonText }}
-  </button>
+      <span class="btn-fill__label">{{ buttonText }}</span>
+      <span class="btn-fill__sweep" aria-hidden="true"><span class="btn-fill__label">{{ buttonText }}</span></span>
+    </button>
   </div>
 </template>

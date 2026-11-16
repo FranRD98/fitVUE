@@ -65,8 +65,8 @@ const plans = [
 <template>
   <section class="bg-[#f3f6f8] py-20 px-6">
     <div class="max-w-7xl mx-auto text-center">
-      <h2 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-6">Nuestros Planes</h2>
-      <p class="text-lg md:text-xl text-gray-600 mb-14 max-w-3xl mx-auto">
+      <h2 v-reveal class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-6">Nuestros Planes</h2>
+      <p v-reveal class="text-lg md:text-xl text-gray-600 mb-14 max-w-3xl mx-auto">
         Empieza gratis con 3 rutinas. Premium quita el límite y abre dietas, platos e ingredientes. Profesional es el plan de quien entrena a otras personas.
       </p>
 
@@ -74,6 +74,7 @@ const plans = [
         <PlanCard
           v-for="(plan, i) in plans"
           :key="i"
+          v-reveal="{ delay: i * 100 }"
           v-bind="plan"
           @select="handlePlanSelect"
         />

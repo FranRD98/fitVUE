@@ -41,7 +41,7 @@ const testimonios = [
 
 <template>
   <section class="py-24 px-6 bg-white">
-    <div class="text-center mb-14 max-w-4xl mx-auto">
+    <div v-reveal class="text-center mb-14 max-w-4xl mx-auto">
       <h2 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)]">Lo que dicen sobre FitVue</h2>
       <p class="text-gray-600 text-lg md:text-xl mt-3">
         Confianza, resultados y apoyo real. Estas son algunas de las voces que ya han experimentado el cambio con FitVue.
@@ -52,8 +52,9 @@ const testimonios = [
       <div
         v-for="(t, i) in testimonios"
         :key="i"
+        v-reveal="{ delay: (i % 3) * 100 }"
         :class="[
-          'bg-white rounded-2xl shadow-lg p-6 border transition-all duration-300',
+          'bg-white rounded-2xl shadow-lg p-6 border transition-all duration-300 hover:-translate-y-1',
           i >= 6 ? 'fade-out-mask' : '',
           i === testimonios.length - 1 ? 'mobile-only-fade' : ''
         ]"

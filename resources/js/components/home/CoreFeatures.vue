@@ -1,7 +1,7 @@
 <template>
   <section class="max-w-7xl mx-auto px-6 py-20 gap-2 bg-white text-center flex flex-col items-center">
-    <h2 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-4">Lo que puedes hacer con FitVue</h2>
-    <p class="text-lg md:text-xl text-gray-600 mb-12 mx-auto">
+    <h2 v-reveal class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-4">Lo que puedes hacer con FitVue</h2>
+    <p v-reveal class="text-lg md:text-xl text-gray-600 mb-12 mx-auto">
       Controla tu progreso, planifica tu rutina, cuida tu alimentación y mucho más desde una sola plataforma.
     </p>
 
@@ -10,7 +10,8 @@
       <div
         v-for="(card, i) in cards"
         :key="i"
-        class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition group"
+        v-reveal="{ delay: (i % 2) * 120 }"
+        class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg hover:-translate-y-1 transition group"
       >
         <!-- Imagen con efecto zoom -->
         <div class="overflow-hidden h-64">
@@ -30,7 +31,7 @@
     </div>
 
     <!-- Mensaje intermedio -->
-    <div class="mt-24 text-center">
+    <div v-reveal class="mt-24 text-center">
       <h3 class="text-4xl md:text-5xl font-bold text-[var(--color-primary)] mb-4">¿Y si te decimos que hay más?</h3>
       <p class="text-lg md:text-xl text-gray-600 mb-8">
         Con <strong>Premium</strong> quitas el límite de rutinas y abres dietas, platos e ingredientes. Con <strong>Profesional</strong> llevas a tus clientes.
@@ -38,7 +39,7 @@
     </div>
 
     <!-- Card extra a pantalla completa -->
-    <div class="w-full max-w-6xl bg-[var(--color-primary)] text-white rounded-xl shadow-lg mt-12 overflow-hidden flex flex-col md:flex-row">
+    <div v-reveal class="w-full max-w-6xl bg-[var(--color-primary)] text-white rounded-xl shadow-lg mt-12 overflow-hidden flex flex-col md:flex-row">
       <img
         src="https://placehold.co/112x112/f3f4f6/005F78?text=Premium"
         alt="Entrenador Personal"
