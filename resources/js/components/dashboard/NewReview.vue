@@ -118,7 +118,7 @@ async function handleSave() {
 <template>
   <div class="fixed inset-0 bg-gray-50 z-50 flex flex-col">
     <!-- Cabecera -->
-    <header class="bg-white border-b shrink-0 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 px-4 flex items-center gap-3">
+    <header class="bg-white border-b shrink-0 pt-[calc(var(--safe-top)+0.75rem)] pb-3 px-4 flex items-center gap-3">
       <button type="button" @click="goBack" class="text-gray-500 hover:text-gray-700 shrink-0" aria-label="Volver">
         <IconArrowLeft class="w-5 h-5" />
       </button>

@@ -13,7 +13,7 @@ defineEmits(['close'])
   <div v-if="show" class="fixed inset-0 z-50 bg-white md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
     <div class="w-full h-full md:h-auto md:max-w-2xl md:max-h-[85vh] bg-white md:rounded-xl shadow-xl flex flex-col overflow-hidden">
 
-      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
+      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(var(--safe-top)+0.75rem)] md:pt-3 shrink-0">
         <span class="w-6"></span>
         <h2 class="font-semibold text-[var(--color-primary)] truncate">{{ routine?.title || 'Rutina' }}</h2>
         <button type="button" @click="$emit('close')" class="text-gray-500 hover:text-red-500 transition" aria-label="Cerrar">

@@ -271,7 +271,7 @@ useSwipeBack(() => {
   </div>
 
   <div v-else-if="summary" class="fixed inset-0 bg-gray-50 z-50 flex flex-col">
-    <header class="bg-white border-b shrink-0 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 px-4">
+    <header class="bg-white border-b shrink-0 pt-[calc(var(--safe-top)+0.75rem)] pb-3 px-4">
       <h1 class="font-bold text-[var(--color-primary)] text-center">Entrenamiento completado</h1>
       <p class="text-sm text-gray-500 text-center truncate">{{ summary.title }}</p>
     </header>
@@ -342,7 +342,7 @@ useSwipeBack(() => {
   <!-- Entrenamiento en curso: todos los ejercicios visibles, sin pasos -->
   <div v-else class="fixed inset-0 bg-gray-50 z-50 flex flex-col">
     <!-- Barra superior -->
-    <header class="bg-white border-b shrink-0 pt-[calc(env(safe-area-inset-top)+0.75rem)] pb-3 px-4 flex items-center justify-between gap-3">
+    <header class="bg-white border-b shrink-0 pt-[calc(var(--safe-top)+0.75rem)] pb-3 px-4 flex items-center justify-between gap-3">
       <button @click="confirmExit" class="text-gray-400 hover:text-gray-600 shrink-0" aria-label="Salir">
         <IconX class="w-6 h-6" />
       </button>

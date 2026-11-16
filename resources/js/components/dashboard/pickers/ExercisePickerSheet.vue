@@ -128,7 +128,7 @@ async function handleExerciseCreated() {
     <div class="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-2xl bg-white md:rounded-xl shadow-xl flex flex-col overflow-hidden">
 
       <!-- Header -->
-      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
+      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(var(--safe-top)+0.75rem)] md:pt-3 shrink-0">
         <button type="button" @click="emit('close')" class="text-[var(--color-primary)] font-medium">Cancelar</button>
         <h2 class="font-semibold text-[var(--color-primary)]">Agregar Ejercicio</h2>
         <button v-if="isAdmin" type="button" @click="showCreateModal = true" class="text-[var(--color-primary)] font-medium">Crear</button>

@@ -213,12 +213,12 @@ function formatDate(dateString) {
     <div class="w-full h-full md:h-auto md:max-w-3xl md:max-h-[90vh] bg-white md:rounded-xl shadow-xl flex flex-col relative overflow-hidden">
 
       <!-- Botón cerrar -->
-      <button @click="emit('close')" class="absolute right-3 z-10 text-gray-500 hover:text-red-500 transition top-[calc(env(safe-area-inset-top)+0.75rem)] md:top-3" aria-label="Cerrar">
+      <button @click="emit('close')" class="absolute right-3 z-10 text-gray-500 hover:text-red-500 transition top-[calc(var(--safe-top)+0.75rem)] md:top-3" aria-label="Cerrar">
         <IconX class="h-6 w-6" />
       </button>
 
       <!-- Tabs: "Historial" no tiene sentido si el ejercicio aún no existe -->
-      <div class="flex border-b divide-x pt-[calc(env(safe-area-inset-top)+0.5rem)] md:pt-0 shrink-0">
+      <div class="flex border-b divide-x pt-[calc(var(--safe-top)+0.5rem)] md:pt-0 shrink-0">
         <div class="flex-1 text-center py-4 cursor-pointer hover:bg-gray-100"
              :class="{ 'bg-gray-100 font-semibold text-[var(--color-primary)]': selectedTab === 'info' }"
              @click="selectedTab = 'info'">Información</div>

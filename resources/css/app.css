@@ -25,6 +25,10 @@
 }
 
 :root {
+  /* Hueco bajo la barra de estado: el safe area solo no basta y el blur
+     del notch parte títulos y nombres. 1.25rem lo deja por debajo. */
+  --safe-top: calc(env(safe-area-inset-top, 0px) + 1.25rem);
+
   /* Tipografía */
   --font-display: "Poppins", "Arial", sans-serif;
   --font-body: "Poppins", "Arial", sans-serif;

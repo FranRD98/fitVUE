@@ -37,7 +37,7 @@ function choose(value) {
 <template>
   <div v-if="show" class="fixed inset-0 z-[60] bg-white md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
     <div class="w-full h-full md:h-auto md:max-h-[85vh] md:max-w-lg md:rounded-2xl bg-white flex flex-col overflow-hidden">
-      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
+      <header class="flex items-center justify-between px-4 py-3 border-b pt-[calc(var(--safe-top)+0.75rem)] md:pt-3 shrink-0">
         <button type="button" @click="emit('close')" class="text-gray-500 hover:text-gray-700" aria-label="Cerrar">
           <IconX class="w-6 h-6" />
         </button>

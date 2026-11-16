@@ -98,7 +98,7 @@ const handleSave = async () => {
 <template>
   <div v-if="show" class="fixed inset-0 z-50 bg-white dark:bg-[#0f172a] md:bg-black/60 md:backdrop-blur-sm md:flex md:justify-center md:items-center md:px-4">
     <div class="w-full h-full md:h-auto md:max-w-lg md:max-h-[85vh] bg-white dark:bg-[#1e293b] md:rounded-xl shadow-xl flex flex-col overflow-hidden">
-      <header class="flex items-center justify-between px-4 py-3 border-b dark:border-white/10 pt-[calc(env(safe-area-inset-top)+0.75rem)] md:pt-3 shrink-0">
+      <header class="flex items-center justify-between px-4 py-3 border-b dark:border-white/10 pt-[calc(var(--safe-top)+0.75rem)] md:pt-3 shrink-0">
         <button type="button" @click="close" class="text-[var(--color-primary)] font-medium">Cancelar</button>
         <h2 class="font-semibold text-[var(--color-primary)]">Editar perfil</h2>
         <button type="button" @click="handleSave" :disabled="updating" class="text-[var(--color-primary)] font-semibold disabled:opacity-50">
