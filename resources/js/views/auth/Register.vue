@@ -20,10 +20,11 @@ onMounted(() => {
 })
 
 const registerUser = async () => {
+  // El plan se activa solo si Stripe confirma el pago (ver StripeController);
+  // aquí no se envía plan_id, la cuenta nace siempre gratuita.
   const response = await register({
     email: email.value,
-    password: password.value,
-    plan_id: selectedPlan.value // <-- importante
+    password: password.value
   })
 
   if (response?.error) {
@@ -95,7 +96,15 @@ const registerUser = async () => {
               class="flex items-start gap-3 bg-red-100 border border-red-300 text-red-800 text-sm rounded-md p-4"
             >
               <span>{{ authError }}</span>
-            </p>          
+            </p>
+
+            <p
+              v-if="selectedPlan === 2 || selectedPlan === 3"
+              class="bg-amber-50 border border-amber-300 text-amber-800 text-sm rounded-md p-3"
+            >
+              Modo de prueba de Stripe: el pago no es real, no se realizará ningún cargo.
+            </p>
+
           <button
             type="submit"
             class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2 rounded-lg transition"

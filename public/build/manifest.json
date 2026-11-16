@@ -3,8 +3,8 @@
     "file": "assets/DietFormModal-BJAobu2H.css",
     "src": "_DietFormModal-BJAobu2H.css"
   },
-  "_DietFormModal-DPw0evZE.js": {
-    "file": "assets/DietFormModal-DPw0evZE.js",
+  "_DietFormModal-BzKc67D0.js": {
+    "file": "assets/DietFormModal-BzKc67D0.js",
     "name": "DietFormModal",
     "imports": [
       "_createVueComponent-Bvt_Dl-G.js",
@@ -52,12 +52,16 @@
       "_createVueComponent-Bvt_Dl-G.js"
     ]
   },
-  "_RoutineFormModal-59f8JcIk.js": {
-    "file": "assets/RoutineFormModal-59f8JcIk.js",
+  "_RoutineFormModal-C6WwC6pK.css": {
+    "file": "assets/RoutineFormModal-C6WwC6pK.css",
+    "src": "_RoutineFormModal-C6WwC6pK.css"
+  },
+  "_RoutineFormModal-D5GVXNrY.js": {
+    "file": "assets/RoutineFormModal-D5GVXNrY.js",
     "name": "RoutineFormModal",
     "imports": [
       "_createVueComponent-Bvt_Dl-G.js",
-      "_text-w5wEUFJT.js",
+      "_text-DxWTX1sO.js",
       "_IconChevronDown-BzEKlVV0.js",
       "resources/js/app.js"
     ],
@@ -65,12 +69,8 @@
       "assets/RoutineFormModal-C6WwC6pK.css"
     ]
   },
-  "_RoutineFormModal-C6WwC6pK.css": {
-    "file": "assets/RoutineFormModal-C6WwC6pK.css",
-    "src": "_RoutineFormModal-C6WwC6pK.css"
-  },
-  "_WorkoutSets-B_Bwgbq5.js": {
-    "file": "assets/WorkoutSets-B_Bwgbq5.js",
+  "_WorkoutSets-CSfp-HVL.js": {
+    "file": "assets/WorkoutSets-CSfp-HVL.js",
     "name": "WorkoutSets",
     "imports": [
       "_createVueComponent-Bvt_Dl-G.js",
@@ -106,8 +106,8 @@
     "file": "assets/text-CBceLlkq.css",
     "src": "_text-CBceLlkq.css"
   },
-  "_text-w5wEUFJT.js": {
-    "file": "assets/text-w5wEUFJT.js",
+  "_text-DxWTX1sO.js": {
+    "file": "assets/text-DxWTX1sO.js",
     "name": "text",
     "imports": [
       "_createVueComponent-Bvt_Dl-G.js",
@@ -157,7 +157,7 @@
     "src": "node_modules/@fontsource/poppins/files/poppins-latin-ext-400-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Cy4Y4yd0.css",
+    "file": "assets/app-Bp-JF3Jo.css",
     "name": "app",
     "names": [
       "app.css"
@@ -174,7 +174,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DzcWqnOE.js",
+    "file": "assets/app-Bg9qheTu.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -201,7 +201,7 @@
     ]
   },
   "resources/js/components/dashboard/CalendarPanel.vue": {
-    "file": "assets/CalendarPanel-Bm2e4fS_.js",
+    "file": "assets/CalendarPanel-BQ8rqwnX.js",
     "name": "CalendarPanel",
     "src": "resources/js/components/dashboard/CalendarPanel.vue",
     "isDynamicEntry": true,
@@ -210,11 +210,11 @@
       "_IconChevronRight-RSRxR3uT.js",
       "resources/js/app.js",
       "_useDelayedSkeleton-B7zjTkve.js",
-      "_WorkoutSets-B_Bwgbq5.js"
+      "_WorkoutSets-CSfp-HVL.js"
     ]
   },
   "resources/js/components/dashboard/ConfigPanel.vue": {
-    "file": "assets/ConfigPanel-B-GbWUcV.js",
+    "file": "assets/ConfigPanel-DQTtSHKh.js",
     "name": "ConfigPanel",
     "src": "resources/js/components/dashboard/ConfigPanel.vue",
     "isDynamicEntry": true,
@@ -227,7 +227,7 @@
     ]
   },
   "resources/js/components/dashboard/DietsPanel.vue": {
-    "file": "assets/DietsPanel-BRcvmvYa.js",
+    "file": "assets/DietsPanel-DzL1EAP8.js",
     "name": "DietsPanel",
     "src": "resources/js/components/dashboard/DietsPanel.vue",
     "isDynamicEntry": true,
@@ -238,20 +238,20 @@
       "resources/js/app.js",
       "_diets-vavw41yW.js",
       "_ingredients-BDHTwJFl.js",
-      "_DietFormModal-DPw0evZE.js"
+      "_DietFormModal-BzKc67D0.js"
     ],
     "css": [
       "assets/DietsPanel-CbuZNkVU.css"
     ]
   },
   "resources/js/components/dashboard/ExercisesPanel.vue": {
-    "file": "assets/ExercisesPanel-FpZRm21q.js",
+    "file": "assets/ExercisesPanel-S66SGJ_a.js",
     "name": "ExercisesPanel",
     "src": "resources/js/components/dashboard/ExercisesPanel.vue",
     "isDynamicEntry": true,
     "imports": [
       "_createVueComponent-Bvt_Dl-G.js",
-      "_text-w5wEUFJT.js",
+      "_text-DxWTX1sO.js",
       "_IconChevronDown-BzEKlVV0.js",
       "_IconLayoutList-CNhZyGtU.js",
       "resources/js/app.js",
@@ -259,7 +259,7 @@
     ]
   },
   "resources/js/components/dashboard/GuidesPanel.vue": {
-    "file": "assets/GuidesPanel-DRXKf9eM.js",
+    "file": "assets/GuidesPanel-DLpYvzz2.js",
     "name": "GuidesPanel",
     "src": "resources/js/components/dashboard/GuidesPanel.vue",
     "isDynamicEntry": true,
@@ -273,7 +273,7 @@
     ]
   },
   "resources/js/components/dashboard/HomePanel.vue": {
-    "file": "assets/HomePanel-tDJIavg7.js",
+    "file": "assets/HomePanel-BxhzrUFZ.js",
     "name": "HomePanel",
     "src": "resources/js/components/dashboard/HomePanel.vue",
     "isDynamicEntry": true,
@@ -282,11 +282,11 @@
       "_IconChevronDown-BzEKlVV0.js",
       "resources/js/app.js",
       "_useDelayedSkeleton-B7zjTkve.js",
-      "_WorkoutSets-B_Bwgbq5.js"
+      "_WorkoutSets-CSfp-HVL.js"
     ]
   },
   "resources/js/components/dashboard/IngredientsPanel.vue": {
-    "file": "assets/IngredientsPanel-Co-YXMfI.js",
+    "file": "assets/IngredientsPanel-Bi8qkr7-.js",
     "name": "IngredientsPanel",
     "src": "resources/js/components/dashboard/IngredientsPanel.vue",
     "isDynamicEntry": true,
@@ -301,7 +301,7 @@
     ]
   },
   "resources/js/components/dashboard/MeasurementsPanel.vue": {
-    "file": "assets/MeasurementsPanel-CsLuTaEJ.js",
+    "file": "assets/MeasurementsPanel-CVxpTGBQ.js",
     "name": "MeasurementsPanel",
     "src": "resources/js/components/dashboard/MeasurementsPanel.vue",
     "isDynamicEntry": true,
@@ -312,7 +312,7 @@
     ]
   },
   "resources/js/components/dashboard/PlatesPanel.vue": {
-    "file": "assets/PlatesPanel-Bvh9XvRL.js",
+    "file": "assets/PlatesPanel-Bhy8p3Jf.js",
     "name": "PlatesPanel",
     "src": "resources/js/components/dashboard/PlatesPanel.vue",
     "isDynamicEntry": true,
@@ -328,13 +328,13 @@
     ]
   },
   "resources/js/components/dashboard/RoutinesPanel.vue": {
-    "file": "assets/RoutinesPanel-Dq7IY06K.js",
+    "file": "assets/RoutinesPanel-Ce3QtaY2.js",
     "name": "RoutinesPanel",
     "src": "resources/js/components/dashboard/RoutinesPanel.vue",
     "isDynamicEntry": true,
     "imports": [
       "_createVueComponent-Bvt_Dl-G.js",
-      "_RoutineFormModal-59f8JcIk.js",
+      "_RoutineFormModal-D5GVXNrY.js",
       "_IconLayoutList-CNhZyGtU.js",
       "_IconRocket-VAlAdmRf.js",
       "resources/js/app.js",
@@ -343,7 +343,7 @@
     ]
   },
   "resources/js/components/dashboard/StatsPanel.vue": {
-    "file": "assets/StatsPanel-Crs8UuYI.js",
+    "file": "assets/StatsPanel-DEN4_pEB.js",
     "name": "StatsPanel",
     "src": "resources/js/components/dashboard/StatsPanel.vue",
     "isDynamicEntry": true,
@@ -355,7 +355,7 @@
     ]
   },
   "resources/js/components/dashboard/UsersPanel.vue": {
-    "file": "assets/UsersPanel-BKac4rtN.js",
+    "file": "assets/UsersPanel-BVGCOcnK.js",
     "name": "UsersPanel",
     "src": "resources/js/components/dashboard/UsersPanel.vue",
     "isDynamicEntry": true,
@@ -370,16 +370,16 @@
     ]
   },
   "resources/js/components/dashboard/WebPanel.vue": {
-    "file": "assets/WebPanel-CozQrC4l.js",
+    "file": "assets/WebPanel-XMMqdFk6.js",
     "name": "WebPanel",
     "src": "resources/js/components/dashboard/WebPanel.vue",
     "isDynamicEntry": true,
     "imports": [
       "_createVueComponent-Bvt_Dl-G.js",
-      "_RoutineFormModal-59f8JcIk.js",
+      "_RoutineFormModal-D5GVXNrY.js",
       "resources/js/app.js",
       "_diets-vavw41yW.js",
-      "_DietFormModal-DPw0evZE.js",
+      "_DietFormModal-BzKc67D0.js",
       "resources/js/components/dashboard/GuidesPanel.vue"
     ]
   }

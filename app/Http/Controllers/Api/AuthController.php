@@ -20,16 +20,17 @@ class AuthController extends Controller
             'last_name' => ['nullable', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
-            'plan_id' => ['sometimes', 'integer', 'min:1', 'max:3'],
         ]);
 
+        // El plan nunca se fía del cliente: toda cuenta nace gratuita y solo
+        // StripeController la sube a Premium/Pro tras confirmar el pago.
         $user = User::create([
             'name' => $data['name'] ?? null,
             'last_name' => $data['last_name'] ?? null,
             'email' => $data['email'],
             'password' => $data['password'],
             'role' => 'user',
-            'plan_id' => $data['plan_id'] ?? 1,
+            'plan_id' => 1,
         ]);
 
         $token = $user->createToken('fitvue')->plainTextToken;
