@@ -1,16 +1,27 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { getWorkoutSessions } from '@/api/services/exercises'
 import { useDelayedSkeleton } from '@/composables/useDelayedSkeleton'
 import { formatDuration, formatVolume, setsVolume } from '@/utils/workout'
 import WorkoutSets from '@/components/dashboard/WorkoutSets.vue'
-import { IconBarbell, IconClock, IconClipboardList, IconChevronDown } from '@tabler/icons-vue'
+import { IconBarbell, IconClock, IconClipboardList, IconChevronDown, IconClipboardHeart } from '@tabler/icons-vue'
 
+const router = useRouter()
 const userStore = useUserStore()
 const sessions = ref([])
 const openKey = ref(null)
 const { loading, showSkeleton, start, finish } = useDelayedSkeleton(300)
+
+// Al registrarse solo se piden nombre y apellidos; el resto (objetivo, edad,
+// altura, peso, actividad) queda pendiente de esta "entrevista" opcional
+// hasta que el usuario quiera rellenarla.
+const needsInterview = computed(() => !userStore.userData?.goal)
+
+function startInterview() {
+  router.push('/empezar?interview=1')
+}
 
 function formatDate(date) {
   return new Date(date).toLocaleDateString('es-ES', {
@@ -44,6 +55,21 @@ onMounted(async () => {
 <template>
   <section class="px-2 py-4 sm:px-6 space-y-6">
     <h1 class="text-2xl sm:text-3xl font-bold text-[var(--color-primary)]">Entrenamientos</h1>
+
+    <button
+      v-if="needsInterview"
+      type="button"
+      @click="startInterview"
+      class="w-full flex items-center gap-3 bg-[rgba(var(--color-primary-rgb),0.08)] hover:bg-[rgba(var(--color-primary-rgb),0.14)] border border-[var(--color-primary)]/20 rounded-xl p-4 text-left transition-colors"
+    >
+      <div class="w-10 h-10 rounded-full bg-[var(--color-primary)] flex items-center justify-center shrink-0">
+        <IconClipboardHeart class="w-5 h-5 text-white" />
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-[var(--color-primary)]">Para empezar, haz una entrevista rápida</p>
+        <p class="text-sm text-gray-500">Así te conocemos mejor y ajustamos tus calorías y objetivos.</p>
+      </div>
+    </button>
 
     <div v-if="loading && !showSkeleton" />
     <div v-else-if="loading && showSkeleton" class="space-y-3 animate-pulse">

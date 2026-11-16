@@ -1,11 +1,17 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+
+// Entrevista opcional: se llega aquí ya logueado (desde el aviso del panel),
+// con nombre/apellidos ya guardados, así que se salta el paso 0 y empieza
+// directamente en género. También permite salir sin terminarla.
+const isInterview = computed(() => route.query.interview === '1')
+const firstStep = computed(() => (isInterview.value ? 1 : 0))
 
 const step = ref(0)
 const userData = ref({
@@ -21,7 +27,6 @@ const userData = ref({
   age: '',
   activity: 'sedentario',
   profile_image: '/img/default-profile.svg',
-  completedForm: true,
   goal: '',
   gender: ''
 })
@@ -34,48 +39,52 @@ onMounted(() => {
       uid: stored.uid || '',
       email: stored.email || '',
       plan_id: stored.plan_id || 1,
-      role: stored.role || 'user'
+      role: stored.role || 'user',
+      name: stored.name || '',
+      last_name: stored.last_name || '',
+      gender: stored.gender || '',
+      goal: stored.goal || '',
+      birthday: stored.birthday ? String(stored.birthday).slice(0, 10) : '',
+      height: stored.height ?? '',
+      weight: stored.weight ?? '',
+      activity: stored.activity || 'sedentario',
+      profile_image: stored.profile_image || '/img/default-profile.svg',
     }
   }
 
-  // Si es coach, solo necesita nombre y apellido
-  if (stored?.role === 'coach') {
-    step.value = 0
-  }
+  step.value = firstStep.value
 })
 
 const macros = ref({ carbs: 0, proteins: 0, fats: 0 })
 const calorieResult = ref(null)
 
 const nextStep = async () => {
-  const isCoach = userData.value.plan_id === 3 || userData.value.role === 'coach'
-
-  // Validación común al primer paso
+  // Validación del primer paso (solo en el alta inicial: nombre y apellidos).
   if (step.value === 0 && (!userData.value.name || !userData.value.last_name)) {
     alert('Por favor, completa este campo antes de continuar.')
     return
   }
 
-  // Si es coach, solo necesitamos nombre y apellidos
-  if (isCoach) {
+  // Alta inicial: con el nombre basta. El resto (género, objetivo, edad,
+  // altura, peso, actividad) es opcional y se completa cuando se quiera
+  // desde la entrevista del panel.
+  if (step.value === 0 && !isInterview.value) {
     try {
       await userStore.updateUserData(userStore.userData.uid, {
         name: userData.value.name,
         last_name: userData.value.last_name,
-        plan_id: userData.value.plan_id,
-        role: 'coach',
-        completedForm: true
+        completed_form: true
       })
 
       await userStore.fetchUserData()
       router.push('/dashboard')
     } catch (error) {
-      console.error('❌ Error guardando datos del coach:', error)
+      console.error('❌ Error guardando datos básicos:', error)
+      alert('Ocurrió un error al guardar tus datos. Por favor, intenta de nuevo.')
     }
     return
   }
 
-  // Si no es coach, sigue flujo normal
   if (
     (step.value === 1 && !userData.value.gender) ||
     (step.value === 2 && !userData.value.goal) ||
@@ -91,40 +100,23 @@ const nextStep = async () => {
   if (step.value < 6) {
     step.value++
   } else {
+    // Último paso: solo calcula y muestra el resultado. El guardado real
+    // ocurre al pulsar "Empezar mi cambio" (finalizeSetup), para poder
+    // revisar las macros antes de confirmar.
     calculateCalories()
-
-    try {
-      await userStore.updateUserData(userStore.userData.uid, {
-        name: userData.value.name,
-        last_name: userData.value.last_name,
-        birthday: new Date(userData.value.birthday),
-        plan_id: userData.value.plan_id,
-        height: userData.value.height,
-        weight: userData.value.weight,
-        age: userData.value.age,
-        activity: userData.value.activity,
-        role: 'user',
-        profile_image: userData.value.profile_image,
-        completedForm: true,
-        goal: userData.value.goal,
-        gender: userData.value.gender
-      })
-
-      await userStore.fetchUserData()
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('❌ Error guardando datos:', error)
-    }
   }
 }
 
+function exitInterview() {
+  router.push('/dashboard')
+}
 
 const previousStep = () => {
-  if (step.value > 0) step.value--
+  if (step.value > firstStep.value) step.value--
 }
 
 const restart = () => {
-  step.value = 0
+  step.value = firstStep.value
   calorieResult.value = null
   macros.value = { carbs: 0, proteins: 0, fats: 0 }
   userData.value = {
@@ -139,7 +131,6 @@ const restart = () => {
     age: '',
     activity: 'sedentario',
     profile_image: '/img/default-profile.svg',
-    completedForm: true,
     goal: '',
     gender: ''
   }
@@ -152,14 +143,12 @@ const finalizeSetup = async () => {
         name: userData.value.name,
         last_name: userData.value.last_name,
         birthday: new Date(userData.value.birthday),
-        plan_id: userData.value.plan_id,
         height: userData.value.height,
         weight: userData.value.weight,
         age: userData.value.age,
         activity: userData.value.activity,
-        role: userData.value.plan_id === 3 ? 'coach' : 'user',
         profile_image: userData.value.profile_image,
-        completedForm: true,
+        completed_form: true,
         goal: userData.value.goal,
         gender: userData.value.gender
       })
@@ -221,7 +210,15 @@ const calculateCalories = () => {
 
 <template>
   <div class="min-h-screen flex flex-col items-center justify-center bg-[var(--color-primary)] p-6">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl">
+    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl relative">
+      <button
+        v-if="isInterview"
+        type="button"
+        @click="exitInterview"
+        class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-sm font-medium"
+      >
+        Hacerlo más tarde ✕
+      </button>
       <transition name="fade" mode="out-in">
         <div v-if="calorieResult === null">
 
@@ -454,11 +451,11 @@ const calculateCalories = () => {
           </div>
 
           <div class="flex justify-between mt-6">
-            <button v-if="step > 0" @click="previousStep" class="bg-gray-300 px-4 py-2 rounded-lg">
+            <button v-if="step > firstStep" @click="previousStep" class="bg-gray-300 px-4 py-2 rounded-lg">
               Atrás
             </button>
             <button @click="nextStep" class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-full">
-              {{ step < 7 ? 'Siguiente' : 'Calcular' }}
+              {{ step < 6 ? 'Siguiente' : 'Calcular' }}
             </button>
           </div>
                 
