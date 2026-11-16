@@ -29,7 +29,7 @@ class ExerciseRequestResolvedNotification extends Notification
         $approved = $this->exerciseRequest->status === 'approved';
 
         $message = (new MailMessage)
-            ->subject($approved ? 'Tu ejercicio ha sido aprobado' : 'Tu ejercicio ha sido rechazado')
+            ->subject($approved ? 'Tu ejercicio ha sido aprobado' : 'Hemos anotado tu propuesta de ejercicio')
             ->greeting('¡Hola'.($notifiable->name ? ' '.$notifiable->name : '').'!');
 
         if ($approved) {
@@ -37,7 +37,7 @@ class ExerciseRequestResolvedNotification extends Notification
                 ->line("Buenas noticias: tu propuesta \"{$this->exerciseRequest->name}\" ya forma parte del catálogo de ejercicios de fitVUE.")
                 ->action('Ver catálogo', url('/'));
         } else {
-            $message->line("Hemos revisado tu propuesta \"{$this->exerciseRequest->name}\" y de momento no la vamos a añadir al catálogo.");
+            $message->line("Hemos anotado tu propuesta \"{$this->exerciseRequest->name}\" para revisarla más adelante.");
         }
 
         return $message;
