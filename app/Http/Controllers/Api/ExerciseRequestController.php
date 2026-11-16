@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Exercise;
 use App\Models\ExerciseRequest;
+use App\Notifications\ExerciseRequestResolvedNotification;
 use Illuminate\Http\Request;
 
 class ExerciseRequestController extends Controller
@@ -64,6 +65,7 @@ class ExerciseRequestController extends Controller
         ]);
 
         $exerciseRequest->update(['status' => 'approved', 'exercise_id' => $exercise->id]);
+        $this->notifyRequester($exerciseRequest);
 
         return response()->json($exercise->load('category'), 201);
     }
@@ -73,8 +75,18 @@ class ExerciseRequestController extends Controller
         $this->authorizeAdmin($request);
 
         $exerciseRequest->update(['status' => 'rejected']);
+        $this->notifyRequester($exerciseRequest);
 
         return response()->json(['success' => true]);
+    }
+
+    private function notifyRequester(ExerciseRequest $exerciseRequest): void
+    {
+        try {
+            $exerciseRequest->user?->notify(new ExerciseRequestResolvedNotification($exerciseRequest));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     private function authorizeAdmin(Request $request): void

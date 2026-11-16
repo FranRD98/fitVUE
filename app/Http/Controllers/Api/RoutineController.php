@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Routine;
 use App\Models\RoutineCategory;
 use App\Models\User;
+use App\Notifications\RoutineAssignedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 
@@ -178,7 +179,14 @@ class RoutineController extends Controller
     public function assign(Request $request, User $user)
     {
         $data = $request->validate(['routine_id' => ['required', 'integer', 'exists:routines,id']]);
-        $user->update(['assigned_routine' => $data['routine_id']]);
+        $routine = Routine::findOrFail($data['routine_id']);
+        $user->update(['assigned_routine' => $routine->id]);
+
+        try {
+            $user->notify(new RoutineAssignedNotification($routine));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json(['success' => true]);
     }

@@ -37,7 +37,8 @@ class WelcomeNotification extends Notification
         return (new MailMessage)
             ->subject('¡Bienvenido a fitVUE!')
             ->greeting('¡Hola'.($notifiable->name ? ' '.$notifiable->name : '').'!')
-            ->line('Gracias por registrarte en fitVUE. Ya puedes empezar a crear tus rutinas y seguir tu progreso.')
+            ->line('Gracias por registrarte en fitVUE. Ya puedes empezar a crear tus rutinas, registrar tus dietas y seguir tu progreso.')
+            ->action('Entrar en fitVUE', url('/'))
             ->line('Si tienes cualquier duda, responde a este correo.');
     }
 }

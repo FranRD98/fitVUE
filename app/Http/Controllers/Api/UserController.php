@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\AccountCreatedNotification;
 use App\Support\SdrImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +62,12 @@ class UserController extends Controller
         }
 
         $user = User::create($data);
+
+        try {
+            $user->notify(new AccountCreatedNotification(trim($me->name.' '.$me->last_name) ?: $me->email));
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         return response()->json($user, 201);
     }

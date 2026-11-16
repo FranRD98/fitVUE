@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\PlanUpgradedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Stripe\StripeClient;
@@ -23,10 +24,20 @@ class StripeController extends Controller
 
     private function applyPlan(User $user, int $planId): void
     {
+        if ($user->plan_id === $planId) {
+            return;
+        }
+
         $user->update([
             'plan_id' => $planId,
             'role' => $planId === 3 ? 'coach' : $user->role,
         ]);
+
+        try {
+            $user->notify(new PlanUpgradedNotification($planId));
+        } catch (\Throwable $e) {
+            report($e);
+        }
     }
 
     // Llamado por el frontend tras volver de Stripe, usando el session_id del checkout.
