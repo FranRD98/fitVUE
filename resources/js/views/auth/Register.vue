@@ -1,9 +1,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user'
 
-const { register, authError } = useUserStore()
+// authError es estado reactivo del store: desestructurarlo "a pelo" (como
+// se hacía antes) se lleva solo el valor que tuviera en ese instante y deja
+// de actualizarse, así que el error de registro (p. ej. email duplicado)
+// nunca llegaba a mostrarse y el botón "parecía" no hacer nada.
+const userStore = useUserStore()
+const { register } = userStore
+const { authError } = storeToRefs(userStore)
 const router = useRouter()
 const email = ref('')
 const password = ref('')
