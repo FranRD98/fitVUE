@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\WelcomeNotification;
 use App\Support\SdrImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,12 @@ class AuthController extends Controller
             'role' => 'user',
             'plan_id' => 1,
         ]);
+
+        try {
+            $user->notify(new WelcomeNotification);
+        } catch (\Throwable $e) {
+            report($e);
+        }
 
         $token = $user->createToken('fitvue')->plainTextToken;
 
