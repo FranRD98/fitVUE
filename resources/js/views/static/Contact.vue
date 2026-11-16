@@ -76,9 +76,9 @@
             </div>
             <button
               type="submit"
-              class="w-full py-3 bg-[var(--color-primary)] text-white font-semibold rounded-full hover:bg-[var(--color-secondary)] transition"
+              class="btn-fill btn-fill--solid w-full py-3 font-semibold rounded-full"
             >
-              Enviar mensaje
+              <span class="btn-fill__label">Enviar mensaje</span>
             </button>
           </form>
         </div>

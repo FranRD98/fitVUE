@@ -27,16 +27,20 @@
           </svg>
         </button>
 
-        <!-- Respuesta -->
-        <transition name="fade-slide">
-          <div
-            v-show="faq.open"
-            :id="'faq-' + index"
-            class="px-6 pb-5 pt-5 text-sm text-gray-700 border-t border-gray-100 bg-gray-100]"
-          >
-            {{ faq.answer }}
+        <!-- Respuesta: grid-template-rows 0fr->1fr anima el alto incluso con
+             contenido de alto "auto", así el cierre no da un golpe seco (lo
+             que pasaba con v-show + solo opacity: el alto colapsaba de golpe
+             en el último frame de la transición). -->
+        <div class="faq-answer" :class="{ 'is-open': faq.open }">
+          <div class="faq-answer__inner">
+            <div
+              :id="'faq-' + index"
+              class="px-6 pb-5 pt-5 text-sm text-gray-700 border-t border-gray-100 bg-gray-100"
+            >
+              {{ faq.answer }}
+            </div>
           </div>
-        </transition>
+        </div>
       </div>
     </div>
   </section>
@@ -80,13 +84,21 @@ export default {
 </script>
 
 <style scoped>
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.25s ease;
+.faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.3s ease;
 }
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
+.faq-answer.is-open {
+  grid-template-rows: 1fr;
+}
+.faq-answer__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .faq-answer {
+    transition: none;
+  }
 }
 </style>

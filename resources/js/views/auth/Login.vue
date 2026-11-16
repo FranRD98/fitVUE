@@ -61,8 +61,8 @@ const login = async () => {
               <span>{{ error }}</span>
             </p>  
 
-          <button type="submit" class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2 rounded-lg transition">
-            Iniciar sesión
+          <button type="submit" class="btn-fill btn-fill--solid w-full font-semibold py-2 rounded-lg">
+            <span class="btn-fill__label">Iniciar sesión</span>
           </button>
         </form>
 

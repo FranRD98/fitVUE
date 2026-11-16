@@ -5,6 +5,22 @@
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Fitvue - La app para mejorar tu estilo de vida</title>
+    <meta name="description" content="Entrena, cuida tu alimentación y sigue tu progreso con FitVue: rutinas, dietas y estadísticas en una sola app para móvil, tablet y ordenador.">
+
+    <!-- Vista previa al compartir el enlace (WhatsApp, redes, Slack...). Sin
+         esto, la mayoría de apps muestran el enlace pelado, sin imagen ni
+         descripción. -->
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:site_name" content="FitVue">
+    <meta property="og:title" content="FitVue - La app para mejorar tu estilo de vida">
+    <meta property="og:description" content="Entrena, cuida tu alimentación y sigue tu progreso con FitVue: rutinas, dietas y estadísticas en una sola app.">
+    <meta property="og:url" content="{{ config('app.url') }}">
+    <meta property="og:image" content="{{ config('app.url') }}/img/icons/pwa-512.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="FitVue - La app para mejorar tu estilo de vida">
+    <meta name="twitter:description" content="Entrena, cuida tu alimentación y sigue tu progreso con FitVue: rutinas, dietas y estadísticas en una sola app.">
+    <meta name="twitter:image" content="{{ config('app.url') }}/img/icons/pwa-512.png">
 
     <!-- PWA -->
     <link rel="manifest" href="/manifest.webmanifest">

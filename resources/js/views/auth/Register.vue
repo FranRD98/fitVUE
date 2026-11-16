@@ -107,9 +107,9 @@ const registerUser = async () => {
 
           <button
             type="submit"
-            class="w-full bg-[var(--color-primary)] hover:bg-[var(--color-secondary)] text-white font-semibold py-2 rounded-lg transition"
+            class="btn-fill btn-fill--solid w-full font-semibold py-2 rounded-lg"
           >
-            Registrarse
+            <span class="btn-fill__label">Registrarse</span>
           </button>
         </form>
 

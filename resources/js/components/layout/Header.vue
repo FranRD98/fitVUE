@@ -25,11 +25,21 @@ const dropdownOpen = ref(false)
 const isHome = computed(() => route.path === '/')
 const transparent = computed(() => isHome.value && !scrolled.value && !dropdownOpen.value)
 
+// El panel del desplegable es "position: fixed" y empieza justo debajo del
+// header (ver .dropdown-menu): al bajar el cursor del enlace al panel, el
+// puntero pasa un instante por un punto que no es descendiente de ".dropdown"
+// (el propio hueco del header), así que sin este margen el mouseleave/enter
+// se dispara dos veces seguidas y el fondo del header parpadea al cambiar.
+let closeTimer = null
 function openDropdown() {
+  clearTimeout(closeTimer)
   dropdownOpen.value = true
 }
 function closeDropdown() {
-  dropdownOpen.value = false
+  clearTimeout(closeTimer)
+  closeTimer = setTimeout(() => {
+    dropdownOpen.value = false
+  }, 150)
 }
 
 function onScroll() {
@@ -50,6 +60,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
+  clearTimeout(closeTimer)
 })
 
 // Computed seguros

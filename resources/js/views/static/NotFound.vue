@@ -12,9 +12,9 @@
       <p class="mt-4 text-lg">Parece que esta ruta no existe</p>
       <router-link
         to="/"
-        class="mt-6 px-6 py-3 bg-[var(--color-primary)] rounded-full hover:bg-[var(--color-secondary)] transition"
+        class="btn-fill btn-fill--solid mt-6 px-6 py-3 rounded-full"
       >
-        Volver al inicio
+        <span class="btn-fill__label">Volver al inicio</span>
       </router-link>
     </div>
   </div>

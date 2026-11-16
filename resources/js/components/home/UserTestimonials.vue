@@ -71,7 +71,7 @@ const testimonios = [
 
         <!-- Usuario -->
         <div class="flex items-center gap-3 mt-auto">
-          <img :src="t.foto" alt="foto" class="w-10 h-10 rounded-full object-cover border" />
+          <img :src="t.foto" :alt="`Foto de ${t.nombre}`" loading="lazy" class="w-10 h-10 rounded-full object-cover border" />
           <div>
             <p class="text-[var(--color-text)]">{{ t.nombre }}</p>
             <span class="text-sm font-semibold text-[var(--color-primary)]">{{ t.rol }}</span>

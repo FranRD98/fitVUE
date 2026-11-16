@@ -18,6 +18,7 @@
           <img
             :src="card.image"
             :alt="card.title"
+            loading="lazy"
             class="w-full h-full object-cover transform transition-transform duration-300 group-hover:scale-110"
           />
         </div>
@@ -41,8 +42,9 @@
     <!-- Card extra a pantalla completa -->
     <div v-reveal class="w-full max-w-6xl bg-[var(--color-primary)] text-white rounded-xl shadow-lg mt-12 overflow-hidden flex flex-col md:flex-row">
       <img
-        src="https://placehold.co/112x112/f3f4f6/005F78?text=Premium"
-        alt="Entrenador Personal"
+        src="/trainer.jpg"
+        alt="Entrenador personal revisando el progreso de un cliente"
+        loading="lazy"
         class="w-full md:w-1/2 object-cover h-64 md:h-auto"
       />
       <div class="p-8 flex flex-col justify-center md:w-1/2 text-left">

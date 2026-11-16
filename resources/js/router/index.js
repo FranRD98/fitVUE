@@ -31,38 +31,38 @@ import FullReviewHistory from '@/components/dashboard/FullReviewHistory.vue'
 
 const routes = [
   { path: '/', component: Home, meta: { public: true } },
-  { path: '/contacto', component: Contact, meta: { public: true } },
-  { path: '/FAQ', component: FAQ, meta: { public: true } },
-  { path: '/login', component: Login, meta: { public: true } },
-  { path: '/sign-in', component: Register, meta: { public: true } },
-  { path: '/empezar', component: StartChange, meta: { public: true } },
+  { path: '/contacto', component: Contact, meta: { public: true, title: 'Contacto' } },
+  { path: '/FAQ', component: FAQ, meta: { public: true, title: 'Preguntas frecuentes' } },
+  { path: '/login', component: Login, meta: { public: true, title: 'Iniciar sesión' } },
+  { path: '/sign-in', component: Register, meta: { public: true, title: 'Crear cuenta' } },
+  { path: '/empezar', component: StartChange, meta: { public: true, title: 'Empezar' } },
 
   // Rutinas
-  { path: '/rutinas', component: RoutineList, meta: { public: true } },
-  { path: '/rutinas/categoria/:category', component: RoutineList, meta: { public: true } },
-  { path: '/rutinas/:routine/:id', component: RoutineDetail, meta: { public: true } },
+  { path: '/rutinas', component: RoutineList, meta: { public: true, title: 'Rutinas' } },
+  { path: '/rutinas/categoria/:category', component: RoutineList, meta: { public: true, title: 'Rutinas' } },
+  { path: '/rutinas/:routine/:id', component: RoutineDetail, meta: { public: true, title: 'Rutina' } },
 
   // Guías
-  { path: '/guias', component: GuideList, meta: { public: true } },
-  { path: '/guias/:category', component: GuideList, meta: { public: true } },
-  { path: '/guias/:category/:id', component: GuideDetail, meta: { public: true } },
+  { path: '/guias', component: GuideList, meta: { public: true, title: 'Guías' } },
+  { path: '/guias/:category', component: GuideList, meta: { public: true, title: 'Guías' } },
+  { path: '/guias/:category/:id', component: GuideDetail, meta: { public: true, title: 'Guía' } },
 
   // Dashboard (protegido)
-  { path: '/dashboard', component: Dashboard },
-  { path: '/dashboard/newReview', component: NewReview },
-  { path: '/user/:userId/:reviewId', component: ReviewDetail },
-  { path: '/user/:userId/iniciar-rutina', component: StartRoutine },
-  { path: '/dashboard/historial', name: 'Historial', component: FullReviewHistory},
+  { path: '/dashboard', component: Dashboard, meta: { title: 'Panel' } },
+  { path: '/dashboard/newReview', component: NewReview, meta: { title: 'Nueva revisión' } },
+  { path: '/user/:userId/:reviewId', component: ReviewDetail, meta: { title: 'Revisión' } },
+  { path: '/user/:userId/iniciar-rutina', component: StartRoutine, meta: { title: 'Entrenando' } },
+  { path: '/dashboard/historial', name: 'Historial', component: FullReviewHistory, meta: { title: 'Historial' } },
 
   // Pagamiento (stripe)
-  { path: '/pago-aceptado', component: SuccessPayment },
+  { path: '/pago-aceptado', component: SuccessPayment, meta: { title: 'Pago confirmado' } },
 
   // Legales
-  { path: '/politica-privacidad', component: PrivacyPolicy, meta: { public: true } },
-  { path: '/terminos-y-condiciones', component: Terms, meta: { public: true } },
+  { path: '/politica-privacidad', component: PrivacyPolicy, meta: { public: true, title: 'Política de privacidad' } },
+  { path: '/terminos-y-condiciones', component: Terms, meta: { public: true, title: 'Términos y condiciones' } },
 
   // 404
-  { path: '/:pathMatch(.*)*', component: NotFound, meta: { public: true } }
+  { path: '/:pathMatch(.*)*', component: NotFound, meta: { public: true, title: 'Página no encontrada' } }
 ]
 
 const router = createRouter({
@@ -96,6 +96,14 @@ router.beforeEach(async (to, from, next) => {
   }
 
   return next()
+})
+
+// Título de pestaña por ruta: sin esto, toda la SPA se queda con el título
+// genérico del <head> (bueno para la primera carga, pero no distingue
+// pestañas al navegar ni ayuda a quien usa el historial del navegador).
+const DEFAULT_TITLE = 'FitVue - La app para mejorar tu estilo de vida'
+router.afterEach((to) => {
+  document.title = to.meta.title ? `${to.meta.title} · FitVue` : DEFAULT_TITLE
 })
 
 export default router

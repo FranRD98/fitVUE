@@ -454,8 +454,8 @@ const calculateCalories = () => {
             <button v-if="step > firstStep" @click="previousStep" class="bg-gray-300 px-4 py-2 rounded-lg">
               Atrás
             </button>
-            <button @click="nextStep" class="bg-[var(--color-primary)] text-white px-4 py-2 rounded-full">
-              {{ step < 6 ? 'Siguiente' : 'Calcular' }}
+            <button @click="nextStep" class="btn-fill btn-fill--solid px-4 py-2 rounded-full">
+              <span class="btn-fill__label">{{ step < 6 ? 'Siguiente' : 'Calcular' }}</span>
             </button>
           </div>
                 
@@ -514,9 +514,9 @@ const calculateCalories = () => {
           <div class="flex flex-col sm:flex-row justify-center gap-4 mt-6">
             <button
               @click="finalizeSetup"
-              class="bg-[var(--color-primary)] text-white px-6 py-3 rounded-full hover:bg-[var(--color-secondary)] transition"
+              class="btn-fill btn-fill--solid px-6 py-3 rounded-full"
             >
-              Empezar mi cambio
+              <span class="btn-fill__label">Empezar mi cambio</span>
             </button>
 
             <button
