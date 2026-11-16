@@ -34,6 +34,8 @@ APP_ENV=production
 APP_KEY=
 APP_DEBUG=false
 APP_URL=https://tu-dominio.com
+APP_LOCALE=es
+APP_FALLBACK_LOCALE=es
 
 DB_CONNECTION=mysql
 DB_HOST=localhost
